@@ -1,0 +1,121 @@
+@import "tailwindcss";
+
+/* ───────────── Design tokens ───────────── */
+:root {
+  /* accent é trocado dinamicamente pelos temas (themes.ts) */
+  --accent: #22c55e;
+  --accent-2: #10b981;
+  --glow: 34, 197, 94;
+
+  --bg: #08090d;
+  --surface: #11131b;
+  --card: #161922;
+  --line: #242836;
+  --muted: #8a90a2;
+  --fg: #f4f6fb;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-card: var(--card);
+  --color-line: var(--line);
+  --color-muted: var(--muted);
+  --color-fg: var(--fg);
+  --color-accent: var(--accent);
+  --color-accent2: var(--accent-2);
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  height: 100%;
+  background: var(--bg);
+}
+
+body {
+  min-height: 100%;
+  color: var(--fg);
+  background:
+    radial-gradient(1200px 600px at 50% -10%, rgba(var(--glow), 0.12), transparent 60%),
+    radial-gradient(900px 500px at 100% 0%, rgba(var(--glow), 0.06), transparent 55%),
+    var(--bg);
+  background-attachment: fixed;
+  font-family: var(--font-sans);
+  overscroll-behavior-y: none;
+}
+
+/* ───────────── Utilitários ───────────── */
+.glass {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.015));
+  border: 1px solid var(--line);
+  backdrop-filter: blur(14px);
+}
+
+.glow-accent {
+  box-shadow: 0 0 0 1px rgba(var(--glow), 0.25), 0 12px 40px -12px rgba(var(--glow), 0.45);
+}
+
+.text-gradient {
+  background: linear-gradient(120deg, var(--accent), var(--accent-2));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.bg-accent-soft {
+  background: rgba(var(--glow), 0.12);
+}
+
+.ring-accent-soft {
+  box-shadow: inset 0 0 0 1px rgba(var(--glow), 0.35);
+}
+
+/* esconde scrollbar mas mantém scroll */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-thickness: none;
+  scrollbar-width: none;
+}
+
+::selection {
+  background: rgba(var(--glow), 0.3);
+}
+
+/* ───────────── Animações ───────────── */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+.animate-float {
+  animation: float 5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.shimmer {
+  background: linear-gradient(90deg, transparent, rgba(var(--glow), 0.15), transparent);
+  background-size: 200% 100%;
+  animation: shimmer 2.5s infinite;
+}
+
+@keyframes pop-in {
+  0% { transform: scale(0.8); opacity: 0; }
+  60% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.animate-pop {
+  animation: pop-in 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-float, .shimmer { animation: none; }
+}

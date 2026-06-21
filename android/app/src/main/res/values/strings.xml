@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Kern</string>
+    <string name="title_activity_main">Kern</string>
+    <string name="package_name">com.alan.kern</string>
+    <string name="custom_url_scheme">com.alan.kern</string>
+</resources>
