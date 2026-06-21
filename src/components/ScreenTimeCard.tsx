@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   tempoTelaDisponivel,
-  temPermissaoTempoTela,
+  permissaoDetalhe,
   pedirPermissaoTempoTela,
   usoSocialHoje,
   type UsoSocial,
@@ -15,14 +15,17 @@ type Estado = "carregando" | "web" | "sem-permissao" | "ok";
 export function ScreenTimeCard() {
   const [estado, setEstado] = useState<Estado>("carregando");
   const [uso, setUso] = useState<UsoSocial | null>(null);
+  const [modo, setModo] = useState<number>(-1);
+  const [aguardando, setAguardando] = useState(false);
 
-  async function atualizar() {
+  const atualizar = useCallback(async () => {
     if (!tempoTelaDisponivel()) {
       setEstado("web");
       return;
     }
-    const ok = await temPermissaoTempoTela();
-    if (!ok) {
+    const { granted, mode } = await permissaoDetalhe();
+    setModo(mode);
+    if (!granted) {
       setEstado("sem-permissao");
       return;
     }
@@ -32,15 +35,25 @@ export function ScreenTimeCard() {
     } catch {
       setEstado("sem-permissao");
     }
-  }
+  }, []);
 
   useEffect(() => {
     atualizar();
-  }, []);
+  }, [atualizar]);
+
+  // revalida sozinho quando o usuário volta das Configurações pro app
+  useEffect(() => {
+    function onVisivel() {
+      if (document.visibilityState === "visible") atualizar();
+    }
+    document.addEventListener("visibilitychange", onVisivel);
+    return () => document.removeEventListener("visibilitychange", onVisivel);
+  }, [atualizar]);
 
   async function conceder() {
+    setAguardando(true);
     await pedirPermissaoTempoTela();
-    // ao voltar dos Ajustes, o usuário toca em "atualizar"
+    // o visibilitychange revalida ao voltar; mantemos o estado de espera
   }
 
   if (estado === "web") {
@@ -48,7 +61,7 @@ export function ScreenTimeCard() {
       <div className="rounded-2xl border border-line bg-card/50 p-4">
         <p className="text-sm font-semibold">📵 Tempo de tela</p>
         <p className="mt-0.5 text-xs text-muted">
-          Monitoramento automático de Instagram/WhatsApp disponível no app Android.
+          Monitoramento de Instagram/WhatsApp disponível no app Android.
         </p>
       </div>
     );
@@ -62,28 +75,36 @@ export function ScreenTimeCard() {
     return (
       <div className="glass rounded-2xl p-4">
         <p className="text-sm font-semibold">📵 Tempo de tela</p>
-        <p className="mt-0.5 text-xs text-muted">
-          Conceda “Acesso ao uso” pra eu acompanhar sua janela de rede automaticamente.
+        <p className="mt-1 text-xs text-muted">
+          Pra eu acompanhar sua janela de rede, ative o <strong>Kern</strong> em
+          “Acesso ao uso”:
         </p>
+        <ol className="mt-2 list-decimal space-y-0.5 pl-4 text-xs text-muted">
+          <li>Toque em “Abrir configurações”.</li>
+          <li>Na lista, encontre <strong>Kern</strong> e ligue a chave.</li>
+          <li>Volte pro app — ele reconhece sozinho.</li>
+        </ol>
         <div className="mt-3 flex gap-2">
           <button
             onClick={conceder}
             className="flex-1 rounded-xl bg-accent py-2.5 text-sm font-bold text-bg active:scale-95"
           >
-            Conceder acesso
+            {aguardando ? "Abrir de novo" : "Abrir configurações"}
           </button>
           <button
             onClick={atualizar}
             className="rounded-xl border border-line px-4 py-2.5 text-sm font-bold active:scale-95"
           >
-            Atualizar
+            Já autorizei
           </button>
         </div>
+        <p className="mt-2 text-[11px] text-muted">
+          Diagnóstico: permissão não detectada (modo {modo}).
+        </p>
       </div>
     );
   }
 
-  // estado ok
   const total = uso?.totalMin ?? 0;
   const dentro = total <= LIMITE_REDE_MIN;
 
@@ -91,7 +112,7 @@ export function ScreenTimeCard() {
     <div className="glass rounded-2xl p-4">
       <div className="flex items-center justify-between">
         <p className="text-sm font-semibold">📵 Rede social hoje</p>
-        <button onClick={atualizar} className="text-xs text-muted">
+        <button onClick={atualizar} className="text-xs text-accent">
           atualizar
         </button>
       </div>
@@ -119,7 +140,7 @@ export function ScreenTimeCard() {
         />
       </div>
 
-      {uso && uso.apps.length > 0 && (
+      {uso && uso.apps.length > 0 ? (
         <ul className="mt-3 space-y-1.5">
           {uso.apps.map((a) => (
             <li key={a.pkg} className="flex items-center gap-2 text-sm">
@@ -129,6 +150,10 @@ export function ScreenTimeCard() {
             </li>
           ))}
         </ul>
+      ) : (
+        <p className="mt-3 text-xs text-muted">
+          Sem uso registrado ainda hoje nos apps monitorados.
+        </p>
       )}
     </div>
   );

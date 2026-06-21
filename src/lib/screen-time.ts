@@ -9,7 +9,7 @@ interface UsageApp {
 }
 
 interface ScreenTimePlugin {
-  hasPermission(): Promise<{ granted: boolean }>;
+  hasPermission(): Promise<{ granted: boolean; mode?: number }>;
   requestPermission(): Promise<void>;
   getTodayUsage(): Promise<{ apps: UsageApp[] }>;
 }
@@ -20,14 +20,18 @@ export function tempoTelaDisponivel(): boolean {
   return Capacitor.isNativePlatform();
 }
 
-export async function temPermissaoTempoTela(): Promise<boolean> {
-  if (!tempoTelaDisponivel()) return false;
+export async function permissaoDetalhe(): Promise<{ granted: boolean; mode: number }> {
+  if (!tempoTelaDisponivel()) return { granted: false, mode: -1 };
   try {
     const r = await ScreenTime.hasPermission();
-    return r.granted;
+    return { granted: r.granted, mode: r.mode ?? -1 };
   } catch {
-    return false;
+    return { granted: false, mode: -1 };
   }
+}
+
+export async function temPermissaoTempoTela(): Promise<boolean> {
+  return (await permissaoDetalhe()).granted;
 }
 
 export async function pedirPermissaoTempoTela(): Promise<void> {
@@ -47,7 +51,6 @@ export interface UsoSocial {
   apps: UsoApp[];
 }
 
-// Uso de hoje dos apps sociais monitorados (minutos), ordenado desc.
 export async function usoSocialHoje(): Promise<UsoSocial> {
   const { apps } = await ScreenTime.getTodayUsage();
   const porPkg = new Map(apps.map((a) => [a.packageName, a.totalMs]));

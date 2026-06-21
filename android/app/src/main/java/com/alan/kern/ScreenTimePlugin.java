@@ -5,6 +5,8 @@ import android.app.usage.UsageStats;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Process;
 import android.provider.Settings;
@@ -27,37 +29,53 @@ import java.util.Map;
 @CapacitorPlugin(name = "ScreenTime")
 public class ScreenTimePlugin extends Plugin {
 
-    private boolean temPermissao() {
+    /** Retorna o modo bruto do AppOps (para diagnóstico). */
+    private int modoAppOps() {
         Context ctx = getContext();
         AppOpsManager appOps = (AppOpsManager) ctx.getSystemService(Context.APP_OPS_SERVICE);
-        if (appOps == null) return false;
-        int mode;
+        if (appOps == null) return AppOpsManager.MODE_ERRORED;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            mode = appOps.unsafeCheckOpNoThrow(
-                    AppOpsManager.OPSTR_GET_USAGE_STATS,
-                    Process.myUid(),
-                    ctx.getPackageName());
-        } else {
-            mode = appOps.checkOpNoThrow(
-                    AppOpsManager.OPSTR_GET_USAGE_STATS,
-                    Process.myUid(),
-                    ctx.getPackageName());
+            return appOps.unsafeCheckOpNoThrow(
+                    AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), ctx.getPackageName());
         }
-        return mode == AppOpsManager.MODE_ALLOWED;
+        return appOps.checkOpNoThrow(
+                AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), ctx.getPackageName());
+    }
+
+    private boolean temPermissao() {
+        int mode = modoAppOps();
+        if (mode == AppOpsManager.MODE_ALLOWED) return true;
+        // Em vários aparelhos o AppOps volta MODE_DEFAULT mesmo após autorizar;
+        // nesse caso confirmamos pela permissão declarada de fato.
+        if (mode == AppOpsManager.MODE_DEFAULT) {
+            return getContext().checkCallingOrSelfPermission(
+                    android.Manifest.permission.PACKAGE_USAGE_STATS) == PackageManager.PERMISSION_GRANTED;
+        }
+        return false;
     }
 
     @PluginMethod
     public void hasPermission(PluginCall call) {
         JSObject ret = new JSObject();
         ret.put("granted", temPermissao());
+        ret.put("mode", modoAppOps()); // diagnóstico
         call.resolve(ret);
     }
 
     @PluginMethod
     public void requestPermission(PluginCall call) {
-        Intent intent = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        getContext().startActivity(intent);
+        Context ctx = getContext();
+        // tenta abrir direto na página do app; cai pra lista geral se não suportado
+        Intent direto = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
+        direto.setData(Uri.fromParts("package", ctx.getPackageName(), null));
+        direto.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        try {
+            ctx.startActivity(direto);
+        } catch (Exception e) {
+            Intent lista = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
+            lista.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            ctx.startActivity(lista);
+        }
         call.resolve();
     }
 
