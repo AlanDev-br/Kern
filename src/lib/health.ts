@@ -11,15 +11,33 @@ export function saudeNativa(): boolean {
 
 export type StatusSaude = "indisponivel" | "sem-app" | "sem-permissao" | "ok";
 
+export interface PermsSaude {
+  sono: boolean;
+  treino: boolean;
+}
+
+async function permissoesConcedidas(): Promise<PermsSaude> {
+  try {
+    const granted = await HealthConnect.getGrantedPermissions();
+    const read = granted.read ?? [];
+    return {
+      sono: read.includes("SleepSession"),
+      treino: read.includes("ActivitySession"),
+    };
+  } catch {
+    return { sono: false, treino: false };
+  }
+}
+
 export async function statusSaude(): Promise<StatusSaude> {
   if (!saudeNativa()) return "indisponivel";
   try {
     const { availability } = await HealthConnect.checkAvailability();
     if (availability === "NotSupported") return "indisponivel";
     if (availability === "NotInstalled") return "sem-app";
-    const granted = await HealthConnect.getGrantedPermissions();
-    const ok = LEITURA.every((t) => granted.read.includes(t));
-    return ok ? "ok" : "sem-permissao";
+    const p = await permissoesConcedidas();
+    // basta UMA permissão (sono é a principal) para o card funcionar
+    return p.sono || p.treino ? "ok" : "sem-permissao";
   } catch {
     return "sem-permissao";
   }
@@ -28,18 +46,19 @@ export async function statusSaude(): Promise<StatusSaude> {
 export async function pedirPermissoesSaude(): Promise<boolean> {
   if (!saudeNativa()) return false;
   try {
-    const r = await HealthConnect.requestPermissions({ read: LEITURA, write: [] });
-    return LEITURA.every((t) => r.read.includes(t));
+    await HealthConnect.requestPermissions({ read: LEITURA, write: [] });
+    const p = await permissoesConcedidas();
+    return p.sono || p.treino;
   } catch {
     return false;
   }
 }
 
-// extrai um ISO de campos possíveis do registro nativo
+// extrai um Date de campos possíveis do registro nativo
 function lerInstante(rec: Record<string, unknown>, ...chaves: string[]): Date | null {
   for (const k of chaves) {
     const v = rec[k];
-    if (typeof v === "string") {
+    if (typeof v === "string" && v.length > 0) {
       const d = new Date(v);
       if (!isNaN(d.getTime())) return d;
     }
@@ -47,80 +66,101 @@ function lerInstante(rec: Record<string, unknown>, ...chaves: string[]): Date | 
   return null;
 }
 
-function ehHoje(d: Date): boolean {
-  const h = new Date();
+function mesmaData(a: Date, b: Date): boolean {
   return (
-    d.getFullYear() === h.getFullYear() &&
-    d.getMonth() === h.getMonth() &&
-    d.getDate() === h.getDate()
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
   );
 }
 
 export interface ResumoSaude {
-  acordouEm: Date | null; // fim do último sono que terminou hoje
+  acordouEm: Date | null; // fim do último sono, se foi hoje
   sonoMin: number;
   treinoMin: number;
   treinoSessoes: number;
+  // diagnóstico
+  perms: PermsSaude;
+  sonoRegistros: number;
+  treinoRegistros: number;
+  ultimoSonoFim: Date | null; // último sono lido, mesmo que não seja de hoje
+  erro: string | null;
 }
 
 export async function lerSaudeHoje(): Promise<ResumoSaude> {
   const agora = new Date();
   const inicioDia = new Date(agora);
   inicioDia.setHours(0, 0, 0, 0);
-  // sono começa na noite anterior — busca a partir de 18h antes
-  const inicioSono = new Date(inicioDia.getTime() - 18 * 3600 * 1000);
+  // janela ampla pra pegar o sono da noite anterior (até 36h atrás)
+  const janelaSono = new Date(agora.getTime() - 36 * 3600 * 1000);
 
+  const perms = await permissoesConcedidas();
   const resumo: ResumoSaude = {
     acordouEm: null,
     sonoMin: 0,
     treinoMin: 0,
     treinoSessoes: 0,
+    perms,
+    sonoRegistros: 0,
+    treinoRegistros: 0,
+    ultimoSonoFim: null,
+    erro: null,
   };
 
   // ── Sono ──
-  try {
-    const { records } = await HealthConnect.readRecords({
-      type: "SleepSession",
-      start: inicioSono.toISOString(),
-      end: agora.toISOString(),
-    });
-    let melhorFim: Date | null = null;
-    let inicioCorrespondente: Date | null = null;
-    for (const r of records as Record<string, unknown>[]) {
-      const fim = lerInstante(r, "endTime", "endDate", "end");
-      const ini = lerInstante(r, "startTime", "startDate", "start");
-      if (fim && ehHoje(fim) && (!melhorFim || fim > melhorFim)) {
-        melhorFim = fim;
-        inicioCorrespondente = ini;
+  if (perms.sono) {
+    try {
+      const { records } = await HealthConnect.readRecords({
+        type: "SleepSession",
+        start: janelaSono.toISOString(),
+        end: agora.toISOString(),
+      });
+      resumo.sonoRegistros = records.length;
+      let fimMaisRecente: Date | null = null;
+      let inicioDoMaisRecente: Date | null = null;
+      for (const r of records as Record<string, unknown>[]) {
+        const fim = lerInstante(r, "endTime", "endDate", "end");
+        const ini = lerInstante(r, "startTime", "startDate", "start");
+        if (fim && (!fimMaisRecente || fim > fimMaisRecente)) {
+          fimMaisRecente = fim;
+          inicioDoMaisRecente = ini;
+        }
       }
-    }
-    if (melhorFim) {
-      resumo.acordouEm = melhorFim;
-      if (inicioCorrespondente) {
-        resumo.sonoMin = Math.round((melhorFim.getTime() - inicioCorrespondente.getTime()) / 60000);
+      resumo.ultimoSonoFim = fimMaisRecente;
+      if (fimMaisRecente && mesmaData(fimMaisRecente, agora)) {
+        resumo.acordouEm = fimMaisRecente;
+        if (inicioDoMaisRecente) {
+          resumo.sonoMin = Math.round(
+            (fimMaisRecente.getTime() - inicioDoMaisRecente.getTime()) / 60000,
+          );
+        }
       }
+    } catch (e) {
+      resumo.erro = `Sono: ${(e as Error)?.message ?? e}`;
     }
-  } catch {
-    /* sem dados de sono */
   }
 
   // ── Exercício ──
-  try {
-    const { records } = await HealthConnect.readRecords({
-      type: "ActivitySession",
-      start: inicioDia.toISOString(),
-      end: agora.toISOString(),
-    });
-    for (const r of records as Record<string, unknown>[]) {
-      const ini = lerInstante(r, "startTime", "startDate", "start");
-      const fim = lerInstante(r, "endTime", "endDate", "end");
-      if (ini && fim) {
-        resumo.treinoSessoes++;
-        resumo.treinoMin += Math.round((fim.getTime() - ini.getTime()) / 60000);
+  if (perms.treino) {
+    try {
+      const { records } = await HealthConnect.readRecords({
+        type: "ActivitySession",
+        start: inicioDia.toISOString(),
+        end: agora.toISOString(),
+      });
+      resumo.treinoRegistros = records.length;
+      for (const r of records as Record<string, unknown>[]) {
+        const ini = lerInstante(r, "startTime", "startDate", "start");
+        const fim = lerInstante(r, "endTime", "endDate", "end");
+        if (ini && fim) {
+          resumo.treinoSessoes++;
+          resumo.treinoMin += Math.round((fim.getTime() - ini.getTime()) / 60000);
+        }
       }
+    } catch (e) {
+      const msg = `Treino: ${(e as Error)?.message ?? e}`;
+      resumo.erro = resumo.erro ? `${resumo.erro} | ${msg}` : msg;
     }
-  } catch {
-    /* sem dados de exercício */
   }
 
   return resumo;
