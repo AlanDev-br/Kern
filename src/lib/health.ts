@@ -3,8 +3,14 @@
 import { Capacitor } from "@capacitor/core";
 import { HealthConnect } from "@devmaxime/capacitor-health-connect";
 
-type Leitura = "SleepSession" | "ActivitySession" | "Steps" | "RestingHeartRate";
-const LEITURA: Leitura[] = ["SleepSession", "ActivitySession", "Steps", "RestingHeartRate"];
+// Tipos lidos. "HeartRate" (intradiário) é usado só para estimar o despertar.
+const LEITURA_REQ = [
+  "SleepSession",
+  "ActivitySession",
+  "Steps",
+  "RestingHeartRate",
+  "HeartRate",
+];
 
 export function saudeNativa(): boolean {
   return Capacitor.isNativePlatform();
@@ -16,26 +22,28 @@ export interface PermsSaude {
   sono: boolean;
   treino: boolean;
   passos: boolean;
-  fc: boolean;
+  fcRepouso: boolean;
+  fcIntra: boolean;
 }
 
 async function permissoesConcedidas(): Promise<PermsSaude> {
   try {
     const granted = await HealthConnect.getGrantedPermissions();
-    const read = granted.read ?? [];
+    const read = (granted.read ?? []) as string[];
     return {
       sono: read.includes("SleepSession"),
       treino: read.includes("ActivitySession"),
       passos: read.includes("Steps"),
-      fc: read.includes("RestingHeartRate"),
+      fcRepouso: read.includes("RestingHeartRate"),
+      fcIntra: read.includes("HeartRate"),
     };
   } catch {
-    return { sono: false, treino: false, passos: false, fc: false };
+    return { sono: false, treino: false, passos: false, fcRepouso: false, fcIntra: false };
   }
 }
 
 export function todasPermissoes(p: PermsSaude): boolean {
-  return p.sono && p.treino && p.passos && p.fc;
+  return p.sono && p.treino && p.passos && p.fcRepouso && p.fcIntra;
 }
 
 export async function statusSaude(): Promise<StatusSaude> {
@@ -45,8 +53,7 @@ export async function statusSaude(): Promise<StatusSaude> {
     if (availability === "NotSupported") return "indisponivel";
     if (availability === "NotInstalled") return "sem-app";
     const p = await permissoesConcedidas();
-    // basta UMA permissão para o card já funcionar
-    return p.sono || p.treino || p.passos || p.fc ? "ok" : "sem-permissao";
+    return p.sono || p.treino || p.passos || p.fcRepouso || p.fcIntra ? "ok" : "sem-permissao";
   } catch {
     return "sem-permissao";
   }
@@ -55,15 +62,18 @@ export async function statusSaude(): Promise<StatusSaude> {
 export async function pedirPermissoesSaude(): Promise<boolean> {
   if (!saudeNativa()) return false;
   try {
-    await HealthConnect.requestPermissions({ read: LEITURA, write: [] });
+    // o tipo do plugin não lista "HeartRate", mas o runtime aceita — daí o cast
+    await HealthConnect.requestPermissions({
+      read: LEITURA_REQ as never,
+      write: [],
+    });
     const p = await permissoesConcedidas();
-    return p.sono || p.treino || p.passos || p.fc;
+    return p.sono || p.treino || p.passos || p.fcRepouso || p.fcIntra;
   } catch {
     return false;
   }
 }
 
-// extrai um Date de campos possíveis do registro nativo
 function lerInstante(rec: Record<string, unknown>, ...chaves: string[]): Date | null {
   for (const k of chaves) {
     const v = rec[k];
@@ -92,9 +102,16 @@ function mesmaData(a: Date, b: Date): boolean {
   );
 }
 
+export type OrigemAcordar = "sono" | "fc+passos" | "fc" | "passos" | null;
+
 export interface ResumoSaude {
-  acordouEm: Date | null; // fim do último sono, se foi hoje
+  // sono real (raro vir da Huawei)
+  acordouEm: Date | null;
   sonoMin: number;
+  // estimativa por FC + passos
+  acordarEstimado: Date | null;
+  acordarOrigem: OrigemAcordar;
+  // métricas que a Huawei envia
   treinoMin: number;
   treinoSessoes: number;
   passos: number;
@@ -102,8 +119,9 @@ export interface ResumoSaude {
   // diagnóstico
   perms: PermsSaude;
   sonoRegistros: number;
-  treinoRegistros: number;
   ultimoSonoFim: Date | null;
+  fcWake: Date | null;
+  stepsWake: Date | null;
   erro: string | null;
 }
 
@@ -117,14 +135,17 @@ export async function lerSaudeHoje(): Promise<ResumoSaude> {
   const resumo: ResumoSaude = {
     acordouEm: null,
     sonoMin: 0,
+    acordarEstimado: null,
+    acordarOrigem: null,
     treinoMin: 0,
     treinoSessoes: 0,
     passos: 0,
     fcRepouso: null,
     perms,
     sonoRegistros: 0,
-    treinoRegistros: 0,
     ultimoSonoFim: null,
+    fcWake: null,
+    stepsWake: null,
     erro: null,
   };
 
@@ -132,7 +153,7 @@ export async function lerSaudeHoje(): Promise<ResumoSaude> {
     resumo.erro = resumo.erro ? `${resumo.erro} | ${msg}` : msg;
   };
 
-  // ── Sono ──
+  // ── Sono real (se a Huawei mandar) ──
   if (perms.sono) {
     try {
       const { records } = await HealthConnect.readRecords({
@@ -141,24 +162,20 @@ export async function lerSaudeHoje(): Promise<ResumoSaude> {
         end: agora.toISOString(),
       });
       resumo.sonoRegistros = records.length;
-      let fimMaisRecente: Date | null = null;
-      let inicioDoMaisRecente: Date | null = null;
+      let fim: Date | null = null;
+      let ini: Date | null = null;
       for (const r of records as Record<string, unknown>[]) {
-        const fim = lerInstante(r, "endTime", "endDate", "end");
-        const ini = lerInstante(r, "startTime", "startDate", "start");
-        if (fim && (!fimMaisRecente || fim > fimMaisRecente)) {
-          fimMaisRecente = fim;
-          inicioDoMaisRecente = ini;
+        const f = lerInstante(r, "endTime", "endDate", "end");
+        const i = lerInstante(r, "startTime", "startDate", "start");
+        if (f && (!fim || f > fim)) {
+          fim = f;
+          ini = i;
         }
       }
-      resumo.ultimoSonoFim = fimMaisRecente;
-      if (fimMaisRecente && mesmaData(fimMaisRecente, agora)) {
-        resumo.acordouEm = fimMaisRecente;
-        if (inicioDoMaisRecente) {
-          resumo.sonoMin = Math.round(
-            (fimMaisRecente.getTime() - inicioDoMaisRecente.getTime()) / 60000,
-          );
-        }
+      resumo.ultimoSonoFim = fim;
+      if (fim && mesmaData(fim, agora)) {
+        resumo.acordouEm = fim;
+        if (ini) resumo.sonoMin = Math.round((fim.getTime() - ini.getTime()) / 60000);
       }
     } catch (e) {
       addErro(`Sono: ${(e as Error)?.message ?? e}`);
@@ -173,7 +190,6 @@ export async function lerSaudeHoje(): Promise<ResumoSaude> {
         start: inicioDia.toISOString(),
         end: agora.toISOString(),
       });
-      resumo.treinoRegistros = records.length;
       for (const r of records as Record<string, unknown>[]) {
         const ini = lerInstante(r, "startTime", "startDate", "start");
         const fim = lerInstante(r, "endTime", "endDate", "end");
@@ -187,23 +203,35 @@ export async function lerSaudeHoje(): Promise<ResumoSaude> {
     }
   }
 
-  // ── Passos (agregado do dia) ──
+  // ── Passos: total do dia + primeiro movimento da manhã ──
   if (perms.passos) {
     try {
-      const { aggregates } = await HealthConnect.aggregateRecords({
+      const { records } = await HealthConnect.readRecords({
         type: "Steps",
         start: inicioDia.toISOString(),
         end: agora.toISOString(),
-        groupBy: "day",
       });
-      resumo.passos = aggregates.reduce((s, a) => s + (a.value ?? 0), 0);
+      let primeiro: Date | null = null;
+      for (const r of records as Record<string, unknown>[]) {
+        const count = lerNumero(r, "count") ?? 0;
+        resumo.passos += count;
+        const ini = lerInstante(r, "startTime", "startDate", "start");
+        const fim = lerInstante(r, "endTime", "endDate", "end");
+        // ignora registros de dia inteiro (>3h) — não servem para o horário
+        const durOk = ini && fim ? fim.getTime() - ini.getTime() < 3 * 3600 * 1000 : true;
+        if (ini && durOk && count >= 5) {
+          const h = ini.getHours();
+          if (h >= 3 && h <= 11 && (!primeiro || ini < primeiro)) primeiro = ini;
+        }
+      }
+      resumo.stepsWake = primeiro;
     } catch (e) {
       addErro(`Passos: ${(e as Error)?.message ?? e}`);
     }
   }
 
-  // ── Frequência cardíaca em repouso (último registro de hoje) ──
-  if (perms.fc) {
+  // ── FC de repouso (último valor de hoje) ──
+  if (perms.fcRepouso) {
     try {
       const { records } = await HealthConnect.readRecords({
         type: "RestingHeartRate",
@@ -211,19 +239,57 @@ export async function lerSaudeHoje(): Promise<ResumoSaude> {
         end: agora.toISOString(),
       });
       let maisRecente: Date | null = null;
-      let bpm: number | null = null;
       for (const r of records as Record<string, unknown>[]) {
         const t = lerInstante(r, "time", "startTime");
         const v = lerNumero(r, "beatsPerMinute", "bpm");
         if (t && v !== null && (!maisRecente || t > maisRecente)) {
           maisRecente = t;
-          bpm = v;
+          resumo.fcRepouso = v;
         }
       }
-      resumo.fcRepouso = bpm;
     } catch (e) {
-      addErro(`FC: ${(e as Error)?.message ?? e}`);
+      addErro(`FC repouso: ${(e as Error)?.message ?? e}`);
     }
+  }
+
+  // ── FC intradiária (por hora) → detecta o despertar ──
+  if (perms.fcIntra) {
+    try {
+      const { aggregates } = await HealthConnect.aggregateRecords({
+        type: "HeartRate",
+        start: inicioDia.toISOString(),
+        end: agora.toISOString(),
+        groupBy: "hour",
+      });
+      const horas = aggregates
+        .map((a) => ({ t: new Date(a.startTime), v: a.value ?? 0 }))
+        .filter((h) => !isNaN(h.t.getTime()) && h.v > 0);
+      // linha de base do sono: menor FC entre 0h–5h
+      const madrugada = horas.filter((h) => h.t.getHours() <= 5);
+      const base = (madrugada.length ? madrugada : horas).reduce(
+        (m, h) => Math.min(m, h.v),
+        Infinity,
+      );
+      if (isFinite(base)) {
+        const limiar = base + 8; // FC subiu ~8 bpm acima do sono = acordou
+        const acordou = horas
+          .filter((h) => h.t.getHours() >= 4 && h.v >= limiar)
+          .sort((a, b) => a.t.getTime() - b.t.getTime())[0];
+        if (acordou) resumo.fcWake = acordou.t;
+      }
+    } catch (e) {
+      addErro(`FC intra: ${(e as Error)?.message ?? e}`);
+    }
+  }
+
+  // ── Estimativa final do despertar: o sinal mais cedo ──
+  const candidatos: { t: Date; tipo: "fc" | "passos" }[] = [];
+  if (resumo.fcWake && mesmaData(resumo.fcWake, agora)) candidatos.push({ t: resumo.fcWake, tipo: "fc" });
+  if (resumo.stepsWake && mesmaData(resumo.stepsWake, agora)) candidatos.push({ t: resumo.stepsWake, tipo: "passos" });
+  if (candidatos.length) {
+    candidatos.sort((a, b) => a.t.getTime() - b.t.getTime());
+    resumo.acordarEstimado = candidatos[0].t;
+    resumo.acordarOrigem = candidatos.length === 2 ? "fc+passos" : candidatos[0].tipo;
   }
 
   return resumo;

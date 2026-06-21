@@ -18,6 +18,7 @@ export interface DiaRegistro {
   concluidas: string[]; // ids de TaskDef cumpridas nesse dia
   fechouInegociaveis: boolean; // os 3 inegociáveis cumpridos?
   xp: number; // xp ganho no dia
+  acordarManual?: string; // "HH:MM" definido pelo usuário (sobrescreve a estimativa)
 }
 
 export interface RevisaoSemanal {

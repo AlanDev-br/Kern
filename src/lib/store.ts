@@ -46,6 +46,7 @@ interface AppState {
   carregar: () => Promise<void>;
   toggleTarefa: (id: string) => Promise<void>;
   marcarConcluida: (id: string) => Promise<void>;
+  setAcordarManual: (hhmm: string) => Promise<void>;
   setTema: (id: string) => Promise<void>;
   atualizarConfig: (patch: Partial<AppConfig>) => Promise<void>;
   proximaCelebracao: () => void;
@@ -196,6 +197,29 @@ export const useApp = create<AppState>((set, get) => ({
     const concluidas = [...diaHoje.concluidas, id];
     const r = await aplicarConcluidas(
       diaHoje,
+      concluidas,
+      conquistasIds,
+      temasDisp.map((t) => t.id),
+    );
+    set({
+      diaHoje: r.novoDia,
+      dias: r.dias,
+      ctx: r.ctx,
+      conquistasIds: r.conquistasIds,
+      temasDisp: r.temasDisp,
+      fila: [...get().fila, ...r.fila],
+    });
+  },
+
+  // define manualmente o horário de acordar e marca o inegociável correspondente
+  setAcordarManual: async (hhmm: string) => {
+    const { diaHoje, conquistasIds, temasDisp } = get();
+    const base = { ...diaHoje, acordarManual: hhmm };
+    const concluidas = base.concluidas.includes("ineg-acordar")
+      ? base.concluidas
+      : [...base.concluidas, "ineg-acordar"];
+    const r = await aplicarConcluidas(
+      base,
       concluidas,
       conquistasIds,
       temasDisp.map((t) => t.id),
