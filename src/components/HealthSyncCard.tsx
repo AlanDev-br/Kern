@@ -7,6 +7,7 @@ import {
   statusSaude,
   pedirPermissoesSaude,
   lerSaudeHoje,
+  todasPermissoes,
   type StatusSaude,
   type ResumoSaude,
 } from "@/lib/health";
@@ -17,6 +18,16 @@ function hhmm(d: Date) {
 
 function dataHora(d: Date) {
   return d.toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+}
+
+function Tile({ label, valor, sub }: { label: string; valor: string; sub?: string }) {
+  return (
+    <div className="rounded-xl border border-line bg-bg/40 p-3">
+      <p className="text-[11px] uppercase tracking-wider text-muted">{label}</p>
+      <p className="text-lg font-bold">{valor}</p>
+      {sub && <p className="text-[11px] text-muted">{sub}</p>}
+    </div>
+  );
 }
 
 export function HealthSyncCard() {
@@ -46,12 +57,17 @@ export function HealthSyncCard() {
     if (saudeNativa()) sincronizar();
   }, [sincronizar]);
 
+  async function autorizar() {
+    await pedirPermissoesSaude();
+    sincronizar();
+  }
+
   if (!saudeNativa()) {
     return (
       <div className="rounded-2xl border border-line bg-card/50 p-4">
         <p className="text-sm font-semibold">⌚ Huawei Band</p>
         <p className="mt-0.5 text-xs text-muted">
-          Importação automática de sono e treino disponível no app Android (via Health Connect).
+          Importação automática de sono, treino, passos e FC disponível no app Android (via Health Connect).
         </p>
       </div>
     );
@@ -62,7 +78,7 @@ export function HealthSyncCard() {
       <div className="glass rounded-2xl p-4">
         <p className="text-sm font-semibold">⌚ Huawei Band</p>
         <p className="mt-0.5 text-xs text-muted">
-          Instale o app “Health Connect” pela Play Store pra eu ler seus dados.
+          O Health Connect não está disponível neste aparelho.
         </p>
       </div>
     );
@@ -73,13 +89,10 @@ export function HealthSyncCard() {
       <div className="glass rounded-2xl p-4">
         <p className="text-sm font-semibold">⌚ Conectar Huawei Band</p>
         <p className="mt-0.5 text-xs text-muted">
-          Autorize a leitura de sono e exercício pra eu marcar acordar e treino sozinho.
+          Autorize a leitura no Health Connect pra eu acompanhar sono, treino, passos e FC.
         </p>
         <button
-          onClick={async () => {
-            await pedirPermissoesSaude();
-            sincronizar();
-          }}
+          onClick={autorizar}
           className="mt-3 w-full rounded-xl bg-accent py-2.5 text-sm font-bold text-bg active:scale-95"
         >
           Autorizar Health Connect
@@ -103,7 +116,6 @@ export function HealthSyncCard() {
         </button>
       </div>
 
-      {/* barra de progresso visível durante a leitura */}
       {sincronizando && (
         <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-line">
           <div className="h-full w-full animate-pulse rounded-full bg-accent" />
@@ -111,33 +123,35 @@ export function HealthSyncCard() {
       )}
 
       <div className="mt-3 grid grid-cols-2 gap-2">
-        <div className="rounded-xl border border-line bg-bg/40 p-3">
-          <p className="text-[11px] uppercase tracking-wider text-muted">Acordou</p>
-          <p className="text-lg font-bold">
-            {resumo?.acordouEm ? hhmm(resumo.acordouEm) : "—"}
-          </p>
-          {resumo && resumo.sonoMin > 0 && (
-            <p className="text-[11px] text-muted">
-              {Math.floor(resumo.sonoMin / 60)}h{String(resumo.sonoMin % 60).padStart(2, "0")} de sono
-            </p>
-          )}
-        </div>
-        <div className="rounded-xl border border-line bg-bg/40 p-3">
-          <p className="text-[11px] uppercase tracking-wider text-muted">Treino</p>
-          <p className="text-lg font-bold">
-            {resumo && resumo.treinoSessoes > 0 ? `${resumo.treinoMin} min` : "—"}
-          </p>
-          {resumo && resumo.treinoSessoes > 0 && (
-            <p className="text-[11px] text-muted">{resumo.treinoSessoes} sessão(ões)</p>
-          )}
-        </div>
+        <Tile
+          label="Acordou"
+          valor={resumo?.acordouEm ? hhmm(resumo.acordouEm) : "—"}
+          sub={
+            resumo && resumo.sonoMin > 0
+              ? `${Math.floor(resumo.sonoMin / 60)}h${String(resumo.sonoMin % 60).padStart(2, "0")} de sono`
+              : undefined
+          }
+        />
+        <Tile
+          label="Treino"
+          valor={resumo && resumo.treinoSessoes > 0 ? `${resumo.treinoMin} min` : "—"}
+          sub={resumo && resumo.treinoSessoes > 0 ? `${resumo.treinoSessoes} sessão(ões)` : undefined}
+        />
+        <Tile
+          label="Passos"
+          valor={resumo && resumo.passos > 0 ? resumo.passos.toLocaleString("pt-BR") : "—"}
+        />
+        <Tile
+          label="FC repouso"
+          valor={resumo?.fcRepouso ? `${resumo.fcRepouso} bpm` : "—"}
+        />
       </div>
 
       {resumo?.acordouEm && (
         <p className="mt-2 text-[11px] text-accent">✓ inegociáveis marcados automaticamente</p>
       )}
 
-      {/* mensagens quando algo não veio */}
+      {/* avisos sobre o sono (que costuma não vir da Huawei) */}
       {resumo && !resumo.acordouEm && resumo.ultimoSonoFim && (
         <p className="mt-2 text-[11px] text-muted">
           Último sono lido terminou {dataHora(resumo.ultimoSonoFim)} (não é de hoje).
@@ -145,11 +159,18 @@ export function HealthSyncCard() {
       )}
       {resumo && !resumo.acordouEm && !resumo.ultimoSonoFim && resumo.perms.sono && (
         <p className="mt-2 text-[11px] text-muted">
-          Nenhum sono encontrado no Health Connect. Force um sync no Health Sync.
+          O Health Connect ainda não recebeu seu sono (o Health Sync da Huawei costuma
+          não enviar sono). Marque “acordar” manualmente se precisar.
         </p>
       )}
 
-      {/* diagnóstico expansível */}
+      {/* libera permissões que faltam (ex.: passos e FC recém-adicionados) */}
+      {resumo && !todasPermissoes(resumo.perms) && (
+        <button onClick={autorizar} className="mt-3 w-full rounded-xl border border-line py-2 text-xs font-semibold active:scale-95">
+          Autorizar leituras que faltam
+        </button>
+      )}
+
       <button
         onClick={() => setDetalhes((d) => !d)}
         className="mt-3 text-[11px] text-muted underline"
@@ -158,23 +179,13 @@ export function HealthSyncCard() {
       </button>
       {detalhes && resumo && (
         <div className="mt-2 space-y-0.5 rounded-xl border border-line bg-bg/40 p-3 text-[11px] text-muted">
-          <p>Permissão sono: {resumo.perms.sono ? "sim" : "não"}</p>
-          <p>Permissão treino: {resumo.perms.treino ? "sim" : "não"}</p>
-          <p>Registros de sono lidos (36h): {resumo.sonoRegistros}</p>
-          <p>Registros de treino lidos (hoje): {resumo.treinoRegistros}</p>
+          <p>Permissões — sono: {resumo.perms.sono ? "sim" : "não"} · treino: {resumo.perms.treino ? "sim" : "não"} · passos: {resumo.perms.passos ? "sim" : "não"} · FC: {resumo.perms.fc ? "sim" : "não"}</p>
+          <p>Sono lido (36h): {resumo.sonoRegistros} registros</p>
+          <p>Treino lido (hoje): {resumo.treinoRegistros} registros</p>
+          <p>Passos hoje: {resumo.passos}</p>
+          <p>FC repouso: {resumo.fcRepouso ?? "—"}</p>
           <p>Último sono: {resumo.ultimoSonoFim ? dataHora(resumo.ultimoSonoFim) : "—"}</p>
           {resumo.erro && <p className="text-[#fb7185]">Erro: {resumo.erro}</p>}
-          {!resumo.perms.treino && (
-            <button
-              onClick={async () => {
-                await pedirPermissoesSaude();
-                sincronizar();
-              }}
-              className="mt-1 text-accent underline"
-            >
-              autorizar exercício também
-            </button>
-          )}
         </div>
       )}
     </div>

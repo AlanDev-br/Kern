@@ -3,7 +3,8 @@
 import { Capacitor } from "@capacitor/core";
 import { HealthConnect } from "@devmaxime/capacitor-health-connect";
 
-const LEITURA: ("SleepSession" | "ActivitySession")[] = ["SleepSession", "ActivitySession"];
+type Leitura = "SleepSession" | "ActivitySession" | "Steps" | "RestingHeartRate";
+const LEITURA: Leitura[] = ["SleepSession", "ActivitySession", "Steps", "RestingHeartRate"];
 
 export function saudeNativa(): boolean {
   return Capacitor.isNativePlatform();
@@ -14,6 +15,8 @@ export type StatusSaude = "indisponivel" | "sem-app" | "sem-permissao" | "ok";
 export interface PermsSaude {
   sono: boolean;
   treino: boolean;
+  passos: boolean;
+  fc: boolean;
 }
 
 async function permissoesConcedidas(): Promise<PermsSaude> {
@@ -23,10 +26,16 @@ async function permissoesConcedidas(): Promise<PermsSaude> {
     return {
       sono: read.includes("SleepSession"),
       treino: read.includes("ActivitySession"),
+      passos: read.includes("Steps"),
+      fc: read.includes("RestingHeartRate"),
     };
   } catch {
-    return { sono: false, treino: false };
+    return { sono: false, treino: false, passos: false, fc: false };
   }
+}
+
+export function todasPermissoes(p: PermsSaude): boolean {
+  return p.sono && p.treino && p.passos && p.fc;
 }
 
 export async function statusSaude(): Promise<StatusSaude> {
@@ -36,8 +45,8 @@ export async function statusSaude(): Promise<StatusSaude> {
     if (availability === "NotSupported") return "indisponivel";
     if (availability === "NotInstalled") return "sem-app";
     const p = await permissoesConcedidas();
-    // basta UMA permissão (sono é a principal) para o card funcionar
-    return p.sono || p.treino ? "ok" : "sem-permissao";
+    // basta UMA permissão para o card já funcionar
+    return p.sono || p.treino || p.passos || p.fc ? "ok" : "sem-permissao";
   } catch {
     return "sem-permissao";
   }
@@ -48,7 +57,7 @@ export async function pedirPermissoesSaude(): Promise<boolean> {
   try {
     await HealthConnect.requestPermissions({ read: LEITURA, write: [] });
     const p = await permissoesConcedidas();
-    return p.sono || p.treino;
+    return p.sono || p.treino || p.passos || p.fc;
   } catch {
     return false;
   }
@@ -66,6 +75,15 @@ function lerInstante(rec: Record<string, unknown>, ...chaves: string[]): Date | 
   return null;
 }
 
+function lerNumero(rec: Record<string, unknown>, ...chaves: string[]): number | null {
+  for (const k of chaves) {
+    const v = rec[k];
+    if (typeof v === "number") return v;
+    if (typeof v === "string" && v.trim() !== "" && !isNaN(Number(v))) return Number(v);
+  }
+  return null;
+}
+
 function mesmaData(a: Date, b: Date): boolean {
   return (
     a.getFullYear() === b.getFullYear() &&
@@ -79,11 +97,13 @@ export interface ResumoSaude {
   sonoMin: number;
   treinoMin: number;
   treinoSessoes: number;
+  passos: number;
+  fcRepouso: number | null;
   // diagnóstico
   perms: PermsSaude;
   sonoRegistros: number;
   treinoRegistros: number;
-  ultimoSonoFim: Date | null; // último sono lido, mesmo que não seja de hoje
+  ultimoSonoFim: Date | null;
   erro: string | null;
 }
 
@@ -91,7 +111,6 @@ export async function lerSaudeHoje(): Promise<ResumoSaude> {
   const agora = new Date();
   const inicioDia = new Date(agora);
   inicioDia.setHours(0, 0, 0, 0);
-  // janela ampla pra pegar o sono da noite anterior (até 36h atrás)
   const janelaSono = new Date(agora.getTime() - 36 * 3600 * 1000);
 
   const perms = await permissoesConcedidas();
@@ -100,11 +119,17 @@ export async function lerSaudeHoje(): Promise<ResumoSaude> {
     sonoMin: 0,
     treinoMin: 0,
     treinoSessoes: 0,
+    passos: 0,
+    fcRepouso: null,
     perms,
     sonoRegistros: 0,
     treinoRegistros: 0,
     ultimoSonoFim: null,
     erro: null,
+  };
+
+  const addErro = (msg: string) => {
+    resumo.erro = resumo.erro ? `${resumo.erro} | ${msg}` : msg;
   };
 
   // ── Sono ──
@@ -136,7 +161,7 @@ export async function lerSaudeHoje(): Promise<ResumoSaude> {
         }
       }
     } catch (e) {
-      resumo.erro = `Sono: ${(e as Error)?.message ?? e}`;
+      addErro(`Sono: ${(e as Error)?.message ?? e}`);
     }
   }
 
@@ -158,8 +183,46 @@ export async function lerSaudeHoje(): Promise<ResumoSaude> {
         }
       }
     } catch (e) {
-      const msg = `Treino: ${(e as Error)?.message ?? e}`;
-      resumo.erro = resumo.erro ? `${resumo.erro} | ${msg}` : msg;
+      addErro(`Treino: ${(e as Error)?.message ?? e}`);
+    }
+  }
+
+  // ── Passos (agregado do dia) ──
+  if (perms.passos) {
+    try {
+      const { aggregates } = await HealthConnect.aggregateRecords({
+        type: "Steps",
+        start: inicioDia.toISOString(),
+        end: agora.toISOString(),
+        groupBy: "day",
+      });
+      resumo.passos = aggregates.reduce((s, a) => s + (a.value ?? 0), 0);
+    } catch (e) {
+      addErro(`Passos: ${(e as Error)?.message ?? e}`);
+    }
+  }
+
+  // ── Frequência cardíaca em repouso (último registro de hoje) ──
+  if (perms.fc) {
+    try {
+      const { records } = await HealthConnect.readRecords({
+        type: "RestingHeartRate",
+        start: inicioDia.toISOString(),
+        end: agora.toISOString(),
+      });
+      let maisRecente: Date | null = null;
+      let bpm: number | null = null;
+      for (const r of records as Record<string, unknown>[]) {
+        const t = lerInstante(r, "time", "startTime");
+        const v = lerNumero(r, "beatsPerMinute", "bpm");
+        if (t && v !== null && (!maisRecente || t > maisRecente)) {
+          maisRecente = t;
+          bpm = v;
+        }
+      }
+      resumo.fcRepouso = bpm;
+    } catch (e) {
+      addErro(`FC: ${(e as Error)?.message ?? e}`);
     }
   }
 
