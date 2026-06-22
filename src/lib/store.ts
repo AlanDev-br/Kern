@@ -47,6 +47,7 @@ interface AppState {
   toggleTarefa: (id: string) => Promise<void>;
   marcarConcluida: (id: string) => Promise<void>;
   setAcordarManual: (hhmm: string) => Promise<void>;
+  setDormirManual: (hhmm: string) => Promise<void>;
   setTema: (id: string) => Promise<void>;
   atualizarConfig: (patch: Partial<AppConfig>) => Promise<void>;
   proximaCelebracao: () => void;
@@ -232,6 +233,14 @@ export const useApp = create<AppState>((set, get) => ({
       temasDisp: r.temasDisp,
       fila: [...get().fila, ...r.fila],
     });
+  },
+
+  // registra o horário que foi dormir (informativo, sem marcar tarefa)
+  setDormirManual: async (hhmm: string) => {
+    const { diaHoje } = get();
+    const novoDia = { ...diaHoje, dormirManual: hhmm };
+    await salvarDia(novoDia);
+    set({ diaHoje: novoDia });
   },
 
   setTema: async (id: string) => {

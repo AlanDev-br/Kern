@@ -19,6 +19,7 @@ export interface DiaRegistro {
   fechouInegociaveis: boolean; // os 3 inegociáveis cumpridos?
   xp: number; // xp ganho no dia
   acordarManual?: string; // "HH:MM" definido pelo usuário (sobrescreve a estimativa)
+  dormirManual?: string; // "HH:MM" que foi dormir na noite anterior (sobrescreve a estimativa)
 }
 
 export interface RevisaoSemanal {

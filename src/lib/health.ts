@@ -111,6 +111,8 @@ export interface ResumoSaude {
   // estimativa por FC + passos
   acordarEstimado: Date | null;
   acordarOrigem: OrigemAcordar;
+  // estimativa do horário de dormir (início do bloco de sono da noite)
+  dormiuEstimado: Date | null;
   // métricas que a Huawei envia
   treinoMin: number;
   treinoSessoes: number;
@@ -140,6 +142,7 @@ export async function lerSaudeHoje(): Promise<ResumoSaude> {
     sonoMin: 0,
     acordarEstimado: null,
     acordarOrigem: null,
+    dormiuEstimado: null,
     treinoMin: 0,
     treinoSessoes: 0,
     passos: 0,
@@ -325,6 +328,48 @@ export async function lerSaudeHoje(): Promise<ResumoSaude> {
       }
     } catch (e) {
       addErro(`FC intra: ${(e as Error)?.message ?? e}`);
+    }
+  }
+
+  // ── Estimativa do horário de dormir: início do bloco de sono da noite (via FC) ──
+  if (perms.fcIntra) {
+    try {
+      const ontem18 = new Date(inicioDia.getTime() - 6 * 3600 * 1000); // ontem 18:00
+      const { aggregates } = await HealthConnect.aggregateRecords({
+        type: "HeartRate",
+        start: ontem18.toISOString(),
+        end: agora.toISOString(),
+        groupBy: "hour",
+      });
+      const horas = aggregates
+        .map((a) => ({ t: new Date(a.startTime), v: a.value ?? 0 }))
+        .filter((h) => !isNaN(h.t.getTime()) && h.v > 0)
+        .sort((a, b) => a.t.getTime() - b.t.getTime());
+      if (horas.length) {
+        const base = horas.reduce((m, h) => Math.min(m, h.v), Infinity);
+        // hora "dormindo" = FC perto da linha de base
+        const dormindo = horas.map((h) => h.v <= base + 8);
+        // maior sequência contígua de horas dormindo = o sono da noite
+        let bestStart = -1, bestLen = 0, curStart = -1, curLen = 0;
+        for (let i = 0; i < dormindo.length; i++) {
+          if (dormindo[i]) {
+            if (curStart < 0) curStart = i;
+            curLen++;
+            if (curLen > bestLen) { bestLen = curLen; bestStart = curStart; }
+          } else {
+            curStart = -1;
+            curLen = 0;
+          }
+        }
+        if (bestStart >= 0 && bestLen >= 3) {
+          const inicioSono = horas[bestStart].t;
+          const h = inicioSono.getHours();
+          // só aceita se o início cair num horário plausível de dormir (19h–03h)
+          if (h >= 19 || h <= 3) resumo.dormiuEstimado = inicioSono;
+        }
+      }
+    } catch (e) {
+      addErro(`Dormir: ${(e as Error)?.message ?? e}`);
     }
   }
 

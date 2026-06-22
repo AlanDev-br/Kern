@@ -42,14 +42,17 @@ function Tile({ label, valor, sub }: { label: string; valor: string; sub?: strin
 export function HealthSyncCard() {
   const marcarConcluida = useApp((s) => s.marcarConcluida);
   const setAcordarManual = useApp((s) => s.setAcordarManual);
+  const setDormirManual = useApp((s) => s.setDormirManual);
   const acordarManual = useApp((s) => s.diaHoje.acordarManual);
+  const dormirManual = useApp((s) => s.diaHoje.dormirManual);
 
   const [status, setStatus] = useState<StatusSaude>("indisponivel");
   const [resumo, setResumo] = useState<ResumoSaude | null>(null);
   const [sincronizando, setSincronizando] = useState(false);
   const [detalhes, setDetalhes] = useState(false);
-  const [editandoHora, setEditandoHora] = useState(false);
-  const [horaInput, setHoraInput] = useState("06:30");
+  const [editandoSono, setEditandoSono] = useState(false);
+  const [dormirInput, setDormirInput] = useState("23:00");
+  const [acordarInput, setAcordarInput] = useState("06:30");
 
   const sincronizar = useCallback(async () => {
     setSincronizando(true);
@@ -76,9 +79,18 @@ export function HealthSyncCard() {
     sincronizar();
   }
 
-  async function salvarHora() {
-    await setAcordarManual(horaInput);
-    setEditandoHora(false);
+  function abrirEditorSono() {
+    if (dormirManual) setDormirInput(dormirManual);
+    else if (resumo?.dormiuEstimado) setDormirInput(hhmm(resumo.dormiuEstimado));
+    if (acordarManual) setAcordarInput(acordarManual);
+    else if (resumo?.acordarEstimado) setAcordarInput(hhmm(resumo.acordarEstimado));
+    setEditandoSono(true);
+  }
+
+  async function salvarSono() {
+    if (dormirInput) await setDormirManual(dormirInput);
+    if (acordarInput) await setAcordarManual(acordarInput);
+    setEditandoSono(false);
   }
 
   if (!saudeNativa()) {
@@ -86,7 +98,7 @@ export function HealthSyncCard() {
       <div className="rounded-2xl border border-line bg-card/50 p-4">
         <p className="text-sm font-semibold">⌚ Huawei Band</p>
         <p className="mt-0.5 text-xs text-muted">
-          Importação automática de treino, passos, FC e estimativa de despertar disponível no app Android.
+          Importação de sono (dormir/acordar), treino, passos e FC disponível no app Android.
         </p>
       </div>
     );
@@ -106,7 +118,7 @@ export function HealthSyncCard() {
       <div className="glass rounded-2xl p-4">
         <p className="text-sm font-semibold">⌚ Conectar Huawei Band</p>
         <p className="mt-0.5 text-xs text-muted">
-          Autorize a leitura no Health Connect pra eu estimar seu despertar e acompanhar treino, passos e FC.
+          Autorize a leitura no Health Connect pra eu estimar dormir/acordar e acompanhar treino, passos e FC.
         </p>
         <button
           onClick={autorizar}
@@ -120,7 +132,18 @@ export function HealthSyncCard() {
 
   if (status !== "ok") return null;
 
-  // valor exibido em "Acordou": manual > sono real > estimativa
+  // Dormiu: manual > estimativa
+  let dormiuValor = "—";
+  let dormiuSub: string | undefined;
+  if (dormirManual) {
+    dormiuValor = dormirManual;
+    dormiuSub = "ajustado por você";
+  } else if (resumo?.dormiuEstimado) {
+    dormiuValor = `~${hhmm(resumo.dormiuEstimado)}`;
+    dormiuSub = "estimado por FC";
+  }
+
+  // Acordou: manual > sono real > estimativa
   let acordouValor = "—";
   let acordouSub: string | undefined;
   if (acordarManual) {
@@ -154,6 +177,7 @@ export function HealthSyncCard() {
       )}
 
       <div className="mt-3 grid grid-cols-2 gap-2">
+        <Tile label="Dormiu" valor={dormiuValor} sub={dormiuSub} />
         <Tile label="Acordou" valor={acordouValor} sub={acordouSub} />
         <Tile
           label="Treino"
@@ -164,32 +188,39 @@ export function HealthSyncCard() {
         <Tile label="FC repouso" valor={resumo?.fcRepouso ? `${resumo.fcRepouso} bpm` : "—"} />
       </div>
 
-      {/* ajuste manual do horário de acordar */}
-      {editandoHora ? (
-        <div className="mt-3 flex items-center gap-2">
-          <input
-            type="time"
-            value={horaInput}
-            onChange={(e) => setHoraInput(e.target.value)}
-            className="flex-1 rounded-xl border border-line bg-bg/50 px-3 py-2 text-sm outline-none focus:border-accent"
-          />
-          <button onClick={salvarHora} className="rounded-xl bg-accent px-4 py-2 text-sm font-bold text-bg active:scale-95">
-            Salvar
-          </button>
-          <button onClick={() => setEditandoHora(false)} className="px-2 text-sm text-muted">
-            ✕
-          </button>
+      {/* ajuste manual dos horários de sono */}
+      {editandoSono ? (
+        <div className="mt-3 space-y-2 rounded-xl border border-line bg-bg/40 p-3">
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs text-muted">Dormi às</span>
+            <input
+              type="time"
+              value={dormirInput}
+              onChange={(e) => setDormirInput(e.target.value)}
+              className="rounded-lg border border-line bg-bg/50 px-2 py-1 text-sm outline-none focus:border-accent"
+            />
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-xs text-muted">Acordei às</span>
+            <input
+              type="time"
+              value={acordarInput}
+              onChange={(e) => setAcordarInput(e.target.value)}
+              className="rounded-lg border border-line bg-bg/50 px-2 py-1 text-sm outline-none focus:border-accent"
+            />
+          </div>
+          <div className="flex gap-2 pt-1">
+            <button onClick={salvarSono} className="flex-1 rounded-xl bg-accent py-2 text-sm font-bold text-bg active:scale-95">
+              Salvar
+            </button>
+            <button onClick={() => setEditandoSono(false)} className="px-3 text-sm text-muted">
+              cancelar
+            </button>
+          </div>
         </div>
       ) : (
-        <button
-          onClick={() => {
-            if (acordarManual) setHoraInput(acordarManual);
-            else if (resumo?.acordarEstimado) setHoraInput(hhmm(resumo.acordarEstimado));
-            setEditandoHora(true);
-          }}
-          className="mt-3 text-xs text-accent underline"
-        >
-          {acordarManual ? "corrigir horário de acordar" : "ajustar horário de acordar manualmente"}
+        <button onClick={abrirEditorSono} className="mt-3 text-xs text-accent underline">
+          ajustar horários de sono manualmente
         </button>
       )}
 
@@ -197,7 +228,6 @@ export function HealthSyncCard() {
         <p className="mt-2 text-[11px] text-accent">✓ inegociável de acordar marcado</p>
       )}
 
-      {/* libera permissões que faltam */}
       {resumo && !todasPermissoes(resumo.perms) && (
         <button onClick={autorizar} className="mt-3 w-full rounded-xl border border-line py-2 text-xs font-semibold active:scale-95">
           Autorizar leituras que faltam
@@ -214,28 +244,9 @@ export function HealthSyncCard() {
             {resumo.perms.passos ? "✓" : "✗"} · FC rep: {resumo.perms.fcRepouso ? "✓" : "✗"} · FC intra:{" "}
             {resumo.perms.fcIntra ? "✓" : "✗"}
           </p>
-          <p>Despertar por FC: {resumo.fcWake ? hhmm(resumo.fcWake) : "—"}</p>
-          <p>Despertar por passos: {resumo.stepsWake ? hhmm(resumo.stepsWake) : "—"}</p>
+          <p>Dormiu (FC): {resumo.dormiuEstimado ? hhmm(resumo.dormiuEstimado) : "—"}</p>
+          <p>Despertar por FC: {resumo.fcWake ? hhmm(resumo.fcWake) : "—"} · por passos: {resumo.stepsWake ? hhmm(resumo.stepsWake) : "—"}</p>
           <p>Passos hoje: {resumo.passos}</p>
-          {resumo.passosOrigens && resumo.passosOrigens.length > 0 && (
-            <div className="ml-2 mt-0.5 mb-1 space-y-0.5 border-l border-line pl-1.5 opacity-80">
-              {resumo.passosOrigens.map((o) => (
-                <p key={o.origem}>
-                  · {o.origem}: {o.passos}
-                </p>
-              ))}
-            </div>
-          )}
-          <p>FC repouso: {resumo.fcRepouso ? `${resumo.fcRepouso} bpm (${resumo.fcRepousoHora ? hhmm(resumo.fcRepousoHora) : "sem hora"})` : "—"}</p>
-          {resumo.fcRepousoOrigens && resumo.fcRepousoOrigens.length > 0 && (
-            <div className="ml-2 mt-0.5 mb-1 space-y-0.5 border-l border-line pl-1.5 opacity-80">
-              {resumo.fcRepousoOrigens.map((o, idx) => (
-                <p key={idx}>
-                  · {o.origem}: {o.valor} bpm ({o.data})
-                </p>
-              ))}
-            </div>
-          )}
           <p>Sono lido (36h): {resumo.sonoRegistros} · último: {resumo.ultimoSonoFim ? dataHora(resumo.ultimoSonoFim) : "—"}</p>
           {resumo.erro && <p className="text-[#fb7185]">Erro: {resumo.erro}</p>}
         </div>
