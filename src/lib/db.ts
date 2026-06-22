@@ -8,6 +8,13 @@ import type {
 } from "./types";
 import { hojeChave } from "./dates";
 
+// Guarda o GLB do avatar (Blob) no próprio IndexedDB → render offline.
+export interface AvatarRegistro {
+  id: string; // "glb"
+  blob: Blob;
+  criadoEm: string;
+}
+
 // Banco local-first. Tudo vive no IndexedDB do dispositivo.
 export class Reconstrucao90DB extends Dexie {
   dias!: Table<DiaRegistro, string>;
@@ -15,6 +22,7 @@ export class Reconstrucao90DB extends Dexie {
   dividas!: Table<Divida, string>;
   conquistas!: Table<ConquistaDesbloqueada, string>;
   config!: Table<AppConfig, string>;
+  avatar!: Table<AvatarRegistro, string>;
 
   constructor() {
     super("reconstrucao90");
@@ -24,6 +32,14 @@ export class Reconstrucao90DB extends Dexie {
       dividas: "id",
       conquistas: "id",
       config: "id",
+    });
+    this.version(2).stores({
+      dias: "data",
+      revisoes: "semana",
+      dividas: "id",
+      conquistas: "id",
+      config: "id",
+      avatar: "id",
     });
   }
 }
