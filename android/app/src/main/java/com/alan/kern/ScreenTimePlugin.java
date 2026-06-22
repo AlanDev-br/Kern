@@ -1,7 +1,7 @@
 package com.alan.kern;
 
 import android.app.AppOpsManager;
-import android.app.usage.UsageStats;
+import android.app.usage.UsageEvents;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.Intent;
@@ -19,6 +19,7 @@ import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -58,14 +59,13 @@ public class ScreenTimePlugin extends Plugin {
     public void hasPermission(PluginCall call) {
         JSObject ret = new JSObject();
         ret.put("granted", temPermissao());
-        ret.put("mode", modoAppOps()); // diagnóstico
+        ret.put("mode", modoAppOps());
         call.resolve(ret);
     }
 
     @PluginMethod
     public void requestPermission(PluginCall call) {
         Context ctx = getContext();
-        // tenta abrir direto na página do app; cai pra lista geral se não suportado
         Intent direto = new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS);
         direto.setData(Uri.fromParts("package", ctx.getPackageName(), null));
         direto.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -80,8 +80,10 @@ public class ScreenTimePlugin extends Plugin {
     }
 
     /**
-     * Retorna o tempo em primeiro plano (ms) por pacote, agregado desde o início
-     * do dia até agora. { apps: [{ packageName, totalMs }] }
+     * Tempo real em primeiro plano por app, somando os intervalos entre abrir
+     * (RESUMED) e fechar (PAUSED) cada app no dia. Fecha sessões abertas quando a
+     * tela apaga / bloqueia, igual ao "Bem-estar digital". Bem mais preciso que o
+     * getTotalTimeInForeground, que costuma inflar os números.
      */
     @PluginMethod
     public void getTodayUsage(PluginCall call) {
@@ -105,17 +107,49 @@ public class ScreenTimePlugin extends Plugin {
         long inicio = cal.getTimeInMillis();
         long fim = System.currentTimeMillis();
 
-        Map<String, UsageStats> stats = usm.queryAndAggregateUsageStats(inicio, fim);
-        JSArray apps = new JSArray();
-        if (stats != null) {
-            for (Map.Entry<String, UsageStats> e : stats.entrySet()) {
-                long total = e.getValue().getTotalTimeInForeground();
-                if (total <= 0) continue;
-                JSObject o = new JSObject();
-                o.put("packageName", e.getKey());
-                o.put("totalMs", total);
-                apps.put(o);
+        Map<String, Long> totais = new HashMap<>();   // pacote -> ms acumulados
+        Map<String, Long> abertos = new HashMap<>();   // pacote -> timestamp de abertura
+
+        UsageEvents eventos = usm.queryEvents(inicio, fim);
+        UsageEvents.Event ev = new UsageEvents.Event();
+
+        while (eventos.hasNextEvent()) {
+            eventos.getNextEvent(ev);
+            int tipo = ev.getEventType();
+            String pkg = ev.getPackageName();
+            long ts = ev.getTimeStamp();
+
+            if (tipo == UsageEvents.Event.ACTIVITY_RESUMED) {
+                // mantém a primeira abertura caso venham RESUMED seguidos
+                if (!abertos.containsKey(pkg)) abertos.put(pkg, ts);
+            } else if (tipo == UsageEvents.Event.ACTIVITY_PAUSED) {
+                Long ini = abertos.remove(pkg);
+                if (ini != null && ts > ini) {
+                    totais.merge(pkg, ts - ini, Long::sum);
+                }
+            } else if (tipo == UsageEvents.Event.SCREEN_NON_INTERACTIVE
+                    || tipo == UsageEvents.Event.KEYGUARD_SHOWN
+                    || tipo == UsageEvents.Event.DEVICE_SHUTDOWN) {
+                // tela apagou/bloqueou: fecha tudo que estava aberto nesse instante
+                for (Map.Entry<String, Long> e : abertos.entrySet()) {
+                    if (ts > e.getValue()) totais.merge(e.getKey(), ts - e.getValue(), Long::sum);
+                }
+                abertos.clear();
             }
+        }
+
+        // fecha sessões ainda abertas no fim da janela (agora)
+        for (Map.Entry<String, Long> e : abertos.entrySet()) {
+            if (fim > e.getValue()) totais.merge(e.getKey(), fim - e.getValue(), Long::sum);
+        }
+
+        JSArray apps = new JSArray();
+        for (Map.Entry<String, Long> e : totais.entrySet()) {
+            if (e.getValue() <= 0) continue;
+            JSObject o = new JSObject();
+            o.put("packageName", e.getKey());
+            o.put("totalMs", e.getValue());
+            apps.put(o);
         }
 
         JSObject ret = new JSObject();
