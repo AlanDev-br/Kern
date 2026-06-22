@@ -26,6 +26,7 @@ import { CONQUISTAS, getTema, fraseDoMarco } from "./plan-data";
 import { aplicarTema, temasDesbloqueados } from "./themes";
 import { ehNativo, pedirPermissaoNotificacoes, reagendarNotificacoes, agendarCoach } from "./notifications";
 import { direcionamentoPrincipal } from "./coach";
+import { seedTreinosSeNecessario } from "./treino-seed";
 
 export interface Celebracao {
   tipo: "inegociaveis" | "conquista" | "tema" | "nivel";
@@ -149,6 +150,7 @@ export const useApp = create<AppState>((set, get) => ({
   fila: [],
 
   carregar: async () => {
+    await seedTreinosSeNecessario(); // embute o histórico de treino na 1ª vez
     const config = await getConfig();
     const dias = await getTodosDias();
     const diaHoje = await getDia(hojeChave());

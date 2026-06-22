@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, type Rotina } from "@/lib/db";
 import {
@@ -10,7 +10,6 @@ import {
   LANDMARKS,
   type StatusVolume,
 } from "@/lib/musculacao";
-import { importarHevyCsv } from "@/lib/hevy-import";
 import { LogTreino } from "@/components/LogTreino";
 
 const COR_STATUS: Record<StatusVolume, string> = {
@@ -31,25 +30,20 @@ export default function TreinoPage() {
   const [logging, setLogging] = useState(false);
   const [rotinaSel, setRotinaSel] = useState<Rotina | null>(null);
   const [escolher, setEscolher] = useState(false);
-  const [msg, setMsg] = useState("");
-  const fileRef = useRef<HTMLInputElement>(null);
 
   const vol = volumeSemanal(treinos);
   const avs = avaliarVolume(vol);
   const catalogo = catalogoExercicios(treinos);
   const alertas = avs.filter((a) => a.status === "excesso" || a.status === "baixo");
 
-  async function onImport(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    try {
-      const txt = await file.text();
-      const r = await importarHevyCsv(txt);
-      setMsg(`Importado: ${r.treinos} treinos, ${r.rotinas} rotinas, ${r.sets} séries.`);
-    } catch {
-      setMsg("Não consegui ler o CSV.");
-    }
-  }
+  // maior carga já feita por exercício (para detectar recordes)
+  const recordes = useMemo(() => {
+    const r: Record<string, number> = {};
+    for (const t of treinos)
+      for (const ex of t.exercicios)
+        for (const s of ex.sets) if (s.peso > (r[ex.nome] ?? 0)) r[ex.nome] = s.peso;
+    return r;
+  }, [treinos]);
 
   function iniciar(rot: Rotina | null) {
     setRotinaSel(rot);
@@ -58,7 +52,14 @@ export default function TreinoPage() {
   }
 
   if (logging) {
-    return <LogTreino rotina={rotinaSel} catalogo={catalogo} onFechar={() => setLogging(false)} />;
+    return (
+      <LogTreino
+        rotina={rotinaSel}
+        catalogo={catalogo}
+        recordes={recordes}
+        onFechar={() => setLogging(false)}
+      />
+    );
   }
 
   return (
@@ -132,7 +133,6 @@ export default function TreinoPage() {
                     className="h-full rounded-full transition-all"
                     style={{ width: `${pct}%`, background: COR_STATUS[a.status] }}
                   />
-                  {/* marcador do mínimo eficaz (MEV) */}
                   <div className="absolute top-0 h-full w-px bg-fg/40" style={{ left: `${mevPct}%` }} />
                 </div>
               </div>
@@ -140,21 +140,14 @@ export default function TreinoPage() {
           })}
         </div>
         <p className="mt-3 text-[11px] text-muted">
-          A linha vertical = mínimo pra crescer (MEV). Verde = na faixa; amarelo = baixo/no teto; vermelho = excesso.
+          Linha vertical = mínimo pra crescer (MEV). Verde = na faixa; amarelo = baixo/no teto; vermelho = excesso.
         </p>
       </section>
 
       {/* Histórico */}
       <section className="space-y-2">
-        <div className="flex items-center justify-between px-1">
-          <h2 className="text-sm font-bold uppercase tracking-wider">Histórico</h2>
-          <button onClick={() => fileRef.current?.click()} className="text-xs text-accent underline">
-            importar do Hevy (CSV)
-          </button>
-          <input ref={fileRef} type="file" accept=".csv" onChange={onImport} className="hidden" />
-        </div>
-        {msg && <p className="px-1 text-xs text-accent">{msg}</p>}
-        {treinos.slice(0, 20).map((t) => {
+        <h2 className="px-1 text-sm font-bold uppercase tracking-wider">Histórico</h2>
+        {treinos.slice(0, 30).map((t) => {
           const totalSets = t.exercicios.reduce((s, e) => s + e.sets.length, 0);
           return (
             <div key={t.id} className="rounded-2xl border border-line bg-card p-3.5">
@@ -169,9 +162,7 @@ export default function TreinoPage() {
           );
         })}
         {treinos.length === 0 && (
-          <p className="py-6 text-center text-sm text-muted">
-            Sem treinos ainda. Importe o CSV do Hevy ou inicie um treino.
-          </p>
+          <p className="py-6 text-center text-sm text-muted">Carregando seus treinos…</p>
         )}
       </section>
     </div>
