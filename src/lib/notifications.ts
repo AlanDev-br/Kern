@@ -88,6 +88,21 @@ export async function reagendarNotificacoes(config: AppConfig): Promise<void> {
   }
 }
 
+// Agenda a notificação diária do coach (direcionamento do dia) num horário fixo.
+export async function agendarCoach(corpo: string, horario = "06:45"): Promise<void> {
+  if (!ehNativo()) return;
+  await LocalNotifications.schedule({
+    notifications: [
+      {
+        id: 5000,
+        title: "🎯 Direcionamento de hoje",
+        body: corpo,
+        schedule: { on: hm(horario), repeats: true, allowWhileIdle: true },
+      },
+    ],
+  });
+}
+
 // Dispara uma notificação de teste em ~8s para validar permissão e entrega.
 export async function agendarTeste(): Promise<boolean> {
   const ok = await pedirPermissaoNotificacoes();

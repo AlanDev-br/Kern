@@ -9,6 +9,7 @@ import { ProgressRing } from "@/components/ProgressRing";
 import { TaskItem } from "@/components/TaskItem";
 import { ScreenTimeCard } from "@/components/ScreenTimeCard";
 import { HealthSyncCard } from "@/components/HealthSyncCard";
+import { CoachCard } from "@/components/CoachCard";
 
 function saudacao() {
   const h = new Date().getHours();
@@ -75,12 +76,8 @@ export default function HojePage() {
       {/* Sincronização Huawei Band via Health Connect */}
       <HealthSyncCard />
 
-      {/* Frase do diagnóstico fixa do dia */}
-      <div className="rounded-2xl border border-line bg-card/50 p-4">
-        <p className="text-sm italic leading-relaxed text-fg/80">
-          “Valor se constrói para dentro, com prova acumulada de promessa cumprida.”
-        </p>
-      </div>
+      {/* Coach adaptativo — direcionamento do dia */}
+      <CoachCard />
 
       {/* Inegociáveis */}
       <section className="space-y-2.5">

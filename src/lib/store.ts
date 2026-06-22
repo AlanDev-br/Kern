@@ -24,7 +24,8 @@ import {
 } from "./gamification";
 import { CONQUISTAS, getTema, fraseDoMarco } from "./plan-data";
 import { aplicarTema, temasDesbloqueados } from "./themes";
-import { ehNativo, pedirPermissaoNotificacoes, reagendarNotificacoes } from "./notifications";
+import { ehNativo, pedirPermissaoNotificacoes, reagendarNotificacoes, agendarCoach } from "./notifications";
+import { direcionamentoPrincipal } from "./coach";
 
 export interface Celebracao {
   tipo: "inegociaveis" | "conquista" | "tema" | "nivel";
@@ -170,6 +171,9 @@ export const useApp = create<AppState>((set, get) => ({
       if (ehNativo() && config.notificacoesAtivas) {
         await pedirPermissaoNotificacoes();
         await reagendarNotificacoes(config);
+        // notificação do coach com o direcionamento nº1 do dia
+        const dir = direcionamentoPrincipal({ dias, diaHoje, ctx });
+        await agendarCoach(`${dir.titulo} — ${dir.acao}`);
       }
     } catch {
       /* sem notificações disponíveis */
