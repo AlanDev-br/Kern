@@ -12,6 +12,15 @@ interface ScreenTimePlugin {
   hasPermission(): Promise<{ granted: boolean; mode?: number }>;
   requestPermission(): Promise<void>;
   getTodayUsage(): Promise<{ apps: UsageApp[] }>;
+  setAppLimits(options: { limits: Record<string, number>; enabled: boolean }): Promise<void>;
+  getLimiterState(): Promise<{
+    enabled: boolean;
+    limits: Record<string, number>;
+    hasOverlayPermission: boolean;
+    lastBlockedApp: string | null;
+  }>;
+  requestOverlayPermission(): Promise<void>;
+  clearBlockedApp(): Promise<void>;
 }
 
 const ScreenTime = registerPlugin<ScreenTimePlugin>("ScreenTime");
@@ -68,4 +77,35 @@ export async function usoSocialHoje(): Promise<UsoSocial> {
     totalMin: lista.reduce((s, a) => s + a.minutos, 0),
     apps: lista,
   };
+}
+
+export async function definirLimitesConfig(limits: Record<string, number>, enabled: boolean): Promise<void> {
+  if (!tempoTelaDisponivel()) return;
+  await ScreenTime.setAppLimits({ limits, enabled });
+}
+
+export async function obterEstadoLimitador(): Promise<{
+  enabled: boolean;
+  limits: Record<string, number>;
+  hasOverlayPermission: boolean;
+  lastBlockedApp: string | null;
+}> {
+  if (!tempoTelaDisponivel()) {
+    return { enabled: false, limits: {}, hasOverlayPermission: false, lastBlockedApp: null };
+  }
+  try {
+    return await ScreenTime.getLimiterState();
+  } catch {
+    return { enabled: false, limits: {}, hasOverlayPermission: false, lastBlockedApp: null };
+  }
+}
+
+export async function pedirPermissaoSobreposicao(): Promise<void> {
+  if (!tempoTelaDisponivel()) return;
+  await ScreenTime.requestOverlayPermission();
+}
+
+export async function limparAppBloqueado(): Promise<void> {
+  if (!tempoTelaDisponivel()) return;
+  await ScreenTime.clearBlockedApp();
 }

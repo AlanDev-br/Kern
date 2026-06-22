@@ -217,6 +217,25 @@ export function HealthSyncCard() {
           <p>Despertar por FC: {resumo.fcWake ? hhmm(resumo.fcWake) : "—"}</p>
           <p>Despertar por passos: {resumo.stepsWake ? hhmm(resumo.stepsWake) : "—"}</p>
           <p>Passos hoje: {resumo.passos}</p>
+          {resumo.passosOrigens && resumo.passosOrigens.length > 0 && (
+            <div className="ml-2 mt-0.5 mb-1 space-y-0.5 border-l border-line pl-1.5 opacity-80">
+              {resumo.passosOrigens.map((o) => (
+                <p key={o.origem}>
+                  · {o.origem}: {o.passos}
+                </p>
+              ))}
+            </div>
+          )}
+          <p>FC repouso: {resumo.fcRepouso ? `${resumo.fcRepouso} bpm (${resumo.fcRepousoHora ? hhmm(resumo.fcRepousoHora) : "sem hora"})` : "—"}</p>
+          {resumo.fcRepousoOrigens && resumo.fcRepousoOrigens.length > 0 && (
+            <div className="ml-2 mt-0.5 mb-1 space-y-0.5 border-l border-line pl-1.5 opacity-80">
+              {resumo.fcRepousoOrigens.map((o, idx) => (
+                <p key={idx}>
+                  · {o.origem}: {o.valor} bpm ({o.data})
+                </p>
+              ))}
+            </div>
+          )}
           <p>Sono lido (36h): {resumo.sonoRegistros} · último: {resumo.ultimoSonoFim ? dataHora(resumo.ultimoSonoFim) : "—"}</p>
           {resumo.erro && <p className="text-[#fb7185]">Erro: {resumo.erro}</p>}
         </div>

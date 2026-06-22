@@ -9,7 +9,6 @@ export const APPS_SOCIAIS: AppMonitorado[] = [
   { pkg: "com.instagram.android", nome: "Instagram", icone: "📸" },
   { pkg: "com.whatsapp", nome: "WhatsApp", icone: "💬" },
   { pkg: "com.zhiliaoapp.musically", nome: "TikTok", icone: "🎵" },
-  { pkg: "com.google.android.youtube", nome: "YouTube", icone: "▶️" },
   { pkg: "com.twitter.android", nome: "X / Twitter", icone: "🐦" },
   { pkg: "com.facebook.katana", nome: "Facebook", icone: "👍" },
 ];

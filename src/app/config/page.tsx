@@ -1,10 +1,19 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useApp } from "@/lib/store";
 import { getTask } from "@/lib/plan-data";
 import { pedirPermissaoNotificacoes, reagendarNotificacoes, ehNativo } from "@/lib/notifications";
 import { exportarBackup, importarBackup } from "@/lib/backup";
+import { APPS_SOCIAIS } from "@/lib/social-apps";
+import {
+  tempoTelaDisponivel,
+  obterEstadoLimitador,
+  definirLimitesConfig,
+  pedirPermissaoSobreposicao,
+  temPermissaoTempoTela,
+  pedirPermissaoTempoTela,
+} from "@/lib/screen-time";
 
 const CAMPOS_HORARIO: { chave: string; label: string }[] = [
   { chave: "ineg-acordar", label: "Acordar" },
@@ -20,6 +29,72 @@ export default function ConfigPage() {
   const { config, atualizarConfig } = useApp();
   const [msg, setMsg] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const [limiterEnabled, setLimiterEnabled] = useState(false);
+  const [limits, setLimits] = useState<Record<string, number>>({});
+  const [hasOverlay, setHasOverlay] = useState(false);
+  const [hasUsageStats, setHasUsageStats] = useState(false);
+  const [nativoDisponivel, setNativoDisponivel] = useState(false);
+  const [carregandoLimites, setCarregandoLimites] = useState(true);
+
+  useEffect(() => {
+    async function carregarLimiter() {
+      if (tempoTelaDisponivel()) {
+        setNativoDisponivel(true);
+        const state = await obterEstadoLimitador();
+        setLimiterEnabled(state.enabled);
+        setLimits(state.limits || {});
+        setHasOverlay(state.hasOverlayPermission);
+        
+        const usageOk = await temPermissaoTempoTela();
+        setHasUsageStats(usageOk);
+      }
+      setCarregandoLimites(false);
+    }
+    carregarLimiter();
+  }, []);
+
+  useEffect(() => {
+    async function revalidaPermissoes() {
+      if (document.visibilityState === "visible" && tempoTelaDisponivel()) {
+        const state = await obterEstadoLimitador();
+        setHasOverlay(state.hasOverlayPermission);
+        const usageOk = await temPermissaoTempoTela();
+        setHasUsageStats(usageOk);
+      }
+    }
+    document.addEventListener("visibilitychange", revalidaPermissoes);
+    return () => document.removeEventListener("visibilitychange", revalidaPermissoes);
+  }, []);
+
+  async function toggleLimiter() {
+    const nextVal = !limiterEnabled;
+    setLimiterEnabled(nextVal);
+    await definirLimitesConfig(limits, nextVal);
+    setMsg(nextVal ? "Limitador de foco ativado." : "Limitador de foco desativado.");
+  }
+
+  async function atualizarLimiteApp(pkg: string, min: number) {
+    const novosLimites = { ...limits, [pkg]: min };
+    setLimits(novosLimites);
+    await definirLimitesConfig(novosLimites, limiterEnabled);
+  }
+
+  async function solicitarSobreposicao() {
+    await pedirPermissaoSobreposicao();
+    setTimeout(async () => {
+      const state = await obterEstadoLimitador();
+      setHasOverlay(state.hasOverlayPermission);
+    }, 1500);
+  }
+
+  async function solicitarAcessoUso() {
+    await pedirPermissaoTempoTela();
+    setTimeout(async () => {
+      const ok = await temPermissaoTempoTela();
+      setHasUsageStats(ok);
+    }, 1500);
+  }
 
   if (!config) return null;
 
@@ -160,6 +235,92 @@ export default function ConfigPage() {
           <p className="mt-2 text-[11px] text-muted">Último backup: {config.ultimoBackup}</p>
         )}
       </section>
+
+      {/* Limitador de Aplicativos (Foco) */}
+      {nativoDisponivel && (
+        <section className="glass rounded-3xl p-5 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-bold uppercase tracking-wider">Limites de Aplicativos</h2>
+              <p className="text-xs text-muted">Estilo StayFree — bloqueia redes sociais se passar do limite</p>
+            </div>
+            <button
+              onClick={toggleLimiter}
+              className={`flex h-7 w-12 items-center rounded-full p-1 transition-colors ${
+                limiterEnabled ? "bg-accent" : "bg-line"
+              }`}
+            >
+              <span
+                className={`h-5 w-5 rounded-full bg-white transition-transform ${
+                  limiterEnabled ? "translate-x-5" : ""
+                }`}
+              />
+            </button>
+          </div>
+
+          {limiterEnabled && (
+            <div className="space-y-4 pt-2 border-t border-line/50">
+              {/* Avisos de Permissões */}
+              {(!hasUsageStats || !hasOverlay) && (
+                <div className="rounded-2xl bg-accent-soft border border-accent/20 p-3 space-y-2">
+                  <p className="text-xs font-bold text-accent">⚠️ Permissões Necessárias:</p>
+                  
+                  {!hasUsageStats && (
+                    <div className="flex items-center justify-between text-xs text-muted">
+                      <span>Acesso aos dados de uso</span>
+                      <button onClick={solicitarAcessoUso} className="text-accent underline font-semibold">
+                        autorizar
+                      </button>
+                    </div>
+                  )}
+                  
+                  {!hasOverlay && (
+                    <div className="flex items-center justify-between text-xs text-muted">
+                      <span>Sobrepor a outros apps (bloqueio)</span>
+                      <button onClick={solicitarSobreposicao} className="text-accent underline font-semibold">
+                        autorizar
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Lista de apps monitorados */}
+              <div className="space-y-3">
+                <p className="text-xs font-semibold text-muted uppercase">Limites Diários por App:</p>
+                {APPS_SOCIAIS.map((app) => {
+                  const valor = limits[app.pkg] || 0;
+                  return (
+                    <div key={app.pkg} className="flex items-center justify-between gap-3 text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="text-base">{app.icone}</span>
+                        <span className="font-medium">{app.nome}</span>
+                      </div>
+                      
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          min="0"
+                          max="480"
+                          value={valor || ""}
+                          placeholder="off"
+                          onChange={(e) => {
+                            const val = parseInt(e.target.value) || 0;
+                            atualizarLimiteApp(app.pkg, val);
+                          }}
+                          className="w-16 rounded-lg border border-line bg-bg/50 px-2 py-1 text-right text-sm outline-none focus:border-accent"
+                        />
+                        <span className="text-xs text-muted">min</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              <p className="text-[11px] text-muted italic">Digite 0 ou deixe em branco para desativar o limite de um aplicativo específico.</p>
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
 }

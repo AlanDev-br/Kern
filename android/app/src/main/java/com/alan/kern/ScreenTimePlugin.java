@@ -18,6 +18,7 @@ import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
 
+import android.content.SharedPreferences;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
@@ -155,5 +156,81 @@ public class ScreenTimePlugin extends Plugin {
         JSObject ret = new JSObject();
         ret.put("apps", apps);
         call.resolve(ret);
+    }
+
+    @PluginMethod
+    public void setAppLimits(PluginCall call) {
+        JSObject limits = call.getObject("limits");
+        Boolean enabled = call.getBoolean("enabled", false);
+
+        SharedPreferences prefs = getContext().getSharedPreferences("KernLimiter", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putBoolean("limiter_enabled", enabled);
+        if (limits != null) {
+            editor.putString("limits_json", limits.toString());
+        }
+        editor.apply();
+
+        // Controlar a inicialização do serviço
+        Intent serviceIntent = new Intent(getContext(), LimitadorService.class);
+        try {
+            if (enabled) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    getContext().startForegroundService(serviceIntent);
+                } else {
+                    getContext().startService(serviceIntent);
+                }
+            } else {
+                getContext().stopService(serviceIntent);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        call.resolve();
+    }
+
+    @PluginMethod
+    public void getLimiterState(PluginCall call) {
+        SharedPreferences prefs = getContext().getSharedPreferences("KernLimiter", Context.MODE_PRIVATE);
+        boolean enabled = prefs.getBoolean("limiter_enabled", false);
+        String limitsJson = prefs.getString("limits_json", "{}");
+        String lastBlockedApp = prefs.getString("last_blocked_app", null);
+        boolean hasOverlayPermission = true;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            hasOverlayPermission = Settings.canDrawOverlays(getContext());
+        }
+
+        JSObject ret = new JSObject();
+        ret.put("enabled", enabled);
+        ret.put("hasOverlayPermission", hasOverlayPermission);
+        ret.put("lastBlockedApp", lastBlockedApp);
+        try {
+            ret.put("limits", new JSObject(limitsJson));
+        } catch (Exception e) {
+            ret.put("limits", new JSObject());
+        }
+        call.resolve(ret);
+    }
+
+    @PluginMethod
+    public void requestOverlayPermission(PluginCall call) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!Settings.canDrawOverlays(getContext())) {
+                Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                        Uri.parse("package:" + getContext().getPackageName()));
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                getContext().startActivity(intent);
+            }
+        }
+        call.resolve();
+    }
+
+    @PluginMethod
+    public void clearBlockedApp(PluginCall call) {
+        SharedPreferences prefs = getContext().getSharedPreferences("KernLimiter", Context.MODE_PRIVATE);
+        prefs.edit().remove("last_blocked_app").apply();
+        call.resolve();
     }
 }

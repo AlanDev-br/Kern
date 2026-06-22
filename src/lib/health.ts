@@ -123,6 +123,9 @@ export interface ResumoSaude {
   fcWake: Date | null;
   stepsWake: Date | null;
   erro: string | null;
+  passosOrigens?: { origem: string; passos: number }[];
+  fcRepousoHora?: Date | null;
+  fcRepousoOrigens?: { origem: string; valor: number; data: string }[];
 }
 
 export async function lerSaudeHoje(): Promise<ResumoSaude> {
@@ -147,6 +150,9 @@ export async function lerSaudeHoje(): Promise<ResumoSaude> {
     fcWake: null,
     stepsWake: null,
     erro: null,
+    passosOrigens: [],
+    fcRepousoHora: null,
+    fcRepousoOrigens: [],
   };
 
   const addErro = (msg: string) => {
@@ -212,9 +218,13 @@ export async function lerSaudeHoje(): Promise<ResumoSaude> {
         end: agora.toISOString(),
       });
       let primeiro: Date | null = null;
+      const passosPorOrigem: Record<string, number> = {};
+
       for (const r of records as Record<string, unknown>[]) {
         const count = lerNumero(r, "count") ?? 0;
-        resumo.passos += count;
+        const origin = (r.metadata as Record<string, unknown>)?.dataOrigin as string || "unknown";
+        passosPorOrigem[origin] = (passosPorOrigem[origin] || 0) + count;
+
         const ini = lerInstante(r, "startTime", "startDate", "start");
         const fim = lerInstante(r, "endTime", "endDate", "end");
         // ignora registros de dia inteiro (>3h) — não servem para o horário
@@ -225,6 +235,29 @@ export async function lerSaudeHoje(): Promise<ResumoSaude> {
         }
       }
       resumo.stepsWake = primeiro;
+      resumo.passosOrigens = Object.entries(passosPorOrigem).map(([origem, passos]) => ({ origem, passos }));
+
+      // Total de passos: usa o agregado do Health Connect, que de-duplica os passos
+      // sobrepostos de várias fontes (Huawei, sensor do celular) pela prioridade
+      // definida nos Ajustes do Health Connect. É o que evita a dupla contagem.
+      let totalAgg = 0;
+      try {
+        const { aggregates } = await HealthConnect.aggregateRecords({
+          type: "Steps",
+          start: inicioDia.toISOString(),
+          end: agora.toISOString(),
+          groupBy: "day",
+        });
+        totalAgg = aggregates.reduce((s, a) => s + (a.value ?? 0), 0);
+      } catch {
+        /* sem agregado disponível — cai no fallback abaixo */
+      }
+      if (totalAgg > 0) {
+        resumo.passos = totalAgg;
+      } else {
+        // fallback: maior contagem entre as origens (evita somar fontes duplicadas)
+        resumo.passos = Object.values(passosPorOrigem).reduce((m, v) => Math.max(m, v), 0);
+      }
     } catch (e) {
       addErro(`Passos: ${(e as Error)?.message ?? e}`);
     }
@@ -233,20 +266,29 @@ export async function lerSaudeHoje(): Promise<ResumoSaude> {
   // ── FC de repouso (último valor de hoje) ──
   if (perms.fcRepouso) {
     try {
+      // Usamos a janela de sono (36h) para pegar frequências registradas durante a madrugada anterior
       const { records } = await HealthConnect.readRecords({
         type: "RestingHeartRate",
-        start: inicioDia.toISOString(),
+        start: janelaSono.toISOString(),
         end: agora.toISOString(),
       });
       let maisRecente: Date | null = null;
+      const origens: { origem: string; valor: number; data: string }[] = [];
+      
       for (const r of records as Record<string, unknown>[]) {
         const t = lerInstante(r, "time", "startTime");
         const v = lerNumero(r, "beatsPerMinute", "bpm");
-        if (t && v !== null && (!maisRecente || t > maisRecente)) {
-          maisRecente = t;
-          resumo.fcRepouso = v;
+        const origin = (r.metadata as Record<string, unknown>)?.dataOrigin as string || "unknown";
+        if (t && v !== null) {
+          origens.push({ origem: origin, valor: v, data: t.toLocaleString("pt-BR") });
+          if (!maisRecente || t > maisRecente) {
+            maisRecente = t;
+            resumo.fcRepouso = v;
+            resumo.fcRepousoHora = t;
+          }
         }
       }
+      resumo.fcRepousoOrigens = origens;
     } catch (e) {
       addErro(`FC repouso: ${(e as Error)?.message ?? e}`);
     }
@@ -276,6 +318,10 @@ export async function lerSaudeHoje(): Promise<ResumoSaude> {
           .filter((h) => h.t.getHours() >= 4 && h.v >= limiar)
           .sort((a, b) => a.t.getTime() - b.t.getTime())[0];
         if (acordou) resumo.fcWake = acordou.t;
+
+        // Fallback da FC de repouso: se a Huawei não enviou o RestingHeartRate ao
+        // Health Connect, usa a menor FC da madrugada como aproximação.
+        if (resumo.fcRepouso === null) resumo.fcRepouso = Math.round(base);
       }
     } catch (e) {
       addErro(`FC intra: ${(e as Error)?.message ?? e}`);
