@@ -1,14 +1,9 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
-import { useGLTF, useAnimations, ContactShadows, OrbitControls } from "@react-three/drei";
+import { useGLTF, useAnimations, ContactShadows, OrbitControls, Sparkles } from "@react-three/drei";
 import type { Group } from "three";
-
-function corAccent(): string {
-  if (typeof document === "undefined") return "#22c55e";
-  return getComputedStyle(document.documentElement).getPropertyValue("--accent").trim() || "#22c55e";
-}
 
 function Modelo({ url }: { url: string }) {
   const ref = useRef<Group>(null);
@@ -23,7 +18,6 @@ function Modelo({ url }: { url: string }) {
     };
   }, [actions]);
 
-  // auto-rotação leve
   useFrame((_, dt) => {
     if (ref.current) ref.current.rotation.y += dt * 0.25;
   });
@@ -35,36 +29,53 @@ function Modelo({ url }: { url: string }) {
   );
 }
 
-export function Avatar3D({ url, streak }: { url: string; streak: number }) {
-  const [accent, setAccent] = useState("#22c55e");
-  useEffect(() => setAccent(corAccent()), []);
-
-  const fator = Math.min(streak / 30, 1); // 0..1 conforme o streak
-  const intensidade = 0.4 + fator * 1.6;
+export function Avatar3D({
+  url,
+  streak,
+  cor = "#a855f7",
+}: {
+  url: string;
+  streak: number;
+  cor?: string;
+}) {
+  const fator = Math.min(streak / 30, 1);
+  const intensidade = 0.6 + fator * 1.8;
 
   return (
     <Canvas
       shadows
       dpr={[1, 1.8]}
+      gl={{ alpha: true }}
       camera={{ position: [0, 0.95, 3.1], fov: 35 }}
-      style={{ width: "100%", height: "100%" }}
+      style={{ width: "100%", height: "100%", background: "transparent" }}
     >
-      <color attach="background" args={["#08090d"]} />
-      <ambientLight intensity={0.6} />
-      <directionalLight position={[3, 5, 4]} intensity={1.1} castShadow />
-      {/* luz de recorte = aura na cor do tema, mais forte quanto maior o streak */}
-      <pointLight position={[-2, 1.5, -1.5]} color={accent} intensity={intensidade} distance={8} />
-      <pointLight position={[0, 1, 2]} color={accent} intensity={intensidade * 0.5} distance={6} />
+      {/* luz ambiente forte pra não ficar escuro */}
+      <ambientLight intensity={1.1} />
+      <hemisphereLight intensity={0.7} groundColor="#1a1d27" />
+      <directionalLight position={[3, 6, 4]} intensity={1.6} castShadow />
+      <directionalLight position={[-4, 3, -2]} intensity={0.6} />
+      {/* aura na cor do rank, mais forte com o streak */}
+      <pointLight position={[-2, 1.6, -1.5]} color={cor} intensity={intensidade} distance={9} />
+      <pointLight position={[0, 1, 2]} color={cor} intensity={intensidade * 0.6} distance={7} />
 
       <Suspense fallback={null}>
         <Modelo url={url} />
-        <ContactShadows position={[0, 0, 0]} opacity={0.5} scale={5} blur={2.5} far={3} />
+        <ContactShadows position={[0, 0, 0]} opacity={0.45} scale={5} blur={2.5} far={3} />
+        {/* partículas de poder (Solo Leveling) — quantidade cresce com o streak */}
+        <Sparkles
+          count={Math.round(20 + fator * 60)}
+          scale={[2.2, 3.4, 2.2]}
+          position={[0, 1.4, 0]}
+          size={4}
+          speed={0.4}
+          color={cor}
+        />
       </Suspense>
 
       {/* anel de aura no chão */}
       <mesh rotation-x={-Math.PI / 2} position={[0, 0.005, 0]}>
-        <ringGeometry args={[0.65, 0.85, 64]} />
-        <meshBasicMaterial color={accent} transparent opacity={0.25 + fator * 0.5} />
+        <ringGeometry args={[0.62, 0.9, 64]} />
+        <meshBasicMaterial color={cor} transparent opacity={0.3 + fator * 0.5} />
       </mesh>
 
       <OrbitControls

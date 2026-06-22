@@ -297,6 +297,24 @@ export async function lerSaudeHoje(): Promise<ResumoSaude> {
     }
   }
 
+  // Fallback robusto: se não veio RestingHeartRate, estima pela menor FC das
+  // últimas 24h (madrugada). Independe do horário do dado de hoje.
+  if (resumo.fcRepouso === null && perms.fcIntra) {
+    try {
+      const ontem = new Date(agora.getTime() - 24 * 3600 * 1000);
+      const { aggregates } = await HealthConnect.aggregateRecords({
+        type: "HeartRate",
+        start: ontem.toISOString(),
+        end: agora.toISOString(),
+        groupBy: "hour",
+      });
+      const valores = aggregates.map((a) => a.value ?? 0).filter((v) => v > 0);
+      if (valores.length) resumo.fcRepouso = Math.round(Math.min(...valores));
+    } catch {
+      /* sem FC intradiária */
+    }
+  }
+
   // ── FC intradiária (por hora) → detecta o despertar ──
   if (perms.fcIntra) {
     try {

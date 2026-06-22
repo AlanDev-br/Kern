@@ -10,6 +10,7 @@ import { TaskItem } from "@/components/TaskItem";
 import { ScreenTimeCard } from "@/components/ScreenTimeCard";
 import { HealthSyncCard } from "@/components/HealthSyncCard";
 import { CoachCard } from "@/components/CoachCard";
+import { AvatarHero } from "@/components/AvatarHero";
 
 function saudacao() {
   const h = new Date().getHours();
@@ -37,6 +38,9 @@ export default function HojePage() {
           Dia <span className="text-gradient">{diaN > 0 ? diaN : 0}</span> de 90
         </h1>
       </header>
+
+      {/* Avatar (Solo Leveling) — centro da tela inicial */}
+      <AvatarHero />
 
       {/* Card de status: nível + XP do dia + streak */}
       <section className="glass relative overflow-hidden rounded-3xl p-5">
