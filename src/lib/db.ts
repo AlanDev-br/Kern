@@ -15,6 +15,29 @@ export interface AvatarRegistro {
   criadoEm: string;
 }
 
+// Treino de musculação (substitui o Hevy). Sessão com exercícios e séries.
+export interface SetReg {
+  peso: number;
+  reps: number;
+  tipo?: string; // normal, warmup, falha...
+}
+export interface ExercicioReg {
+  nome: string;
+  sets: SetReg[];
+}
+export interface Treino {
+  id: string; // inicio ISO (único por sessão)
+  titulo: string;
+  inicio: string; // ISO
+  fim?: string;
+  exercicios: ExercicioReg[];
+}
+export interface Rotina {
+  id: string;
+  nome: string;
+  exercicios: { nome: string; series: number }[];
+}
+
 // Banco local-first. Tudo vive no IndexedDB do dispositivo.
 export class Reconstrucao90DB extends Dexie {
   dias!: Table<DiaRegistro, string>;
@@ -23,6 +46,8 @@ export class Reconstrucao90DB extends Dexie {
   conquistas!: Table<ConquistaDesbloqueada, string>;
   config!: Table<AppConfig, string>;
   avatar!: Table<AvatarRegistro, string>;
+  treinos!: Table<Treino, string>;
+  rotinas!: Table<Rotina, string>;
 
   constructor() {
     super("reconstrucao90");
@@ -40,6 +65,16 @@ export class Reconstrucao90DB extends Dexie {
       conquistas: "id",
       config: "id",
       avatar: "id",
+    });
+    this.version(3).stores({
+      dias: "data",
+      revisoes: "semana",
+      dividas: "id",
+      conquistas: "id",
+      config: "id",
+      avatar: "id",
+      treinos: "id, inicio",
+      rotinas: "id",
     });
   }
 }

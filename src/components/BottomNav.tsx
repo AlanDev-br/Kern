@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 
 const ITENS = [
   { href: "/", label: "Hoje", icon: "◎" },
+  { href: "/treino/", label: "Treino", icon: "💪" },
   { href: "/progresso/", label: "Progresso", icon: "▟" },
   { href: "/conquistas/", label: "Troféus", icon: "✦" },
   { href: "/rotina/", label: "Rotina", icon: "☰" },
