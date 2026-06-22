@@ -84,6 +84,11 @@ export function ScreenTimeCard() {
           <li>Na lista, encontre <strong>Kern</strong> e ligue a chave.</li>
           <li>Volte pro app — ele reconhece sozinho.</li>
         </ol>
+        <p className="mt-2 text-[11px] text-muted">
+          A chave não liga? Como o app foi instalado fora da Play Store, o Android a
+          bloqueia. Vá em <strong>Ajustes → Apps → Kern → ⋮ → “Permitir configurações
+          restritas”</strong> e tente de novo.
+        </p>
         <div className="mt-3 flex gap-2">
           <button
             onClick={conceder}
