@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useApp } from "@/lib/store";
 import { getTask } from "@/lib/plan-data";
-import { pedirPermissaoNotificacoes, reagendarNotificacoes, ehNativo } from "@/lib/notifications";
+import { pedirPermissaoNotificacoes, reagendarNotificacoes, ehNativo, agendarTeste, contarAgendadas } from "@/lib/notifications";
 import { exportarBackup, importarBackup } from "@/lib/backup";
 import { APPS_SOCIAIS } from "@/lib/social-apps";
 import {
@@ -202,6 +202,23 @@ export default function ConfigPage() {
             </div>
           ))}
         </div>
+
+        {ehNativo() && (
+          <button
+            onClick={async () => {
+              const ok = await agendarTeste();
+              const n = await contarAgendadas();
+              setMsg(
+                ok
+                  ? `Teste enviado! Deve chegar em ~8s. ${n} lembretes agendados.`
+                  : "Permissão de notificação negada — libere nos Ajustes do Android.",
+              );
+            }}
+            className="mt-4 w-full rounded-xl border border-line py-2.5 text-sm font-bold active:scale-95"
+          >
+            Testar notificação (8s)
+          </button>
+        )}
       </section>
 
       {/* Backup */}

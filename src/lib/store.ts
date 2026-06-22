@@ -24,6 +24,7 @@ import {
 } from "./gamification";
 import { CONQUISTAS, getTema, fraseDoMarco } from "./plan-data";
 import { aplicarTema, temasDesbloqueados } from "./themes";
+import { ehNativo, pedirPermissaoNotificacoes, reagendarNotificacoes } from "./notifications";
 
 export interface Celebracao {
   tipo: "inegociaveis" | "conquista" | "tema" | "nivel";
@@ -162,6 +163,17 @@ export const useApp = create<AppState>((set, get) => ({
       conquistasIds,
       temasDisp: temasDesbloqueados(ctx.xpTotal),
     });
+
+    // Reagenda as notificações toda vez que o app abre (idempotente). Sem isso,
+    // elas só eram agendadas ao mexer em Ajustes — e nada disparava.
+    try {
+      if (ehNativo() && config.notificacoesAtivas) {
+        await pedirPermissaoNotificacoes();
+        await reagendarNotificacoes(config);
+      }
+    } catch {
+      /* sem notificações disponíveis */
+    }
   },
 
   recarregarDias: async () => {

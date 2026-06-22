@@ -87,3 +87,31 @@ export async function reagendarNotificacoes(config: AppConfig): Promise<void> {
     await LocalNotifications.schedule({ notifications: notifs });
   }
 }
+
+// Dispara uma notificação de teste em ~8s para validar permissão e entrega.
+export async function agendarTeste(): Promise<boolean> {
+  const ok = await pedirPermissaoNotificacoes();
+  if (!ehNativo() || !ok) return ok;
+  await LocalNotifications.schedule({
+    notifications: [
+      {
+        id: 9999,
+        title: "🔔 Teste do Kern",
+        body: "Se você está vendo isto, as notificações estão funcionando!",
+        schedule: { at: new Date(Date.now() + 8000), allowWhileIdle: true },
+      },
+    ],
+  });
+  return true;
+}
+
+// Quantas notificações estão agendadas (diagnóstico).
+export async function contarAgendadas(): Promise<number> {
+  if (!ehNativo()) return 0;
+  try {
+    const p = await LocalNotifications.getPending();
+    return p.notifications.length;
+  } catch {
+    return 0;
+  }
+}
