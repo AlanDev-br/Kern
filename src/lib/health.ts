@@ -128,6 +128,8 @@ export interface ResumoSaude {
   passosOrigens?: { origem: string; passos: number }[];
   fcRepousoHora?: Date | null;
   fcRepousoOrigens?: { origem: string; valor: number; data: string }[];
+  fcRepousoRegistros?: number; // qtos RestingHeartRate vieram (diagnóstico)
+  fcIntraHoras?: number; // qtas horas de HeartRate vieram em 24h (diagnóstico)
 }
 
 export async function lerSaudeHoje(): Promise<ResumoSaude> {
@@ -156,6 +158,8 @@ export async function lerSaudeHoje(): Promise<ResumoSaude> {
     passosOrigens: [],
     fcRepousoHora: null,
     fcRepousoOrigens: [],
+    fcRepousoRegistros: 0,
+    fcIntraHoras: 0,
   };
 
   const addErro = (msg: string) => {
@@ -275,9 +279,10 @@ export async function lerSaudeHoje(): Promise<ResumoSaude> {
         start: janelaSono.toISOString(),
         end: agora.toISOString(),
       });
+      resumo.fcRepousoRegistros = records.length;
       let maisRecente: Date | null = null;
       const origens: { origem: string; valor: number; data: string }[] = [];
-      
+
       for (const r of records as Record<string, unknown>[]) {
         const t = lerInstante(r, "time", "startTime");
         const v = lerNumero(r, "beatsPerMinute", "bpm");
@@ -297,9 +302,9 @@ export async function lerSaudeHoje(): Promise<ResumoSaude> {
     }
   }
 
-  // Fallback robusto: se não veio RestingHeartRate, estima pela menor FC das
-  // últimas 24h (madrugada). Independe do horário do dado de hoje.
-  if (resumo.fcRepouso === null && perms.fcIntra) {
+  // FC intradiária (24h) — conta as horas (diagnóstico) e serve de fallback de
+  // repouso: se não veio RestingHeartRate, usa a menor FC das últimas 24h.
+  if (perms.fcIntra) {
     try {
       const ontem = new Date(agora.getTime() - 24 * 3600 * 1000);
       const { aggregates } = await HealthConnect.aggregateRecords({
@@ -309,9 +314,12 @@ export async function lerSaudeHoje(): Promise<ResumoSaude> {
         groupBy: "hour",
       });
       const valores = aggregates.map((a) => a.value ?? 0).filter((v) => v > 0);
-      if (valores.length) resumo.fcRepouso = Math.round(Math.min(...valores));
-    } catch {
-      /* sem FC intradiária */
+      resumo.fcIntraHoras = valores.length;
+      if (resumo.fcRepouso === null && valores.length) {
+        resumo.fcRepouso = Math.round(Math.min(...valores));
+      }
+    } catch (e) {
+      addErro(`FC 24h: ${(e as Error)?.message ?? e}`);
     }
   }
 

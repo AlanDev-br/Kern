@@ -247,6 +247,10 @@ export function HealthSyncCard() {
           <p>Dormiu (FC): {resumo.dormiuEstimado ? hhmm(resumo.dormiuEstimado) : "—"}</p>
           <p>Despertar por FC: {resumo.fcWake ? hhmm(resumo.fcWake) : "—"} · por passos: {resumo.stepsWake ? hhmm(resumo.stepsWake) : "—"}</p>
           <p>Passos hoje: {resumo.passos}</p>
+          <p>
+            FC: RestingHR {resumo.fcRepousoRegistros ?? 0} reg · HR 24h{" "}
+            {resumo.fcIntraHoras ?? 0}h → repouso {resumo.fcRepouso ?? "—"}
+          </p>
           <p>Sono lido (36h): {resumo.sonoRegistros} · último: {resumo.ultimoSonoFim ? dataHora(resumo.ultimoSonoFim) : "—"}</p>
           {resumo.erro && <p className="text-[#fb7185]">Erro: {resumo.erro}</p>}
         </div>
