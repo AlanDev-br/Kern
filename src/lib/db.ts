@@ -33,6 +33,23 @@ export interface Treino {
   fim?: string;
   exercicios: ExercicioReg[];
 }
+// Série em edição durante o treino (inclui o estado "feito" do checkbox).
+export interface SetRascunho {
+  peso: number;
+  reps: number;
+  tipo?: string;
+  feito?: boolean;
+}
+// Treino em andamento, salvo continuamente para sobreviver a um reinício do app
+// (Android pode encerrar o app em segundo plano por pressão de memória). Linha
+// única, id fixo "atual".
+export interface TreinoRascunho {
+  id: "atual";
+  titulo: string;
+  inicio: string; // ISO — preserva o cronômetro ao retomar
+  exercicios: { nome: string; sets: SetRascunho[] }[];
+  atualizadoEm: string; // ISO
+}
 export interface Rotina {
   id: string;
   nome: string;
@@ -82,6 +99,7 @@ export class Reconstrucao90DB extends Dexie {
   rotinas!: Table<Rotina, string>;
   exImagens!: Table<ImagemExercicio, string>;
   leituras!: Table<CartaoLeitura, string>;
+  rascunhoTreino!: Table<TreinoRascunho, string>;
 
   constructor() {
     super("reconstrucao90");
@@ -132,6 +150,19 @@ export class Reconstrucao90DB extends Dexie {
       rotinas: "id",
       exImagens: "nome",
       leituras: "id, proximaRevisao, origem",
+    });
+    this.version(6).stores({
+      dias: "data",
+      revisoes: "semana",
+      dividas: "id",
+      conquistas: "id",
+      config: "id",
+      avatar: "id",
+      treinos: "id, inicio",
+      rotinas: "id",
+      exImagens: "nome",
+      leituras: "id, proximaRevisao, origem",
+      rascunhoTreino: "id",
     });
   }
 }

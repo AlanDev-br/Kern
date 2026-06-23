@@ -27,8 +27,11 @@ function dataCurta(iso: string) {
 export default function TreinoPage() {
   const treinos = useLiveQuery(() => db.treinos.orderBy("inicio").reverse().toArray(), []) ?? [];
   const rotinas = useLiveQuery(() => db.rotinas.toArray(), []) ?? [];
+  // treino em andamento salvo (sobrevive a um reinício do app)
+  const rascunho = useLiveQuery(() => db.rascunhoTreino.get("atual"), []) ?? null;
 
   const [logging, setLogging] = useState(false);
+  const [retomando, setRetomando] = useState(false);
   const [rotinaSel, setRotinaSel] = useState<Rotina | null>(null);
   const [escolher, setEscolher] = useState(false);
   const [editor, setEditor] = useState<{ aberta: boolean; rotina: Rotina | null }>({
@@ -61,18 +64,32 @@ export default function TreinoPage() {
 
   function iniciar(rot: Rotina | null) {
     setRotinaSel(rot);
+    setRetomando(false);
     setEscolher(false);
     setLogging(true);
+  }
+
+  function retomar() {
+    setRetomando(true);
+    setEscolher(false);
+    setLogging(true);
+  }
+
+  function fecharLog() {
+    setLogging(false);
+    setRetomando(false);
+    setRotinaSel(null);
   }
 
   if (logging) {
     return (
       <LogTreino
-        rotina={rotinaSel}
+        rotina={retomando ? null : rotinaSel}
+        rascunho={retomando ? rascunho : null}
         catalogo={catalogo}
         recordes={recordes}
         anteriores={anteriores}
-        onFechar={() => setLogging(false)}
+        onFechar={fecharLog}
       />
     );
   }
@@ -93,6 +110,19 @@ export default function TreinoPage() {
         <h1 className="text-2xl font-bold tracking-tight">Treino</h1>
         <p className="text-sm text-muted">Volume por grupo + coach natural.</p>
       </header>
+
+      {rascunho && rascunho.exercicios.length > 0 && (
+        <button
+          onClick={retomar}
+          className="w-full rounded-2xl py-3.5 font-bold text-bg active:scale-95"
+          style={{ background: "var(--accent)", boxShadow: "0 0 0 2px var(--accent) inset" }}
+        >
+          ▶ Retomar treino em andamento
+          <span className="ml-1 block text-xs font-medium opacity-80">
+            {rascunho.titulo} · {rascunho.exercicios.length} exercícios
+          </span>
+        </button>
+      )}
 
       <button
         onClick={() => setEscolher((v) => !v)}
