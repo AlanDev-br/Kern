@@ -15,6 +15,7 @@ import {
   getDia,
   salvarDia,
   getTodosDias,
+  type CartaoLeitura,
 } from "./db";
 import { hojeChave } from "./dates";
 import {
@@ -27,6 +28,8 @@ import { aplicarTema, temasDesbloqueados } from "./themes";
 import { ehNativo, pedirPermissaoNotificacoes, reagendarNotificacoes, agendarCoach } from "./notifications";
 import { direcionamentoPrincipal } from "./coach";
 import { seedTreinosSeNecessario } from "./treino-seed";
+import { seedBibliotecaSeNecessario } from "./biblioteca-seed";
+import { agendar, marcarLido, type NotaRevisao } from "./biblioteca";
 
 export interface Celebracao {
   tipo: "inegociaveis" | "conquista" | "tema" | "nivel";
@@ -44,6 +47,7 @@ interface AppState {
   ctx: ConquistaContexto;
   conquistasIds: string[];
   temasDisp: ThemeDef[];
+  cartoes: CartaoLeitura[];
   fila: Celebracao[];
 
   carregar: () => Promise<void>;
@@ -55,6 +59,22 @@ interface AppState {
   atualizarConfig: (patch: Partial<AppConfig>) => Promise<void>;
   proximaCelebracao: () => void;
   recarregarDias: () => Promise<void>;
+  // Biblioteca
+  lerCartao: (id: string) => Promise<void>;
+  revisarCartao: (id: string, nota: NotaRevisao) => Promise<void>;
+  adicionarCartao: (dados: NovoCartao) => Promise<void>;
+  removerCartao: (id: string) => Promise<void>;
+}
+
+// Campos que o usuário fornece ao capturar um trecho próprio.
+export interface NovoCartao {
+  livro: string;
+  autor: string;
+  tema: string;
+  titulo: string;
+  ideia: string;
+  citacao?: string;
+  pergunta?: string;
 }
 
 const ctxVazio: ConquistaContexto = {
@@ -79,32 +99,15 @@ interface Resultado {
   fila: Celebracao[];
 }
 
-// Lógica central compartilhada por toggleTarefa e marcarConcluida.
-async function aplicarConcluidas(
-  diaAntes: DiaRegistro,
-  concluidas: string[],
+// Detecta conquistas e temas recém-desbloqueados a partir de um contexto novo,
+// persiste as conquistas e devolve as celebrações a enfileirar. Compartilhado
+// pelo fluxo de tarefas e pelas ações da Biblioteca.
+async function detectarDesbloqueios(
+  ctx: ConquistaContexto,
   conquistasIds: string[],
   temasAntesIds: string[],
-): Promise<Resultado> {
-  const fechouAntes = diaAntes.fechouInegociaveis;
-  const { xp, fechouInegociaveis } = calcularXpDia(concluidas);
-  const novoDia: DiaRegistro = { ...diaAntes, concluidas, xp, fechouInegociaveis };
-  await salvarDia(novoDia);
-
-  const dias = await getTodosDias();
-  const ctx = construirContexto(dias);
-
+): Promise<{ fila: Celebracao[]; conquistasIds: string[]; temasDisp: ThemeDef[] }> {
   const fila: Celebracao[] = [];
-
-  if (fechouInegociaveis && !fechouAntes) {
-    fila.push({
-      tipo: "inegociaveis",
-      titulo: "Dia fechado!",
-      subtitulo: `Streak de ${ctx.streakAtual} ${ctx.streakAtual === 1 ? "dia" : "dias"}`,
-      icone: "🔥",
-      frase: fraseDoMarco(ctx.streakAtual),
-    });
-  }
 
   const desbloqueadasAgora = conquistasDesbloqueadas(ctx);
   const novas = desbloqueadasAgora.filter((cid) => !conquistasIds.includes(cid));
@@ -132,12 +135,63 @@ async function aplicarConcluidas(
   }
 
   return {
+    fila,
+    conquistasIds: [...conquistasIds, ...novas],
+    temasDisp: agoraTemas,
+  };
+}
+
+// Recalcula contexto + desbloqueios após uma mudança nos cartões da Biblioteca.
+// Usado pelas ações de leitura/revisão para refletir o novo XP no nível, temas e
+// conquistas, sem tocar no checklist diário.
+async function recomputarBiblioteca(
+  cartoes: CartaoLeitura[],
+  conquistasIds: string[],
+  temasAntesIds: string[],
+): Promise<{ ctx: ConquistaContexto; fila: Celebracao[]; conquistasIds: string[]; temasDisp: ThemeDef[] }> {
+  const dias = await getTodosDias();
+  const ctx = construirContexto(dias, cartoes);
+  const desb = await detectarDesbloqueios(ctx, conquistasIds, temasAntesIds);
+  return { ctx, fila: desb.fila, conquistasIds: desb.conquistasIds, temasDisp: desb.temasDisp };
+}
+
+// Lógica central compartilhada por toggleTarefa e marcarConcluida.
+async function aplicarConcluidas(
+  diaAntes: DiaRegistro,
+  concluidas: string[],
+  conquistasIds: string[],
+  temasAntesIds: string[],
+  cartoes: CartaoLeitura[],
+): Promise<Resultado> {
+  const fechouAntes = diaAntes.fechouInegociaveis;
+  const { xp, fechouInegociaveis } = calcularXpDia(concluidas);
+  const novoDia: DiaRegistro = { ...diaAntes, concluidas, xp, fechouInegociaveis };
+  await salvarDia(novoDia);
+
+  const dias = await getTodosDias();
+  const ctx = construirContexto(dias, cartoes);
+
+  const fila: Celebracao[] = [];
+
+  if (fechouInegociaveis && !fechouAntes) {
+    fila.push({
+      tipo: "inegociaveis",
+      titulo: "Dia fechado!",
+      subtitulo: `Streak de ${ctx.streakAtual} ${ctx.streakAtual === 1 ? "dia" : "dias"}`,
+      icone: "🔥",
+      frase: fraseDoMarco(ctx.streakAtual),
+    });
+  }
+
+  const desb = await detectarDesbloqueios(ctx, conquistasIds, temasAntesIds);
+
+  return {
     novoDia,
     dias,
     ctx,
-    conquistasIds: [...conquistasIds, ...novas],
-    temasDisp: agoraTemas,
-    fila,
+    conquistasIds: desb.conquistasIds,
+    temasDisp: desb.temasDisp,
+    fila: [...fila, ...desb.fila],
   };
 }
 
@@ -149,14 +203,17 @@ export const useApp = create<AppState>((set, get) => ({
   ctx: ctxVazio,
   conquistasIds: [],
   temasDisp: [],
+  cartoes: [],
   fila: [],
 
   carregar: async () => {
     await seedTreinosSeNecessario(); // embute o histórico de treino na 1ª vez
+    await seedBibliotecaSeNecessario(); // semeia os conceitos curados na 1ª vez
     const config = await getConfig();
     const dias = await getTodosDias();
     const diaHoje = await getDia(hojeChave());
-    const ctx = construirContexto(dias);
+    const cartoes = await db.leituras.toArray();
+    const ctx = construirContexto(dias, cartoes);
     const conquistasIds = (await db.conquistas.toArray()).map((c) => c.id);
     aplicarTema(config.temaAtivo);
     set({
@@ -164,6 +221,7 @@ export const useApp = create<AppState>((set, get) => ({
       config,
       dias,
       diaHoje,
+      cartoes,
       ctx,
       conquistasIds,
       temasDisp: temasDesbloqueados(ctx.xpTotal),
@@ -186,12 +244,13 @@ export const useApp = create<AppState>((set, get) => ({
 
   recarregarDias: async () => {
     const dias = await getTodosDias();
-    const ctx = construirContexto(dias);
+    const { cartoes } = get();
+    const ctx = construirContexto(dias, cartoes);
     set({ dias, ctx, temasDisp: temasDesbloqueados(ctx.xpTotal) });
   },
 
   toggleTarefa: async (id: string) => {
-    const { diaHoje, conquistasIds, temasDisp } = get();
+    const { diaHoje, conquistasIds, temasDisp, cartoes } = get();
     const concluidas = diaHoje.concluidas.includes(id)
       ? diaHoje.concluidas.filter((x) => x !== id)
       : [...diaHoje.concluidas, id];
@@ -200,6 +259,7 @@ export const useApp = create<AppState>((set, get) => ({
       concluidas,
       conquistasIds,
       temasDisp.map((t) => t.id),
+      cartoes,
     );
     set({
       diaHoje: r.novoDia,
@@ -213,7 +273,7 @@ export const useApp = create<AppState>((set, get) => ({
 
   // marca como concluída sem desmarcar (idempotente) — usado pela auto-sync de saúde
   marcarConcluida: async (id: string) => {
-    const { diaHoje, conquistasIds, temasDisp } = get();
+    const { diaHoje, conquistasIds, temasDisp, cartoes } = get();
     if (diaHoje.concluidas.includes(id)) return;
     const concluidas = [...diaHoje.concluidas, id];
     const r = await aplicarConcluidas(
@@ -221,6 +281,7 @@ export const useApp = create<AppState>((set, get) => ({
       concluidas,
       conquistasIds,
       temasDisp.map((t) => t.id),
+      cartoes,
     );
     set({
       diaHoje: r.novoDia,
@@ -234,7 +295,7 @@ export const useApp = create<AppState>((set, get) => ({
 
   // define manualmente o horário de acordar e marca o inegociável correspondente
   setAcordarManual: async (hhmm: string) => {
-    const { diaHoje, conquistasIds, temasDisp } = get();
+    const { diaHoje, conquistasIds, temasDisp, cartoes } = get();
     const base = { ...diaHoje, acordarManual: hhmm };
     const concluidas = base.concluidas.includes("ineg-acordar")
       ? base.concluidas
@@ -244,6 +305,7 @@ export const useApp = create<AppState>((set, get) => ({
       concluidas,
       conquistasIds,
       temasDisp.map((t) => t.id),
+      cartoes,
     );
     set({
       diaHoje: r.novoDia,
@@ -272,6 +334,88 @@ export const useApp = create<AppState>((set, get) => ({
   atualizarConfig: async (patch: Partial<AppConfig>) => {
     const config = await persistConfig(patch);
     set({ config });
+  },
+
+  // Marca a 1ª leitura de um conceito: dá XP e o coloca no ciclo de revisão.
+  lerCartao: async (id: string) => {
+    const { cartoes, conquistasIds, temasDisp } = get();
+    const alvo = cartoes.find((c) => c.id === id);
+    if (!alvo || alvo.lido) return;
+    const atualizado = marcarLido(alvo);
+    await db.leituras.put(atualizado);
+    const novos = cartoes.map((c) => (c.id === id ? atualizado : c));
+    const r = await recomputarBiblioteca(novos, conquistasIds, temasDisp.map((t) => t.id));
+    set({
+      cartoes: novos,
+      ctx: r.ctx,
+      conquistasIds: r.conquistasIds,
+      temasDisp: r.temasDisp,
+      fila: [...get().fila, ...r.fila],
+    });
+  },
+
+  // Aplica uma nota de revisão (difícil/ok/fácil) e reagenda o cartão.
+  revisarCartao: async (id: string, nota: NotaRevisao) => {
+    const { cartoes, conquistasIds, temasDisp } = get();
+    const alvo = cartoes.find((c) => c.id === id);
+    if (!alvo) return;
+    const atualizado = agendar(alvo, nota);
+    await db.leituras.put(atualizado);
+    const novos = cartoes.map((c) => (c.id === id ? atualizado : c));
+    const r = await recomputarBiblioteca(novos, conquistasIds, temasDisp.map((t) => t.id));
+    set({
+      cartoes: novos,
+      ctx: r.ctx,
+      conquistasIds: r.conquistasIds,
+      temasDisp: r.temasDisp,
+      fila: [...get().fila, ...r.fila],
+    });
+  },
+
+  // Captura um trecho próprio do usuário; já entra como lido e agendado.
+  adicionarCartao: async (dados: NovoCartao) => {
+    const { cartoes, conquistasIds, temasDisp } = get();
+    const hoje = hojeChave();
+    const novo: CartaoLeitura = {
+      id: crypto.randomUUID(),
+      origem: "meu",
+      livro: dados.livro,
+      autor: dados.autor,
+      tema: dados.tema,
+      titulo: dados.titulo,
+      ideia: dados.ideia,
+      citacao: dados.citacao,
+      pergunta: dados.pergunta,
+      caixa: 0,
+      proximaRevisao: hoje, // entra já no ciclo de revisão
+      revisoes: 0,
+      lido: true,
+      criadoEm: hoje,
+    };
+    await db.leituras.put(novo);
+    const novos = [...cartoes, novo];
+    const r = await recomputarBiblioteca(novos, conquistasIds, temasDisp.map((t) => t.id));
+    set({
+      cartoes: novos,
+      ctx: r.ctx,
+      conquistasIds: r.conquistasIds,
+      temasDisp: r.temasDisp,
+      fila: [...get().fila, ...r.fila],
+    });
+  },
+
+  // Remove um cartão (apenas trechos próprios são removíveis pela UI).
+  removerCartao: async (id: string) => {
+    const { cartoes, conquistasIds, temasDisp } = get();
+    await db.leituras.delete(id);
+    const novos = cartoes.filter((c) => c.id !== id);
+    const r = await recomputarBiblioteca(novos, conquistasIds, temasDisp.map((t) => t.id));
+    set({
+      cartoes: novos,
+      ctx: r.ctx,
+      conquistasIds: r.conquistasIds,
+      temasDisp: r.temasDisp,
+    });
   },
 
   proximaCelebracao: () => {
