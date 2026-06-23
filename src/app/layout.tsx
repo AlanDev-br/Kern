@@ -1,11 +1,20 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Manrope, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { AppShell } from "@/components/AppShell";
 
-const inter = Inter({
+// Corpo: Manrope (limpo, com mais caráter que a Inter padrão).
+const sans = Manrope({
   variable: "--font-sans",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+});
+
+// Títulos e números: Space Grotesk (técnica, marcante — dá identidade).
+const display = Space_Grotesk({
+  variable: "--font-display",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -32,7 +41,7 @@ export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="pt-BR" className={inter.variable}>
+    <html lang="pt-BR" className={`${sans.variable} ${display.variable}`}>
       <body className="min-h-full antialiased">
         <AppShell>{children}</AppShell>
       </body>

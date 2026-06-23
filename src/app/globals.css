@@ -25,10 +25,31 @@
   --color-accent: var(--accent);
   --color-accent2: var(--accent-2);
   --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-display), var(--font-sans), system-ui, sans-serif;
 }
 
 * {
   -webkit-tap-highlight-color: transparent;
+}
+
+/* Títulos com a fonte de display e tracking apertado — tira a cara "padrão".
+   Números tabulares por toda a interface (placares, cargas, cronômetros). */
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+h1 {
+  letter-spacing: -0.03em;
+}
+
+.tabular-nums,
+.num {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-display);
 }
 
 html {
