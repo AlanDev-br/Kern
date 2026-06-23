@@ -200,3 +200,57 @@ export async function definirImagem(nome: string, url: string): Promise<void> {
 export async function removerImagem(nome: string): Promise<void> {
   await db.exImagens.delete(nome);
 }
+
+function lerComoDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => resolve(r.result as string);
+    r.onerror = () => reject(r.error);
+    r.readAsDataURL(file);
+  });
+}
+
+// Tokens do nome do arquivo (tira extensão, id numérico final e separadores).
+function tokensDoArquivo(nomeArquivo: string): string[] {
+  const base = nomeArquivo
+    .replace(/\.[a-z0-9]+$/i, "")
+    .replace(/[_-]\d+$/, "")
+    .replace(/[_-]+/g, " ");
+  return norm(base)
+    .split(/\s+/)
+    .filter((w) => w.length > 2);
+}
+
+// Importação em lote: o usuário seleciona vários arquivos (que ele mesmo baixou),
+// e cada um é vinculado ao exercício do catálogo cujo nome melhor casa com o nome
+// do arquivo. Devolve quantos casaram e quais ficaram de fora.
+export async function vincularImagensEmLote(
+  arquivos: File[],
+  catalogo: string[],
+): Promise<{ vinculadas: number; total: number; naoCasadas: string[] }> {
+  const cat = catalogo.map((nome) => ({ nome, n: norm(nome) }));
+  const naoCasadas: string[] = [];
+  let vinculadas = 0;
+
+  for (const file of arquivos) {
+    const toks = tokensDoArquivo(file.name);
+    let melhor: string | null = null;
+    let melhorScore = 0;
+    for (const c of cat) {
+      let s = 0;
+      for (const t of toks) if (c.n.includes(t)) s++;
+      if (s > melhorScore) {
+        melhorScore = s;
+        melhor = c.nome;
+      }
+    }
+    const minimo = Math.max(1, Math.floor(toks.length / 2));
+    if (melhor && melhorScore >= minimo) {
+      await definirImagem(melhor, await lerComoDataUrl(file));
+      vinculadas++;
+    } else {
+      naoCasadas.push(file.name);
+    }
+  }
+  return { vinculadas, total: arquivos.length, naoCasadas };
+}

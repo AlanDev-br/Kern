@@ -14,6 +14,7 @@ import { RotinaEditor } from "@/components/RotinaEditor";
 import { VolumeColunas } from "@/components/VolumeColunas";
 import { ClassificacaoForca } from "@/components/ClassificacaoForca";
 import { Periodizacao } from "@/components/Periodizacao";
+import { ImportarImagens } from "@/components/ImportarImagens";
 
 const COR_STATUS: Record<StatusVolume, string> = {
   baixo: "#fbbf24",
@@ -214,6 +215,9 @@ export default function TreinoPage() {
           </div>
         ))}
       </section>
+
+      {/* Importação em lote de imagens dos exercícios */}
+      <ImportarImagens catalogo={catalogo} />
 
       {/* Histórico (paginado, 10 por vez) */}
       <section className="space-y-2">
