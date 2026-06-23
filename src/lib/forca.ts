@@ -16,6 +16,8 @@ export interface PerfilFisico {
   sexo: "M" | "F";
   pesoCorporal: number; // kg
   idade: number; // anos
+  altura?: number; // cm — referência do rank de tamanho
+  medidas?: Record<string, number>; // circunferências (cm) por id de medida
 }
 
 const LIFTS: { id: LiftId; rotulo: string; chaves: string[] }[] = [
@@ -145,6 +147,110 @@ export function classificar(lift: LiftId, e1rm: number, perfil: PerfilFisico): C
     alvoProximo,
     progresso,
   };
+}
+
+// ── Nível genérico (usado por grupo/tamanho) ───────────────────────────────
+export interface Nivel {
+  index: number; // 0..11; -1 iniciante
+  tier: Tier | "Iniciante";
+  sub: number; // 3..1
+  rotulo: string;
+  tierIndex: number; // 0..3; -1
+  cor: string;
+}
+
+export function nivelDoIndex(index: number): Nivel {
+  if (index < 0)
+    return { index: -1, tier: "Iniciante", sub: 0, rotulo: "Iniciante", tierIndex: -1, cor: "#6b7280" };
+  const i = Math.min(11, Math.round(index));
+  const tierIndex = Math.floor(i / 3);
+  const sub = 3 - (i % 3);
+  const tier = TIERS[tierIndex];
+  return { index: i, tier, sub, rotulo: `${tier} ${sub}`, tierIndex, cor: COR_TIER[tier] };
+}
+
+// ── Rank de tamanho por medida corporal ────────────────────────────────────
+// Referência de circunferência como fração da altura (homem médio ≈ nível
+// central). É uma ESTIMATIVA para situar o usuário, não um padrão clínico.
+export interface MedidaDef {
+  id: string;
+  rotulo: string;
+  fracAltura: number; // circunferência de referência = fracAltura × altura
+  grupos: Grupo[]; // grupos musculares que esta medida alimenta
+}
+
+export const MEDIDAS: MedidaDef[] = [
+  { id: "braco", rotulo: "Braço", fracAltura: 0.185, grupos: ["Bíceps", "Tríceps"] },
+  { id: "antebraco", rotulo: "Antebraço", fracAltura: 0.16, grupos: [] },
+  { id: "ombros", rotulo: "Ombros", fracAltura: 0.66, grupos: ["Ombros"] },
+  { id: "peito", rotulo: "Peito", fracAltura: 0.57, grupos: ["Peito"] },
+  { id: "cintura", rotulo: "Cintura", fracAltura: 0.46, grupos: [] },
+  { id: "quadril", rotulo: "Quadril", fracAltura: 0.55, grupos: ["Glúteos"] },
+  { id: "coxa", rotulo: "Coxa", fracAltura: 0.32, grupos: ["Quadríceps", "Posteriores"] },
+  { id: "panturrilha", rotulo: "Panturrilha", fracAltura: 0.21, grupos: ["Panturrilha"] },
+];
+
+const CURVA_MEDIDA = [0.8, 0.85, 0.9, 0.95, 1.0, 1.05, 1.1, 1.15, 1.2, 1.25, 1.3, 1.38];
+
+function fatorSexoMedida(sexo: "M" | "F"): number {
+  return sexo === "F" ? 0.9 : 1;
+}
+
+// Índice de nível (0..11, -1 abaixo) de uma medida contra a referência.
+function indexMedida(def: MedidaDef, cm: number, perfil: PerfilFisico): number {
+  const alt = perfil.altura ?? 0;
+  if (!alt || !cm) return -1;
+  const ref = def.fracAltura * alt * fatorSexoMedida(perfil.sexo);
+  let idx = -1;
+  for (let i = 0; i < CURVA_MEDIDA.length; i++) if (cm >= ref * CURVA_MEDIDA[i]) idx = i;
+  return idx;
+}
+
+// ── Rank combinado por grupo muscular (carga + medida) ─────────────────────
+export interface RankGrupo {
+  grupo: Grupo;
+  nivel: Nivel;
+  temCarga: boolean;
+  temMedida: boolean;
+}
+
+// Para cada grupo, mistura o índice de carga (do lift composto) com o de tamanho
+// (da medida que o alimenta). Grupos sem lift usam só a medida; sem medida, só a
+// carga. Mistura ponderada: 70% carga, 30% medida.
+export function rankGrupos(treinos: Treino[], perfil: PerfilFisico): RankGrupo[] {
+  const cargas = rankGruposPorCarga(treinos, perfil); // por grupo → Classificacao
+
+  // índice de tamanho por grupo (melhor medida que o alimenta)
+  const tamanhoPorGrupo = new Map<Grupo, number>();
+  for (const def of MEDIDAS) {
+    const cm = perfil.medidas?.[def.id];
+    if (!cm) continue;
+    const idx = indexMedida(def, cm, perfil);
+    for (const g of def.grupos) {
+      tamanhoPorGrupo.set(g, Math.max(tamanhoPorGrupo.get(g) ?? -1, idx));
+    }
+  }
+
+  const grupos = new Set<Grupo>([
+    ...(Object.keys(cargas) as Grupo[]),
+    ...tamanhoPorGrupo.keys(),
+  ]);
+
+  const out: RankGrupo[] = [];
+  for (const grupo of grupos) {
+    const idxCarga = cargas[grupo]?.nivelIndex ?? -1;
+    const idxTam = tamanhoPorGrupo.has(grupo) ? tamanhoPorGrupo.get(grupo)! : -1;
+    const temCarga = grupo in cargas;
+    const temMedida = tamanhoPorGrupo.has(grupo);
+
+    let index: number;
+    if (temCarga && temMedida) index = 0.7 * idxCarga + 0.3 * idxTam;
+    else if (temCarga) index = idxCarga;
+    else index = idxTam;
+
+    out.push({ grupo, nivel: nivelDoIndex(index), temCarga, temMedida });
+  }
+  return out;
 }
 
 // Melhor 1RM estimado por lift, a partir de todo o histórico.

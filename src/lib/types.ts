@@ -89,5 +89,7 @@ export interface AppConfig {
     sexo: "M" | "F";
     pesoCorporal: number; // kg
     idade: number; // anos
+    altura?: number; // cm — referência para o rank de tamanho
+    medidas?: Record<string, number>; // circunferências (cm) por id de medida
   };
 }
