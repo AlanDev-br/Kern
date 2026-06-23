@@ -30,14 +30,25 @@ import { direcionamentoPrincipal } from "./coach";
 import { seedTreinosSeNecessario } from "./treino-seed";
 import { seedBibliotecaSeNecessario } from "./biblioteca-seed";
 import { agendar, marcarLido, type NotaRevisao } from "./biblioteca";
-import { xpForca as calcularXpForca, type PerfilFisico } from "./forca";
+import {
+  xpForca as calcularXpForca,
+  blocoAtivo,
+  melhores1RM,
+  classificar,
+  nivelDoIndex,
+  ROTULO_LIFT,
+  type LiftId,
+  type PerfilFisico,
+} from "./forca";
+import type { Treino } from "./db";
 
 export interface Celebracao {
-  tipo: "inegociaveis" | "conquista" | "tema" | "nivel";
+  tipo: "inegociaveis" | "conquista" | "tema" | "nivel" | "rank";
   titulo: string;
   subtitulo: string;
   icone: string;
   frase?: string;
+  cor?: string; // cor do tier (celebração de rank)
 }
 
 interface AppState {
@@ -159,6 +170,45 @@ async function recomputarBiblioteca(
   const ctx = construirContexto(dias, cartoes, xpForcaAtual);
   const desb = await detectarDesbloqueios(ctx, conquistasIds, temasAntesIds);
   return { ctx, fila: desb.fila, conquistasIds: desb.conquistasIds, temasDisp: desb.temasDisp };
+}
+
+// Detecta subidas de tier por exercício (Bronze→Prata→Ouro→Diamante) e devolve
+// celebrações de medalha. Guarda o último tier por lift no localStorage; na 1ª
+// execução apenas registra (sem celebrar) para não disparar em massa.
+function detectarRankUps(treinos: Treino[], perfil?: PerfilFisico | null): Celebracao[] {
+  if (!perfil || perfil.pesoCorporal <= 0 || !perfil.altura) return [];
+  const CHAVE = "kern_ranks_lift";
+  let anterior: Record<string, number> | null = null;
+  try {
+    const raw = typeof localStorage !== "undefined" ? localStorage.getItem(CHAVE) : null;
+    anterior = raw ? JSON.parse(raw) : null;
+  } catch {
+    anterior = null;
+  }
+
+  const best = melhores1RM(blocoAtivo(treinos));
+  const atual: Record<string, number> = {};
+  const cels: Celebracao[] = [];
+  for (const lift of Object.keys(best) as LiftId[]) {
+    const tierIndex = classificar(lift, best[lift]!, perfil).tierIndex;
+    atual[lift] = tierIndex;
+    if (anterior && tierIndex >= 0 && tierIndex > (anterior[lift] ?? -1)) {
+      const nivel = nivelDoIndex(tierIndex * 3); // tier no topo da faixa
+      cels.push({
+        tipo: "rank",
+        titulo: `${ROTULO_LIFT[lift]} — ${nivel.tier}!`,
+        subtitulo: "Você subiu de tier. Medalha conquistada.",
+        icone: "🏅",
+        cor: nivel.cor,
+      });
+    }
+  }
+  try {
+    localStorage.setItem(CHAVE, JSON.stringify(atual));
+  } catch {
+    /* sem localStorage */
+  }
+  return cels;
 }
 
 // Lógica central compartilhada por toggleTarefa e marcarConcluida.
@@ -440,7 +490,13 @@ export const useApp = create<AppState>((set, get) => ({
     const xpForca = calcularXpForca(treinos, config?.perfil ?? null);
     const dias = await getTodosDias();
     const ctx = construirContexto(dias, cartoes, xpForca);
-    set({ xpForca, ctx, temasDisp: temasDesbloqueados(ctx.xpTotal) });
+    const medalhas = detectarRankUps(treinos, config?.perfil);
+    set({
+      xpForca,
+      ctx,
+      temasDisp: temasDesbloqueados(ctx.xpTotal),
+      fila: [...get().fila, ...medalhas],
+    });
   },
 
   // Salva o perfil físico e recalcula a classificação/XP de força.
@@ -451,7 +507,14 @@ export const useApp = create<AppState>((set, get) => ({
     const xpForca = calcularXpForca(treinos, perfil);
     const dias = await getTodosDias();
     const ctx = construirContexto(dias, cartoes, xpForca);
-    set({ config, xpForca, ctx, temasDisp: temasDesbloqueados(ctx.xpTotal) });
+    const medalhas = detectarRankUps(treinos, perfil);
+    set({
+      config,
+      xpForca,
+      ctx,
+      temasDisp: temasDesbloqueados(ctx.xpTotal),
+      fila: [...get().fila, ...medalhas],
+    });
   },
 
   proximaCelebracao: () => {
