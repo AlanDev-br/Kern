@@ -11,6 +11,7 @@ import { ScreenTimeCard } from "@/components/ScreenTimeCard";
 import { HealthSyncCard } from "@/components/HealthSyncCard";
 import { CoachCard } from "@/components/CoachCard";
 import { AvatarHero } from "@/components/AvatarHero";
+import { RevisaoLeituraCard } from "@/components/RevisaoLeituraCard";
 
 function saudacao() {
   const h = new Date().getHours();
@@ -82,6 +83,9 @@ export default function HojePage() {
 
       {/* Coach adaptativo — direcionamento do dia */}
       <CoachCard />
+
+      {/* Cartão de Foco / Biblioteca */}
+      <RevisaoLeituraCard />
 
       {/* Inegociáveis */}
       <section className="space-y-2.5">

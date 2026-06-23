@@ -178,6 +178,20 @@ export const CONQUISTAS: ConquistaDef[] = [
     condicao: (c) => c.maxLeituraSemana >= 7,
   },
   {
+    id: "leitor-atento",
+    titulo: "Leitor atento",
+    descricao: "Leu pelo menos 10 conceitos na biblioteca.",
+    icone: "🧠",
+    condicao: (c) => c.conceitosLidos >= 10,
+  },
+  {
+    id: "mente-treinada",
+    titulo: "Mente treinada",
+    descricao: "Completou pelo menos 30 revisões espaçadas.",
+    icone: "🔄",
+    condicao: (c) => c.revisoesTotais >= 30,
+  },
+  {
     id: "xp-500",
     titulo: "500 de prova",
     descricao: "Acumulou 500 XP de promessas cumpridas.",
