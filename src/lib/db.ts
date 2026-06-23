@@ -6,6 +6,7 @@ import type {
   ConquistaDesbloqueada,
   AppConfig,
 } from "./types";
+// CartaoLeitura é definido neste módulo (abaixo) e re-exportado para o restante.
 import { hojeChave } from "./dates";
 
 // Guarda o GLB do avatar (Blob) no próprio IndexedDB → render offline.
@@ -45,6 +46,30 @@ export interface ImagemExercicio {
   url: string;
 }
 
+// Cartão da Biblioteca: um conceito de livro para ler e internalizar via
+// repetição espaçada. Pode ser "curado" (semeado pelo app) ou "meu" (trecho que
+// o próprio usuário marcou e adicionou). Cada cartão carrega seu estado de
+// agendamento (caixa de Leitner + próxima revisão).
+export interface CartaoLeitura {
+  id: string; // slug (curados) | uuid (meus)
+  origem: "curado" | "meu";
+  livro: string;
+  autor: string;
+  tema: string;
+  titulo: string;
+  ideia: string; // conceito distilado (curados) ou a nota do usuário
+  citacao?: string; // citação curta atribuída (curados) | trecho marcado pelo usuário
+  aplicacao?: string; // como aplicar hoje
+  pergunta?: string; // prompt usado na revisão
+  dificuldade?: string; // dificuldade-alvo (ex.: "impulsividade")
+  caixa: number; // caixa de Leitner 0..5
+  proximaRevisao: string; // "YYYY-MM-DD"
+  ultimaRevisao?: string;
+  revisoes: number; // quantas vezes já foi revisado
+  lido: boolean; // já foi lido a 1ª vez?
+  criadoEm: string;
+}
+
 // Banco local-first. Tudo vive no IndexedDB do dispositivo.
 export class Reconstrucao90DB extends Dexie {
   dias!: Table<DiaRegistro, string>;
@@ -56,6 +81,7 @@ export class Reconstrucao90DB extends Dexie {
   treinos!: Table<Treino, string>;
   rotinas!: Table<Rotina, string>;
   exImagens!: Table<ImagemExercicio, string>;
+  leituras!: Table<CartaoLeitura, string>;
 
   constructor() {
     super("reconstrucao90");
@@ -94,6 +120,18 @@ export class Reconstrucao90DB extends Dexie {
       treinos: "id, inicio",
       rotinas: "id",
       exImagens: "nome",
+    });
+    this.version(5).stores({
+      dias: "data",
+      revisoes: "semana",
+      dividas: "id",
+      conquistas: "id",
+      config: "id",
+      avatar: "id",
+      treinos: "id, inicio",
+      rotinas: "id",
+      exImagens: "nome",
+      leituras: "id, proximaRevisao, origem",
     });
   }
 }
