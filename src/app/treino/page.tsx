@@ -35,6 +35,7 @@ export default function TreinoPage() {
   const [retomando, setRetomando] = useState(false);
   const [rotinaSel, setRotinaSel] = useState<Rotina | null>(null);
   const [escolher, setEscolher] = useState(false);
+  const [historicoVisivel, setHistoricoVisivel] = useState(10); // paginação: 10 por vez
   const [editor, setEditor] = useState<{ aberta: boolean; rotina: Rotina | null }>({
     aberta: false,
     rotina: null,
@@ -210,10 +211,17 @@ export default function TreinoPage() {
         ))}
       </section>
 
-      {/* Histórico */}
+      {/* Histórico (paginado, 10 por vez) */}
       <section className="space-y-2">
-        <h2 className="px-1 text-sm font-bold uppercase tracking-wider">Histórico</h2>
-        {treinos.slice(0, 30).map((t) => {
+        <div className="flex items-baseline justify-between px-1">
+          <h2 className="text-sm font-bold uppercase tracking-wider">Histórico</h2>
+          {treinos.length > 0 && (
+            <span className="text-[11px] text-muted">
+              {Math.min(historicoVisivel, treinos.length)} de {treinos.length}
+            </span>
+          )}
+        </div>
+        {treinos.slice(0, historicoVisivel).map((t) => {
           const totalSets = t.exercicios.reduce((s, e) => s + e.sets.length, 0);
           return (
             <div key={t.id} className="rounded-2xl border border-line bg-card p-3.5">
@@ -229,6 +237,14 @@ export default function TreinoPage() {
         })}
         {treinos.length === 0 && (
           <p className="py-6 text-center text-sm text-muted">Carregando seus treinos…</p>
+        )}
+        {historicoVisivel < treinos.length && (
+          <button
+            onClick={() => setHistoricoVisivel((n) => n + 10)}
+            className="w-full rounded-2xl border border-line py-2.5 text-sm font-semibold text-accent active:scale-95"
+          >
+            Ver mais 10
+          </button>
         )}
       </section>
     </div>
