@@ -91,5 +91,7 @@ export interface AppConfig {
     idade: number; // anos
     altura?: number; // cm — referência para o rank de tamanho
     medidas?: Record<string, number>; // circunferências (cm) por id de medida
+    gorduraPct?: number; // % de gordura (manual, de qualquer balança)
+    massaMuscularKg?: number; // massa muscular em kg (manual)
   };
 }

@@ -15,6 +15,7 @@ import { VolumeColunas } from "@/components/VolumeColunas";
 import { ClassificacaoForca } from "@/components/ClassificacaoForca";
 import { Periodizacao } from "@/components/Periodizacao";
 import { ImportarImagens } from "@/components/ImportarImagens";
+import { ComposicaoCorporal } from "@/components/ComposicaoCorporal";
 
 const COR_STATUS: Record<StatusVolume, string> = {
   baixo: "#fbbf24",
@@ -185,6 +186,9 @@ export default function TreinoPage() {
 
       {/* Classificação de força — rank por exercício e por grupo + mapa do corpo */}
       <ClassificacaoForca treinos={treinos} />
+
+      {/* Composição corporal — IMC, gordura, metas e tempo estimado */}
+      <ComposicaoCorporal />
 
       {/* Periodização para natural — guia baseado em evidência */}
       <Periodizacao />

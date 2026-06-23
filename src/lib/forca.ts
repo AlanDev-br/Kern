@@ -18,6 +18,8 @@ export interface PerfilFisico {
   idade: number; // anos
   altura?: number; // cm — referência do rank de tamanho
   medidas?: Record<string, number>; // circunferências (cm) por id de medida
+  gorduraPct?: number; // % de gordura (manual, de qualquer balança)
+  massaMuscularKg?: number; // massa muscular em kg (manual)
 }
 
 const LIFTS: { id: LiftId; rotulo: string; chaves: string[] }[] = [
@@ -353,4 +355,101 @@ export function xpForca(treinos: Treino[], perfil?: PerfilFisico | null): number
     }
   }
   return xp;
+}
+
+// ── Composição corporal: IMC, faixa de gordura e metas de medida ───────────
+export interface ImcInfo {
+  valor: number;
+  faixa: string;
+  cor: string;
+}
+
+export function imc(pesoKg: number, alturaCm: number): ImcInfo | null {
+  const m = alturaCm / 100;
+  if (m <= 0 || pesoKg <= 0) return null;
+  const v = pesoKg / (m * m);
+  let faixa: string, cor: string;
+  if (v < 18.5) {
+    faixa = "Abaixo do peso";
+    cor = "#fbbf24";
+  } else if (v < 25) {
+    faixa = "Normal";
+    cor = "var(--accent)";
+  } else if (v < 30) {
+    faixa = "Sobrepeso";
+    cor = "#fbbf24";
+  } else {
+    faixa = "Obesidade";
+    cor = "#fb7185";
+  }
+  return { valor: v, faixa, cor };
+}
+
+// Faixa de % de gordura (referências comuns por sexo).
+export function faixaGordura(pct: number, sexo: "M" | "F"): { faixa: string; cor: string } {
+  const lim = sexo === "F" ? [14, 21, 25, 32] : [6, 14, 18, 25];
+  if (pct < lim[0]) return { faixa: "Essencial", cor: "#38bdf8" };
+  if (pct < lim[1]) return { faixa: "Atlético", cor: "var(--accent)" };
+  if (pct < lim[2]) return { faixa: "Em forma", cor: "var(--accent)" };
+  if (pct < lim[3]) return { faixa: "Médio", cor: "#fbbf24" };
+  return { faixa: "Acima", cor: "#fb7185" };
+}
+
+// Metas de medida: para cada circunferência muscular, quanto falta (cm) para o
+// próximo nível de tamanho e uma estimativa de tempo treinando certo. A taxa de
+// ganho cai conforme o nível atual (iniciante cresce mais rápido) — é uma
+// ESTIMATIVA, assumindo treino e dieta consistentes.
+export interface MetaMedida {
+  id: string;
+  rotulo: string;
+  atual: number;
+  alvo: number;
+  faltaCm: number;
+  nivelAtual: Nivel;
+  nivelAlvo: Nivel;
+  mesesEstimados: number | null; // null se já no topo
+}
+
+const GANHO_CM_MES = [0.45, 0.3, 0.18, 0.1]; // por tier atual: Bronze, Prata, Ouro, Diamante
+
+export function metasMedidas(perfil: PerfilFisico): MetaMedida[] {
+  const alt = perfil.altura ?? 0;
+  if (!alt) return [];
+  const out: MetaMedida[] = [];
+  for (const def of MEDIDAS) {
+    if (def.id === "cintura" || def.grupos.length === 0) continue; // cintura é fat-loss; antebraço sem grupo
+    const cm = perfil.medidas?.[def.id];
+    if (!cm) continue;
+    const idxAtual = indexMedida(def, cm, perfil);
+    const ref = def.fracAltura * alt * fatorSexoMedida(perfil.sexo);
+    if (idxAtual >= CURVA_MEDIDA.length - 1) {
+      out.push({
+        id: def.id,
+        rotulo: def.rotulo,
+        atual: cm,
+        alvo: cm,
+        faltaCm: 0,
+        nivelAtual: nivelDoIndex(idxAtual),
+        nivelAlvo: nivelDoIndex(idxAtual),
+        mesesEstimados: null,
+      });
+      continue;
+    }
+    const idxAlvo = idxAtual + 1;
+    const alvo = ref * CURVA_MEDIDA[idxAlvo];
+    const faltaCm = Math.max(0, alvo - cm);
+    const tierAtual = Math.max(0, Math.floor(Math.max(0, idxAtual) / 3));
+    const taxa = GANHO_CM_MES[Math.min(3, tierAtual)];
+    out.push({
+      id: def.id,
+      rotulo: def.rotulo,
+      atual: cm,
+      alvo,
+      faltaCm,
+      nivelAtual: nivelDoIndex(idxAtual),
+      nivelAlvo: nivelDoIndex(idxAlvo),
+      mesesEstimados: taxa > 0 ? Math.max(1, Math.ceil(faltaCm / taxa)) : null,
+    });
+  }
+  return out;
 }
