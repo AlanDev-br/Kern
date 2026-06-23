@@ -1,8 +1,8 @@
 {
   "Supino Sentado (Máquina)": "/ex-img/supino-sentado-maquina.gif",
   "Peito na Paralela do Graviton (Máquina)": "/ex-img/peito-na-paralela-do-graviton-maquina.gif",
-  "Crucifixo no Voador (Máquina)": "/ex-img/7saC5zz.gif",
-  "Rosca Direta (Máquina)": "/ex-img/8oYqOt9.gif",
+  "Crucifixo no Voador (Máquina)": "/ex-img/crucifixo-no-voador-maquina.gif",
+  "Rosca Direta (Máquina)": "/ex-img/rosca-direta-maquina.gif",
   "Tríceps na Polia": "/ex-img/triceps-na-polia.gif",
   "Rosca Martelo (Halter)": "/ex-img/rosca-martelo-halter.gif",
   "Caminhada do Fazendeiro": "/ex-img/caminhada-do-fazendeiro.gif",
@@ -23,7 +23,7 @@
   "Levantamento Terra (Barra)": "/ex-img/levantamento-terra-barra.gif",
   "Crucifixo na Polia (Máquina)": "/ex-img/crucifixo-na-polia-maquina.gif",
   "Tríceps na Polia com Corda": "/ex-img/triceps-na-polia-com-corda.gif",
-  "Abdominal (Corda)": "/ex-img/8xUv4J7.gif",
+  "Abdominal (Corda)": "/ex-img/abdominal-corda.gif",
   "Elevação de Panturrilha em Pé (Máquina)": "/ex-img/elevacao-de-panturrilha-em-pe-maquina.gif",
   "Prancha Abdominal": "/ex-img/prancha-abdominal.gif",
   "Mesa Flexora (Máquina)": "/ex-img/mesa-flexora-maquina.gif",
@@ -35,8 +35,9 @@
   "Elevação Pélvica (Barra)": "/ex-img/elevacao-pelvica-barra.gif",
   "Elevação de Panturrilha Sentado (Máquina)": "/ex-img/elevacao-de-panturrilha-sentado-maquina.gif",
   "Prancha Lateral": "/ex-img/prancha-lateral.gif",
-  "Curtsy Lunge (Dumbbell)": "/ex-img/curtsy-lunge-dumbbell.jpg",
+  "Curtsy Lunge (Dumbbell)": "/ex-img/curtsy-lunge-dumbbell.gif",
   "Puxada Com Braços Esticados (Corda)": "/ex-img/puxada-com-bracos-esticados-corda.gif",
   "Puxada Com O Braço Reto (Corda)": "/ex-img/puxada-com-o-braco-reto-corda.gif",
-  "Cadeira Flexora (Máquina)": "/ex-img/cadeira-flexora-maquina.gif"
+  "Cadeira Flexora (Máquina)": "/ex-img/cadeira-flexora-maquina.gif",
+  "Roda Abdominal ": "/ex-img/roda-abdominal.gif"
 }
