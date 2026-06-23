@@ -38,17 +38,40 @@ export function VolumeColunas({ avaliacoes }: { avaliacoes: AvaliacaoGrupo[] }) 
                 {a.series}
               </span>
               <div
-                className="relative w-full max-w-[34px] overflow-hidden rounded-md bg-line/60"
-                style={{ height: ALTURA }}
+                className="relative w-full max-w-[34px] rounded-md"
+                style={{
+                  height: ALTURA,
+                  background: "linear-gradient(180deg, rgba(0,0,0,0.25), rgba(255,255,255,0.04))",
+                  boxShadow: "inset 0 1px 3px rgba(0,0,0,0.5)",
+                }}
               >
-                {/* preenchimento da coluna */}
-                <div
-                  className="absolute inset-x-0 bottom-0 rounded-md transition-all"
-                  style={{ height: `${pct}%`, background: cor }}
-                />
+                {/* coluna 3D: corpo + brilho + topo cilíndrico */}
+                {pct > 0 && (
+                  <div
+                    className="absolute inset-x-0 bottom-0 rounded-t-[5px] transition-all"
+                    style={{
+                      height: `${pct}%`,
+                      background: cor,
+                      boxShadow: `0 3px 10px -2px ${cor}99`,
+                    }}
+                  >
+                    <div
+                      className="absolute inset-0 rounded-t-[5px]"
+                      style={{
+                        background:
+                          "linear-gradient(180deg, rgba(255,255,255,0.4), rgba(255,255,255,0) 38%, rgba(0,0,0,0.3))",
+                      }}
+                    />
+                    {/* topo arredondado (cara de cilindro) */}
+                    <div
+                      className="absolute -top-1 inset-x-0 h-2 rounded-[50%]"
+                      style={{ background: cor, filter: "brightness(1.3)" }}
+                    />
+                  </div>
+                )}
                 {/* linha do MEV (mínimo pra crescer) */}
                 <div
-                  className="absolute inset-x-0 border-t border-dashed border-fg/50"
+                  className="absolute inset-x-0 z-10 border-t border-dashed border-fg/60"
                   style={{ bottom: `${mevPct}%` }}
                 />
               </div>
