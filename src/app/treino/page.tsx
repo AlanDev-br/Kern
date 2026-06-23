@@ -7,11 +7,11 @@ import {
   volumeSemanal,
   avaliarVolume,
   catalogoExercicios,
-  LANDMARKS,
   type StatusVolume,
 } from "@/lib/musculacao";
 import { LogTreino } from "@/components/LogTreino";
 import { RotinaEditor } from "@/components/RotinaEditor";
+import { VolumeColunas } from "@/components/VolumeColunas";
 
 const COR_STATUS: Record<StatusVolume, string> = {
   baixo: "#fbbf24",
@@ -166,36 +166,16 @@ export default function TreinoPage() {
         </section>
       )}
 
-      {/* Volume semanal por grupo */}
+      {/* Volume semanal por grupo — gráfico de colunas por zona */}
       <section className="glass rounded-3xl p-5">
         <h2 className="mb-1 text-sm font-bold uppercase tracking-wider">Volume desta semana</h2>
-        <p className="mb-3 text-[11px] text-muted">séries/semana por grupo · faixa ideal (MEV–MRV) p/ natural</p>
-        <div className="space-y-2.5">
-          {avs.map((a) => {
-            const [mev, , mrv] = LANDMARKS[a.grupo];
-            const pct = mrv > 0 ? Math.min(100, (a.series / mrv) * 100) : 0;
-            const mevPct = mrv > 0 ? Math.min(100, (mev / mrv) * 100) : 0;
-            return (
-              <div key={a.grupo}>
-                <div className="flex justify-between text-xs">
-                  <span className="font-medium">{a.grupo}</span>
-                  <span className="text-muted">
-                    {a.series} <span className="opacity-60">/ {mrv}</span>
-                  </span>
-                </div>
-                <div className="relative mt-1 h-2 w-full overflow-hidden rounded-full bg-line">
-                  <div
-                    className="h-full rounded-full transition-all"
-                    style={{ width: `${pct}%`, background: COR_STATUS[a.status] }}
-                  />
-                  <div className="absolute top-0 h-full w-px bg-fg/40" style={{ left: `${mevPct}%` }} />
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        <p className="mb-4 text-[11px] text-muted">séries/semana por grupo · altura = teto recuperável (MRV)</p>
+        <VolumeColunas avaliacoes={avs} />
         <p className="mt-3 text-[11px] text-muted">
-          Linha vertical = mínimo pra crescer (MEV). Verde = na faixa; amarelo = baixo/no teto; vermelho = excesso.
+          Linha tracejada = mínimo pra crescer (MEV).{" "}
+          <span style={{ color: "var(--accent)" }}>verde</span> = faixa de hipertrofia;{" "}
+          <span style={{ color: "#fbbf24" }}>amarelo</span> = baixo/no teto;{" "}
+          <span style={{ color: "#fb7185" }}>vermelho</span> = excesso.
         </p>
       </section>
 
