@@ -303,16 +303,39 @@ export function rankGruposPorCarga(
   return out;
 }
 
+// ── Destreino: só o bloco de treino atual conta ────────────────────────────
+// Após uma semana sem treinar, os recordes antigos deixam de valer — é preciso
+// treinar de novo (e rebater os recordes) para reconquistar a classificação e o
+// XP. O "bloco ativo" são as sessões consecutivas sem intervalo > 7 dias,
+// terminando dentro da última semana. Se está destreinado, retorna vazio.
+export const DETREINO_DIAS = 7;
+
+export function blocoAtivo(treinos: Treino[]): Treino[] {
+  if (treinos.length === 0) return [];
+  const ord = [...treinos].sort((a, b) => a.inicio.localeCompare(b.inicio));
+  const ultima = new Date(ord[ord.length - 1].inicio).getTime();
+  if ((Date.now() - ultima) / 86400000 > DETREINO_DIAS) return []; // destreinado agora
+
+  const bloco: Treino[] = [ord[ord.length - 1]];
+  for (let i = ord.length - 2; i >= 0; i--) {
+    const gap = (new Date(bloco[0].inicio).getTime() - new Date(ord[i].inicio).getTime()) / 86400000;
+    if (gap > DETREINO_DIAS) break;
+    bloco.unshift(ord[i]);
+  }
+  return bloco;
+}
+
 // ── Recordes → XP ──────────────────────────────────────────────────────────
-// Cada novo recorde de 1RM estimado por lift rende XP conforme o tier atingido.
+// Cada novo recorde de 1RM estimado por lift (dentro do bloco ativo) rende XP
+// conforme o tier atingido.
 const XP_POR_TIER = [12, 24, 40, 60]; // Bronze, Prata, Ouro, Diamante
 const XP_PR_BASE = 10; // recorde ainda abaixo do Bronze 3 (ou sem perfil)
 
 export function xpForca(treinos: Treino[], perfil?: PerfilFisico | null): number {
-  const ordenados = [...treinos].sort((a, b) => a.inicio.localeCompare(b.inicio));
+  const ativos = blocoAtivo(treinos); // destreino zera o XP retroativo
   const melhor: Partial<Record<LiftId, number>> = {};
   let xp = 0;
-  for (const t of ordenados) {
+  for (const t of ativos) {
     for (const ex of t.exercicios) {
       const lift = liftCanonico(ex.nome);
       if (!lift) continue;

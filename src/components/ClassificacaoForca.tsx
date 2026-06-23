@@ -8,6 +8,8 @@ import {
   melhores1RM,
   classificar,
   rankGrupos,
+  blocoAtivo,
+  nivelDoIndex,
   ROTULO_LIFT,
   MEDIDAS,
   type LiftId,
@@ -50,8 +52,12 @@ function Painel({
   xpForca: number;
   onEditar: () => void;
 }) {
-  const best = useMemo(() => melhores1RM(treinos), [treinos]);
-  const grupos = useMemo(() => rankGrupos(treinos, perfil), [treinos, perfil]);
+  // Só o bloco de treino atual conta: após uma semana sem treinar, os recordes
+  // antigos deixam de valer e a classificação zera até serem rebatidos.
+  const ativos = useMemo(() => blocoAtivo(treinos), [treinos]);
+  const destreinado = treinos.length > 0 && ativos.length === 0;
+  const best = useMemo(() => melhores1RM(ativos), [ativos]);
+  const grupos = useMemo(() => rankGrupos(ativos, perfil), [ativos, perfil]);
 
   const ranksVisual = useMemo(() => {
     const m: Partial<Record<Grupo, GrupoVisual>> = {};
@@ -72,6 +78,15 @@ function Painel({
           perfil
         </button>
       </div>
+
+      {destreinado && (
+        <div className="mt-3 rounded-xl border border-line bg-bg/40 p-3 text-xs" style={{ borderColor: "#fbbf24" }}>
+          <span className="font-bold" style={{ color: "#fbbf24" }}>Destreinado.</span>{" "}
+          <span className="text-muted">
+            Mais de uma semana sem treinar — os recordes antigos não contam mais. Treine e rebata-os para reconquistar a classificação e o XP.
+          </span>
+        </div>
+      )}
 
       {/* Mapa do corpo */}
       <div className="mt-4">
@@ -120,10 +135,16 @@ function Painel({
                       style={{ width: `${Math.round(c.progresso * 100)}%`, background: c.cor }}
                     />
                   </div>
-                  <span className="text-[11px] tabular-nums text-muted">
-                    {Math.round(c.e1rm)}kg{c.alvoProximo ? ` → ${Math.round(c.alvoProximo)}` : ""}
-                  </span>
+                  <span className="text-[11px] tabular-nums text-muted">{Math.round(c.e1rm)}kg agora</span>
                 </div>
+                {c.alvoProximo != null && (
+                  <p className="mt-1.5 text-[11px] text-muted">
+                    Para <span className="font-semibold" style={{ color: nivelDoIndex(c.nivelIndex + 1).cor }}>
+                      {nivelDoIndex(c.nivelIndex + 1).rotulo}
+                    </span>: 1RM ≥ <span className="font-bold tabular-nums text-fg">{Math.round(c.alvoProximo)}kg</span>{" "}
+                    (faltam {Math.max(0, Math.round(c.alvoProximo - c.e1rm))}kg)
+                  </p>
+                )}
               </div>
             );
           })}
