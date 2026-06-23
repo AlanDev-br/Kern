@@ -80,12 +80,14 @@ function maxPorSemana(dias: DiaRegistro[], taskId: string): number {
 export function construirContexto(
   dias: DiaRegistro[],
   cartoes: CartaoLeitura[] = [],
+  xpForca = 0,
 ): ConquistaContexto {
   const { atual, melhor } = calcularStreak(dias);
   const { conceitosLidos, revisoesTotais } = contagensBiblioteca(cartoes);
   return {
-    // a Biblioteca é uma fonte de XP própria, somada ao XP do checklist diário
-    xpTotal: xpTotal(dias) + xpBiblioteca(cartoes),
+    // Biblioteca e recordes de força são fontes de XP próprias, somadas ao XP
+    // do checklist diário.
+    xpTotal: xpTotal(dias) + xpBiblioteca(cartoes) + xpForca,
     streakAtual: atual,
     melhorStreak: melhor,
     diasComCheck: dias.filter((d) => d.concluidas.length > 0).length,

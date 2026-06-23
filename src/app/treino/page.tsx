@@ -12,6 +12,7 @@ import {
 import { LogTreino } from "@/components/LogTreino";
 import { RotinaEditor } from "@/components/RotinaEditor";
 import { VolumeColunas } from "@/components/VolumeColunas";
+import { ClassificacaoForca } from "@/components/ClassificacaoForca";
 
 const COR_STATUS: Record<StatusVolume, string> = {
   baixo: "#fbbf24",
@@ -178,6 +179,9 @@ export default function TreinoPage() {
           <span style={{ color: "#fb7185" }}>vermelho</span> = excesso.
         </p>
       </section>
+
+      {/* Classificação de força — rank por exercício e por grupo + mapa do corpo */}
+      <ClassificacaoForca treinos={treinos} />
 
       {/* Rotinas (editáveis) */}
       <section className="space-y-2">
