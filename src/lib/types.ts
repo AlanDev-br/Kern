@@ -84,4 +84,10 @@ export interface AppConfig {
   horarios: Record<string, string>; // taskId/evento -> "HH:MM"
   notificacoesAtivas: boolean;
   ultimoBackup?: string;
+  // Perfil físico — base da classificação de força (módulo de treino).
+  perfil?: {
+    sexo: "M" | "F";
+    pesoCorporal: number; // kg
+    idade: number; // anos
+  };
 }
