@@ -221,24 +221,41 @@ function tokensDoArquivo(nomeArquivo: string): string[] {
     .filter((w) => w.length > 2);
 }
 
-// Importação em lote: o usuário seleciona vários arquivos (que ele mesmo baixou),
-// e cada um é vinculado ao exercício do catálogo cujo nome melhor casa com o nome
-// do arquivo. Devolve quantos casaram e quais ficaram de fora.
+const EXT_IMAGEM = /\.(gif|webp|png|jpe?g|avif)$/i;
+
+// Importação em lote: o usuário seleciona vários arquivos (ou uma pasta inteira)
+// que ele mesmo baixou, e cada um é vinculado ao exercício do catálogo cujo nome
+// melhor casa com o nome do arquivo. O casamento funciona tanto com nomes de
+// arquivo em PT quanto em EN: para cada exercício do catálogo comparamos contra
+// o nome normalizado (PT) E a tradução em inglês (tokensDe). Devolve quantos
+// casaram e quais ficaram de fora.
 export async function vincularImagensEmLote(
   arquivos: File[],
   catalogo: string[],
-): Promise<{ vinculadas: number; total: number; naoCasadas: string[] }> {
-  const cat = catalogo.map((nome) => ({ nome, n: norm(nome) }));
+): Promise<{ vinculadas: number; total: number; naoCasadas: string[]; ignorados: number }> {
+  // alvo = "<nome PT normalizado> <tokens EN traduzidos>"
+  const cat = catalogo.map((nome) => ({
+    nome,
+    alvo: `${norm(nome)} ${tokensDe(nome).join(" ")}`,
+  }));
   const naoCasadas: string[] = [];
   let vinculadas = 0;
+  let ignorados = 0;
 
-  for (const file of arquivos) {
+  const imagens = arquivos.filter((f) => EXT_IMAGEM.test(f.name));
+  ignorados = arquivos.length - imagens.length;
+
+  for (const file of imagens) {
     const toks = tokensDoArquivo(file.name);
+    if (toks.length === 0) {
+      naoCasadas.push(file.name);
+      continue;
+    }
     let melhor: string | null = null;
     let melhorScore = 0;
     for (const c of cat) {
       let s = 0;
-      for (const t of toks) if (c.n.includes(t)) s++;
+      for (const t of toks) if (c.alvo.includes(t)) s++;
       if (s > melhorScore) {
         melhorScore = s;
         melhor = c.nome;
@@ -252,5 +269,5 @@ export async function vincularImagensEmLote(
       naoCasadas.push(file.name);
     }
   }
-  return { vinculadas, total: arquivos.length, naoCasadas };
+  return { vinculadas, total: imagens.length, naoCasadas, ignorados };
 }
