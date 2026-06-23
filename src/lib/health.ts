@@ -130,6 +130,7 @@ export interface ResumoSaude {
   fcRepousoOrigens?: { origem: string; valor: number; data: string }[];
   fcRepousoRegistros?: number; // qtos RestingHeartRate vieram (diagnóstico)
   fcIntraHoras?: number; // qtas horas de HeartRate vieram em 24h (diagnóstico)
+  fcRepousoReaproveitada?: boolean; // valor veio do cache (dia ainda sem dado)
 }
 
 export async function lerSaudeHoje(): Promise<ResumoSaude> {
@@ -407,6 +408,28 @@ export async function lerSaudeHoje(): Promise<ResumoSaude> {
     candidatos.sort((a, b) => a.t.getTime() - b.t.getTime());
     resumo.acordarEstimado = candidatos[0].t;
     resumo.acordarOrigem = candidatos.length === 2 ? "fc+passos" : candidatos[0].tipo;
+  }
+
+  // ── FC de repouso: persiste e reaproveita ──
+  // O Health Connect às vezes só popula a FC de repouso de um dia para o outro.
+  // Como ela varia pouco, guardamos o último valor e o reutilizamos enquanto o
+  // dado do dia não chega — em vez de mostrar "—" e perder a informação.
+  try {
+    const CHAVE = "kern_fc_repouso";
+    if (resumo.fcRepouso !== null && resumo.fcRepouso > 0) {
+      localStorage.setItem(CHAVE, JSON.stringify({ valor: resumo.fcRepouso, data: agora.toISOString() }));
+    } else {
+      const salvo = localStorage.getItem(CHAVE);
+      if (salvo) {
+        const { valor } = JSON.parse(salvo) as { valor: number };
+        if (valor > 0) {
+          resumo.fcRepouso = valor;
+          resumo.fcRepousoReaproveitada = true;
+        }
+      }
+    }
+  } catch {
+    /* sem localStorage */
   }
 
   return resumo;
