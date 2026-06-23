@@ -38,42 +38,29 @@ export function VolumeColunas({ avaliacoes }: { avaliacoes: AvaliacaoGrupo[] }) 
                 {a.series}
               </span>
               
-              {/* Container - Tubo de vidro 3D */}
+              {/* Container - Retângulo de vidro premium */}
               <div
-                className="relative w-full max-w-[30px] rounded-t-[6px] rounded-b-[4px]"
+                className="relative w-full max-w-[28px] rounded-[6px] overflow-hidden"
                 style={{
                   height: ALTURA,
-                  background: "linear-gradient(90deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.07) 50%, rgba(0,0,0,0.25) 100%)",
-                  boxShadow: "inset 0 0 6px rgba(0,0,0,0.6), 0 1px 2px rgba(0,0,0,0.5)",
-                  border: "1px solid rgba(255,255,255,0.06)",
+                  background: "rgba(255, 255, 255, 0.03)",
+                  boxShadow: "inset 0 1px 4px rgba(0,0,0,0.5)",
+                  border: "1px solid rgba(255,255,255,0.08)",
                 }}
               >
-                {/* Coluna preenchida (Cilindro com brilho e topo elíptico) */}
+                {/* Coluna preenchida (Retangular com gradiente vertical) */}
                 {pct > 0 && (
                   <div
                     className="absolute inset-x-0 bottom-0 rounded-t-[4px] transition-all duration-500 ease-out"
                     style={{
                       height: `${pct}%`,
-                      background: cor,
-                      boxShadow: `0 0 12px 1px ${cor}44, inset 1px 0 0 rgba(255,255,255,0.2)`,
+                      background: `linear-gradient(to top, ${cor} 0%, color-mix(in srgb, ${cor} 80%, white) 100%)`,
+                      boxShadow: `0 0 10px ${cor}33`,
                     }}
                   >
-                    {/* Efeito de brilho / reflexão vertical 3D */}
+                    {/* Efeito de reflexo de luz vertical plano sutil */}
                     <div
-                      className="absolute inset-0 rounded-t-[4px]"
-                      style={{
-                        background:
-                          "linear-gradient(90deg, rgba(255,255,255,0.25) 0%, rgba(255,255,255,0.45) 25%, rgba(255,255,255,0) 65%, rgba(0,0,0,0.3) 100%)",
-                      }}
-                    />
-                    
-                    {/* Tampa elíptica superior (Perspectiva cilíndrica) */}
-                    <div
-                      className="absolute -top-1 inset-x-0 h-2 rounded-[50%] transition-all duration-300"
-                      style={{
-                        background: `color-mix(in srgb, ${cor} 80%, white)`,
-                        boxShadow: "0 1px 2px rgba(0,0,0,0.25)",
-                      }}
+                      className="absolute inset-y-0 left-0 w-[30%] bg-gradient-to-r from-white/10 to-transparent pointer-events-none"
                     />
                   </div>
                 )}

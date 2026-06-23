@@ -103,7 +103,7 @@ export interface Classificacao {
 }
 
 // Pesos (kg) que definem cada um dos 12 níveis para um dado lift e perfil.
-function limiares(lift: LiftId, perfil: PerfilFisico): number[] {
+export function limiares(lift: LiftId, perfil: PerfilFisico): number[] {
   const k = FATOR_LIFT[lift] * fatorSexo(perfil.sexo) * fatorIdade(perfil.idade) * perfil.pesoCorporal;
   return CURVA.map((m) => m * k);
 }

@@ -24,6 +24,7 @@ public class LimitadorService extends Service {
     private boolean running = false;
     private Thread monitorThread;
     private String lastPkg = null;
+    private String lastBlockedPkg = null;
 
     @Override
     public void onCreate() {
@@ -69,6 +70,20 @@ public class LimitadorService extends Service {
         monitorThread.start();
     }
 
+    private String getCanonicalPkg(String pkg, JSONObject limits) {
+        if (limits.has(pkg)) return pkg;
+        if (pkg.equals("com.instagram.lite") && limits.has("com.instagram.android")) {
+            return "com.instagram.android";
+        }
+        if (pkg.equals("com.facebook.lite") && limits.has("com.facebook.katana")) {
+            return "com.facebook.katana";
+        }
+        if (pkg.equals("com.zhiliaoapp.musically.go") && limits.has("com.zhiliaoapp.musically")) {
+            return "com.zhiliaoapp.musically";
+        }
+        return null;
+    }
+
     private void verificarLimites() {
         SharedPreferences prefs = getSharedPreferences("KernLimiter", Context.MODE_PRIVATE);
         boolean enabled = prefs.getBoolean("limiter_enabled", false);
@@ -80,32 +95,47 @@ public class LimitadorService extends Service {
         String currentPkg = getForegroundPackage(this);
         if (currentPkg == null) return;
 
-        // Se o app atual for o Kern ou o Launcher do Android, ignora
+        // Se o app atual for o Kern ou o Launcher do Android, ignora e reseta a trava do bloqueio
         if (currentPkg.equals(getPackageName()) || currentPkg.contains("launcher") || currentPkg.contains("home") || currentPkg.contains("systemui")) {
             lastPkg = currentPkg;
+            if (!currentPkg.equals(getPackageName())) {
+                // Se saiu do Kern para a Home, reseta para rearmar o bloqueio ao reabrir
+                lastBlockedPkg = null;
+            }
             return;
         }
 
         String limitsJsonStr = prefs.getString("limits_json", "{}");
         try {
             JSONObject limits = new JSONObject(limitsJsonStr);
-            if (limits.has(currentPkg)) {
-                // Esse app tem limite configurado!
-                int limitMin = limits.getInt(currentPkg);
+            String canonicalPkg = getCanonicalPkg(currentPkg, limits);
+
+            if (canonicalPkg != null) {
+                // Esse app (ou sua versão Lite) tem limite configurado!
+                int limitMin = limits.getInt(canonicalPkg);
                 if (limitMin > 0) {
                     long usageMs = getTodayUsageMs(this, currentPkg);
                     long usageMin = usageMs / 60000;
 
                     if (usageMin >= limitMin) {
                         // Limite excedido! Bloquear.
-                        if (!currentPkg.equals(lastPkg)) {
+                        if (!currentPkg.equals(lastBlockedPkg)) {
+                            lastBlockedPkg = currentPkg;
                             bloquearApp(currentPkg);
                         }
+                        lastPkg = currentPkg;
+                        return;
                     }
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+
+        // Se o usuário está em um app sem limite, ou cujo limite não excedeu,
+        // reseta a trava do último app bloqueado
+        if (!currentPkg.equals(lastBlockedPkg)) {
+            lastBlockedPkg = null;
         }
 
         lastPkg = currentPkg;
@@ -137,16 +167,31 @@ public class LimitadorService extends Service {
         UsageStatsManager usm = (UsageStatsManager) context.getSystemService(Context.USAGE_STATS_SERVICE);
         if (usm == null) return null;
         long time = System.currentTimeMillis();
-        UsageEvents events = usm.queryEvents(time - 12000, time);
+        // Consulta eventos dos últimos 20 minutos para encontrar o estado mais recente
+        UsageEvents events = usm.queryEvents(time - 20 * 60 * 1000, time);
         UsageEvents.Event event = new UsageEvents.Event();
         String foregroundPackage = null;
         long latestTime = 0;
         while (events.hasNextEvent()) {
             events.getNextEvent(event);
-            if (event.getEventType() == UsageEvents.Event.ACTIVITY_RESUMED) {
-                if (event.getTimeStamp() > latestTime) {
+            int eventType = event.getEventType();
+            long eventTime = event.getTimeStamp();
+
+            if (eventType == UsageEvents.Event.ACTIVITY_RESUMED) {
+                if (eventTime >= latestTime) {
                     foregroundPackage = event.getPackageName();
-                    latestTime = event.getTimeStamp();
+                    latestTime = eventTime;
+                }
+            } else if (eventType == UsageEvents.Event.ACTIVITY_PAUSED) {
+                if (event.getPackageName().equals(foregroundPackage) && eventTime >= latestTime) {
+                    foregroundPackage = null;
+                    latestTime = eventTime;
+                }
+            } else if (eventType == UsageEvents.Event.KEYGUARD_SHOWN ||
+                       eventType == UsageEvents.Event.SCREEN_NON_INTERACTIVE) {
+                if (eventTime >= latestTime) {
+                    foregroundPackage = null;
+                    latestTime = eventTime;
                 }
             }
         }
