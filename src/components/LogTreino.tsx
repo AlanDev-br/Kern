@@ -29,11 +29,13 @@ export function LogTreino({
   rotina,
   catalogo,
   recordes,
+  anteriores,
   onFechar,
 }: {
   rotina?: Rotina | null;
   catalogo: string[];
   recordes: Record<string, number>; // exercício -> maior carga já feita
+  anteriores: Record<string, { peso: number; reps: number }[]>; // última sessão por exercício
   onFechar: () => void;
 }) {
   const [inicio] = useState(() => new Date());
@@ -147,6 +149,7 @@ export function LogTreino({
       <div className="flex-1 space-y-4 overflow-y-auto p-4 pb-28">
         {exercicios.map((ex, i) => {
           const recorde = recordes[ex.nome] ?? 0;
+          const prevSets = anteriores[ex.nome];
           return (
             <div key={i} className="glass rounded-2xl p-4">
               <div className="flex items-center gap-3">
@@ -161,6 +164,12 @@ export function LogTreino({
                 <button onClick={() => removerExercicio(i)} className="px-1 text-lg text-muted">✕</button>
               </div>
 
+              {prevSets && prevSets.length > 0 && (
+                <p className="mt-2 text-[11px] text-muted">
+                  Última vez: {prevSets.map((s) => `${s.peso}×${s.reps}`).join(" · ")}
+                </p>
+              )}
+
               <div className="mt-3 space-y-1.5">
                 <div className="flex gap-2 px-1 text-[10px] uppercase tracking-wider text-muted">
                   <span className="w-7">set</span>
@@ -170,18 +179,21 @@ export function LogTreino({
                 </div>
                 {ex.sets.map((s, k) => {
                   const pr = s.feito && s.reps > 0 && s.peso > recorde && s.peso > 0;
+                  const prev = prevSets?.[k];
                   return (
                     <div key={k} className={`flex items-center gap-2 rounded-lg ${s.feito ? "bg-accent-soft" : ""}`}>
                       <span className="w-7 text-center text-sm text-muted">{k + 1}</span>
                       <input
                         type="number" inputMode="decimal" value={s.peso || ""}
+                        placeholder={prev ? String(prev.peso) : "kg"}
                         onChange={(e) => setVal(i, k, "peso", parseFloat(e.target.value) || 0)}
-                        className="w-full flex-1 rounded-lg border border-line bg-bg/50 px-2 py-3 text-center text-base outline-none focus:border-accent"
+                        className="w-full flex-1 rounded-lg border border-line bg-bg/50 px-2 py-3 text-center text-base outline-none placeholder:text-muted/50 focus:border-accent"
                       />
                       <input
                         type="number" inputMode="numeric" value={s.reps || ""}
+                        placeholder={prev ? String(prev.reps) : "reps"}
                         onChange={(e) => setVal(i, k, "reps", parseInt(e.target.value, 10) || 0)}
-                        className="w-full flex-1 rounded-lg border border-line bg-bg/50 px-2 py-3 text-center text-base outline-none focus:border-accent"
+                        className="w-full flex-1 rounded-lg border border-line bg-bg/50 px-2 py-3 text-center text-base outline-none placeholder:text-muted/50 focus:border-accent"
                       />
                       <button
                         onClick={() => toggleFeito(i, k)}

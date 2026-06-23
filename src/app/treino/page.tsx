@@ -50,6 +50,15 @@ export default function TreinoPage() {
     return r;
   }, [treinos]);
 
+  // sets da última sessão de cada exercício (treinos vem do mais recente p/ o + antigo)
+  const anteriores = useMemo(() => {
+    const m: Record<string, { peso: number; reps: number }[]> = {};
+    for (const t of treinos)
+      for (const ex of t.exercicios)
+        if (!m[ex.nome]) m[ex.nome] = ex.sets.map((s) => ({ peso: s.peso, reps: s.reps }));
+    return m;
+  }, [treinos]);
+
   function iniciar(rot: Rotina | null) {
     setRotinaSel(rot);
     setEscolher(false);
@@ -62,6 +71,7 @@ export default function TreinoPage() {
         rotina={rotinaSel}
         catalogo={catalogo}
         recordes={recordes}
+        anteriores={anteriores}
         onFechar={() => setLogging(false)}
       />
     );

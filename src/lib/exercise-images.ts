@@ -118,16 +118,10 @@ export async function imagemSalva(nome: string): Promise<string | null> {
   return reg?.url ?? null;
 }
 
-// Resolve a melhor imagem: usa a salva, senão a primeira sugestão (e cacheia).
+// Só retorna a imagem que o usuário escolheu (a sugestão automática errava muito
+// com nomes de máquina em PT). Sem escolha → null (mostra o grupo muscular).
 export async function resolverImagem(nome: string): Promise<string | null> {
-  const salva = await imagemSalva(nome);
-  if (salva) return salva;
-  const sugestoes = await buscarImagens(nome, 1);
-  if (sugestoes.length) {
-    await db.exImagens.put({ nome, url: sugestoes[0].url });
-    return sugestoes[0].url;
-  }
-  return null;
+  return imagemSalva(nome);
 }
 
 export async function definirImagem(nome: string, url: string): Promise<void> {
