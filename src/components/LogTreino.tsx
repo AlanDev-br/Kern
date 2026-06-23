@@ -19,6 +19,38 @@ interface ExLocal {
 // Descanso padrão entre séries (segundos). Ajustável na hora pelo cronômetro.
 const DESCANSO_PADRAO = 90;
 
+// Aviso ao terminar o descanso: dois bipes curtos (Web Audio, sem asset) e
+// vibração. Tocado via setTimeout no fim do descanso.
+function avisoFimDescanso() {
+  try {
+    const AC = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    const ctx = new AC();
+    const bip = (t: number) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.connect(g);
+      g.connect(ctx.destination);
+      o.type = "sine";
+      o.frequency.value = 880;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.35, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.18);
+      o.start(t);
+      o.stop(t + 0.2);
+    };
+    bip(ctx.currentTime);
+    bip(ctx.currentTime + 0.28);
+    setTimeout(() => ctx.close(), 800);
+  } catch {
+    /* áudio indisponível */
+  }
+  try {
+    navigator.vibrate?.([120, 60, 120]);
+  } catch {
+    /* sem vibração */
+  }
+}
+
 function mmss(ms: number) {
   const s = Math.floor(ms / 1000);
   const h = Math.floor(s / 3600);
@@ -83,6 +115,15 @@ export function LogTreino({
       atualizadoEm: new Date().toISOString(),
     });
   }, [exercicios, titulo, inicio]);
+
+  // Agenda o aviso sonoro para o instante exato do fim do descanso.
+  useEffect(() => {
+    if (!descansoFim) return;
+    const ms = descansoFim - Date.now();
+    if (ms <= 0) return;
+    const t = setTimeout(avisoFimDescanso, ms);
+    return () => clearTimeout(t);
+  }, [descansoFim]);
 
   const restanteDescanso = descansoFim ? Math.max(0, Math.ceil((descansoFim - agora) / 1000)) : 0;
 
