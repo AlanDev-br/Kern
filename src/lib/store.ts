@@ -65,6 +65,8 @@ const ctxVazio: ConquistaContexto = {
   diasFechados: 0,
   maxTreinosSemana: 0,
   maxLeituraSemana: 0,
+  conceitosLidos: 0,
+  revisoesTotais: 0,
 };
 
 // Resultado de aplicar uma nova lista de tarefas concluídas ao dia de hoje.

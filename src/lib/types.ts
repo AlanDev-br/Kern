@@ -58,6 +58,8 @@ export interface ConquistaContexto {
   diasFechados: number; // dias com os 3 inegociáveis
   maxTreinosSemana: number;
   maxLeituraSemana: number;
+  conceitosLidos: number; // conceitos da Biblioteca já lidos ao menos uma vez
+  revisoesTotais: number; // total de revisões espaçadas concluídas
 }
 
 export interface ConquistaDesbloqueada {

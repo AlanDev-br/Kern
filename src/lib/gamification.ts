@@ -1,6 +1,8 @@
 import type { DiaRegistro, ConquistaContexto } from "./types";
+import type { CartaoLeitura } from "./db";
 import { chaveDia, chaveSemana, parseChave } from "./dates";
 import { CONQUISTAS, INEGOCIAVEIS, BLOCOS, BONUS_INEGOCIAVEIS } from "./plan-data";
+import { xpBiblioteca, contagensBiblioteca } from "./biblioteca";
 
 // Recalcula o XP de um dia a partir das tarefas concluídas.
 export function calcularXpDia(concluidas: string[]): {
@@ -75,16 +77,23 @@ function maxPorSemana(dias: DiaRegistro[], taskId: string): number {
   return max;
 }
 
-export function construirContexto(dias: DiaRegistro[]): ConquistaContexto {
+export function construirContexto(
+  dias: DiaRegistro[],
+  cartoes: CartaoLeitura[] = [],
+): ConquistaContexto {
   const { atual, melhor } = calcularStreak(dias);
+  const { conceitosLidos, revisoesTotais } = contagensBiblioteca(cartoes);
   return {
-    xpTotal: xpTotal(dias),
+    // a Biblioteca é uma fonte de XP própria, somada ao XP do checklist diário
+    xpTotal: xpTotal(dias) + xpBiblioteca(cartoes),
     streakAtual: atual,
     melhorStreak: melhor,
     diasComCheck: dias.filter((d) => d.concluidas.length > 0).length,
     diasFechados: dias.filter((d) => d.fechouInegociaveis).length,
     maxTreinosSemana: maxPorSemana(dias, "ineg-treino"),
     maxLeituraSemana: maxPorSemana(dias, "ineg-leitura"),
+    conceitosLidos,
+    revisoesTotais,
   };
 }
 
