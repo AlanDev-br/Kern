@@ -56,6 +56,43 @@ const TRAD: [string, string[]][] = [
   ["lunge", ["lunge"]],
   ["farmer", ["farmers", "walk"]],
   ["fazendeiro", ["farmers", "walk"]],
+  // ── ampliação da cobertura ──
+  ["supino reto", ["bench", "press"]],
+  ["supino declinado", ["decline", "bench", "press"]],
+  ["crossover", ["cable", "crossover"]],
+  ["mergulho", ["dip"]],
+  ["barra fixa", ["pull", "up"]],
+  ["pull up", ["pull", "up"]],
+  ["pulldown", ["pulldown"]],
+  ["remada curvada", ["bent", "over", "row"]],
+  ["remada unilateral", ["dumbbell", "row"]],
+  ["serrote", ["dumbbell", "row"]],
+  ["encolhimento", ["shrug"]],
+  ["trapezio", ["shrug"]],
+  ["face pull", ["face", "pull"]],
+  ["desenvolvimento militar", ["military", "press"]],
+  ["desenvolvimento arnold", ["arnold", "press"]],
+  ["arnold", ["arnold", "press"]],
+  ["rosca direta", ["barbell", "curl"]],
+  ["rosca concentrada", ["concentration", "curl"]],
+  ["triceps corda", ["triceps", "pushdown"]],
+  ["triceps pulley", ["triceps", "pushdown"]],
+  ["triceps pushdown", ["triceps", "pushdown"]],
+  ["coice", ["kickback"]],
+  ["agachamento frontal", ["front", "squat"]],
+  ["agachamento bulgaro", ["bulgarian", "split", "squat"]],
+  ["bulgaro", ["bulgarian", "split", "squat"]],
+  ["hack", ["hack", "squat"]],
+  ["stiff", ["stiff", "leg", "deadlift"]],
+  ["good morning", ["good", "morning"]],
+  ["adutora", ["hip", "adduction"]],
+  ["abdutora", ["hip", "abduction"]],
+  ["gluteo", ["glute"]],
+  ["hip thrust", ["hip", "thrust"]],
+  ["panturrilha sentado", ["seated", "calf", "raise"]],
+  ["gemeos", ["calf", "raise"]],
+  ["abdominal infra", ["leg", "raise"]],
+  ["prancha lateral", ["side", "plank"]],
 ];
 
 function tokensDe(nome: string): string[] {
@@ -118,10 +155,41 @@ export async function imagemSalva(nome: string): Promise<string | null> {
   return reg?.url ?? null;
 }
 
-// Só retorna a imagem que o usuário escolheu (a sugestão automática errava muito
-// com nomes de máquina em PT). Sem escolha → null (mostra o grupo muscular).
+// Melhor imagem automática a partir do nome do exercício. Exige confiança mínima
+// (casar os tokens traduzidos) para não exibir imagem errada; entre empates,
+// prefere o nome mais curto (mais canônico, ex.: "Barbell Bench Press").
+export async function melhorImagem(nome: string): Promise<string | null> {
+  try {
+    const index = await carregarIndex();
+    const tokens = tokensDe(nome);
+    if (tokens.length === 0) return null;
+    let best: { e: ExDataset; score: number; len: number } | null = null;
+    for (const e of index) {
+      if (!urlDe(e)) continue;
+      const en = norm(e.name);
+      let score = 0;
+      for (const t of tokens) if (en.includes(t)) score++;
+      if (score === 0) continue;
+      const len = e.name.length;
+      if (!best || score > best.score || (score === best.score && len < best.len)) {
+        best = { e, score, len };
+      }
+    }
+    // confiança: casar ao menos 2 tokens (ou todos, quando há só 1) e >=60% deles
+    const minimo = Math.max(Math.min(2, tokens.length), Math.ceil(tokens.length * 0.6));
+    if (best && best.score >= minimo) return urlDe(best.e);
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+// Imagem do exercício: a escolhida manualmente tem prioridade; senão, tenta o
+// auto-match pelo nome. Sem correspondência confiável → null (mostra o grupo).
 export async function resolverImagem(nome: string): Promise<string | null> {
-  return imagemSalva(nome);
+  const manual = await imagemSalva(nome);
+  if (manual) return manual;
+  return melhorImagem(nome);
 }
 
 export async function definirImagem(nome: string, url: string): Promise<void> {
