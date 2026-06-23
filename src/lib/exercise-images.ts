@@ -184,11 +184,30 @@ export async function melhorImagem(nome: string): Promise<string | null> {
   }
 }
 
-// Imagem do exercício: a escolhida manualmente tem prioridade; senão, tenta o
-// auto-match pelo nome. Sem correspondência confiável → null (mostra o grupo).
+// Mapa nome→arquivo das imagens de domínio público já embutidas no app
+// (public/ex-img/map.json). Carregado uma vez e cacheado; funciona offline.
+let cacheEmbutidas: Record<string, string> | null = null;
+async function imagemEmbutida(nome: string): Promise<string | null> {
+  if (!cacheEmbutidas) {
+    try {
+      const resp = await fetch("/ex-img/map.json", { cache: "force-cache" });
+      cacheEmbutidas = resp.ok ? await resp.json() : {};
+    } catch {
+      cacheEmbutidas = {};
+    }
+  }
+  const mapa = cacheEmbutidas ?? {};
+  return mapa[nome] ?? null;
+}
+
+// Imagem do exercício, em ordem de prioridade:
+// 1) escolha manual do usuário; 2) imagem nativa embutida (offline); 3) auto-match
+// online pelo nome. Sem nada confiável → null (mostra o grupo muscular).
 export async function resolverImagem(nome: string): Promise<string | null> {
   const manual = await imagemSalva(nome);
   if (manual) return manual;
+  const embutida = await imagemEmbutida(nome);
+  if (embutida) return embutida;
   return melhorImagem(nome);
 }
 
