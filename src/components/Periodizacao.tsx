@@ -1,7 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import type { Treino } from "@/lib/db";
+import { diagnosticoPeriodizacao, type RecomendacaoPeriod } from "@/lib/periodizacao";
+
+const COR_REC: Record<RecomendacaoPeriod["tipo"], string> = {
+  erro: "#fb7185",
+  alerta: "#fbbf24",
+  ok: "var(--accent)",
+};
+const ICONE_REC: Record<RecomendacaoPeriod["tipo"], string> = {
+  erro: "✕",
+  alerta: "!",
+  ok: "✓",
+};
 
 // Orientação de periodização para natural, fundamentada na literatura (não nos
 // materiais de nenhum método específico). Ideia central validada por meta-análises:
@@ -34,16 +47,57 @@ const PRINCIPIOS = [
   "O estilo de periodização (linear, ondulatória) importa pouco quando o volume é igualado. Para natural, priorize volume na faixa certa, progressão e recuperação — não o esquema da moda.",
 ];
 
-export function Periodizacao() {
+export function Periodizacao({ treinos = [] }: { treinos?: Treino[] }) {
   const [aberto, setAberto] = useState(false);
+  const diag = useMemo(() => diagnosticoPeriodizacao(treinos), [treinos]);
 
   return (
     <section className="glass rounded-3xl p-5">
-      <button onClick={() => setAberto((v) => !v)} className="flex w-full items-center justify-between text-left">
+      <div className="flex items-center justify-between">
         <div>
           <h2 className="text-sm font-bold uppercase tracking-wider">Periodização (natural)</h2>
-          <p className="text-[11px] text-muted">mesociclo de 5 semanas · baseado em evidência</p>
+          <p className="text-[11px] text-muted">
+            {diag.temDados ? diag.fase : "mesociclo de 5 semanas · baseado em evidência"}
+          </p>
         </div>
+        {diag.temDados && (
+          <span
+            className="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
+            style={{
+              background: diag.destreinado ? "rgba(251,113,133,0.15)" : "rgba(255,255,255,0.06)",
+              color: diag.destreinado ? "#fb7185" : "var(--fg)",
+            }}
+          >
+            {diag.destreinado ? "recomeço" : `sem ${diag.semanasNoBloco} · ${diag.sessoesUltimaSemana}/sem`}
+          </span>
+        )}
+      </div>
+
+      {/* Coach adaptativo — reage aos seus erros reais */}
+      {diag.temDados && (
+        <div className="mt-3 space-y-2">
+          {diag.recomendacoes.map((r, i) => (
+            <div key={i} className="flex gap-2.5 rounded-xl bg-bg/40 p-3">
+              <span
+                className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold"
+                style={{ background: COR_REC[r.tipo], color: "var(--bg)" }}
+              >
+                {ICONE_REC[r.tipo]}
+              </span>
+              <div className="min-w-0">
+                <p className="text-xs font-bold" style={{ color: COR_REC[r.tipo] }}>{r.titulo}</p>
+                <p className="text-[11px] leading-relaxed text-muted">{r.detalhe}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <button
+        onClick={() => setAberto((v) => !v)}
+        className="mt-3 flex w-full items-center justify-between text-left"
+      >
+        <span className="text-xs font-semibold text-accent">Guia do mesociclo e princípios</span>
         <span className="text-lg text-muted">{aberto ? "−" : "+"}</span>
       </button>
 

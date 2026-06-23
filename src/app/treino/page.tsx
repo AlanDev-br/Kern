@@ -190,8 +190,8 @@ export default function TreinoPage() {
       {/* Composição corporal — IMC, gordura, metas e tempo estimado */}
       <ComposicaoCorporal />
 
-      {/* Periodização para natural — guia baseado em evidência */}
-      <Periodizacao />
+      {/* Periodização adaptativa — reage aos seus erros + guia baseado em evidência */}
+      <Periodizacao treinos={treinos} />
 
       {/* Rotinas (editáveis) */}
       <section className="space-y-2">
