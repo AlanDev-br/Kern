@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { resolverImagem, buscarImagens, definirImagem } from "@/lib/exercise-images";
+import { useEffect, useRef, useState } from "react";
+import { resolverImagem, buscarImagens, definirImagem, removerImagem } from "@/lib/exercise-images";
 import { grupoDoExercicio } from "@/lib/musculacao";
 
 export function ExercicioImagem({ nome, size = 64 }: { nome: string; size?: number }) {
@@ -9,6 +9,20 @@ export function ExercicioImagem({ nome, size = 64 }: { nome: string; size?: numb
   const [picking, setPicking] = useState(false);
   const [opcoes, setOpcoes] = useState<{ nome: string; url: string }[]>([]);
   const [carregando, setCarregando] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  // Importa um arquivo do dispositivo (imagem ou GIF/WebP animado) e guarda como
+  // data URL no IndexedDB — fica local, offline e suporta animação.
+  async function enviarArquivo(file: File) {
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const dataUrl = reader.result as string;
+      await definirImagem(nome, dataUrl);
+      setUrl(dataUrl);
+      setPicking(false);
+    };
+    reader.readAsDataURL(file);
+  }
 
   useEffect(() => {
     let vivo = true;
@@ -42,7 +56,7 @@ export function ExercicioImagem({ nome, size = 64 }: { nome: string; size?: numb
       >
         {url ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={url} alt={nome} className="h-full w-full object-cover" />
+          <img src={url} alt={nome} className="h-full w-full object-contain" />
         ) : (
           <span className="px-1 text-center text-[9px] leading-tight text-muted">
             {grupoDoExercicio(nome)}
@@ -60,7 +74,42 @@ export function ExercicioImagem({ nome, size = 64 }: { nome: string; size?: numb
             onClick={(e) => e.stopPropagation()}
           >
             <p className="text-sm font-bold">Imagem de “{nome}”</p>
-            <p className="mt-0.5 text-xs text-muted">Toque pra escolher a que melhor representa.</p>
+            <p className="mt-0.5 text-xs text-muted">
+              Envie a sua (GIF/WebP animado com o movimento) ou escolha uma das sugestões.
+            </p>
+
+            {/* Upload do dispositivo — prioriza o estilo animado que você prefere */}
+            <input
+              ref={fileRef}
+              type="file"
+              accept="image/*"
+              hidden
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) enviarArquivo(f);
+              }}
+            />
+            <button
+              onClick={() => fileRef.current?.click()}
+              className="mt-3 w-full rounded-xl bg-accent py-2.5 text-sm font-bold text-bg active:scale-95"
+            >
+              ⬆ Enviar imagem/GIF do meu dispositivo
+            </button>
+
+            {url && (
+              <button
+                onClick={async () => {
+                  await removerImagem(nome);
+                  setUrl(await resolverImagem(nome));
+                  setPicking(false);
+                }}
+                className="mt-2 w-full rounded-xl border border-line py-2 text-xs text-muted"
+              >
+                Remover imagem atual
+              </button>
+            )}
+
+            <p className="mt-4 mb-1 text-xs font-semibold text-muted">Sugestões automáticas</p>
             {carregando ? (
               <p className="py-6 text-center text-sm text-muted">Buscando…</p>
             ) : opcoes.length ? (

@@ -195,3 +195,8 @@ export async function resolverImagem(nome: string): Promise<string | null> {
 export async function definirImagem(nome: string, url: string): Promise<void> {
   await db.exImagens.put({ nome, url });
 }
+
+// Remove a escolha manual; volta a valer o auto-match pelo nome.
+export async function removerImagem(nome: string): Promise<void> {
+  await db.exImagens.delete(nome);
+}
