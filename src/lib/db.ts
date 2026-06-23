@@ -38,6 +38,13 @@ export interface Rotina {
   exercicios: { nome: string; series: number }[];
 }
 
+// Imagem (URL) associada a um exercício — sugerida automaticamente ou definida
+// pelo usuário; cacheada para não buscar de novo.
+export interface ImagemExercicio {
+  nome: string; // chave = nome do exercício
+  url: string;
+}
+
 // Banco local-first. Tudo vive no IndexedDB do dispositivo.
 export class Reconstrucao90DB extends Dexie {
   dias!: Table<DiaRegistro, string>;
@@ -48,6 +55,7 @@ export class Reconstrucao90DB extends Dexie {
   avatar!: Table<AvatarRegistro, string>;
   treinos!: Table<Treino, string>;
   rotinas!: Table<Rotina, string>;
+  exImagens!: Table<ImagemExercicio, string>;
 
   constructor() {
     super("reconstrucao90");
@@ -75,6 +83,17 @@ export class Reconstrucao90DB extends Dexie {
       avatar: "id",
       treinos: "id, inicio",
       rotinas: "id",
+    });
+    this.version(4).stores({
+      dias: "data",
+      revisoes: "semana",
+      dividas: "id",
+      conquistas: "id",
+      config: "id",
+      avatar: "id",
+      treinos: "id, inicio",
+      rotinas: "id",
+      exImagens: "nome",
     });
   }
 }

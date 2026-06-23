@@ -11,6 +11,7 @@ import {
   type StatusVolume,
 } from "@/lib/musculacao";
 import { LogTreino } from "@/components/LogTreino";
+import { RotinaEditor } from "@/components/RotinaEditor";
 
 const COR_STATUS: Record<StatusVolume, string> = {
   baixo: "#fbbf24",
@@ -30,6 +31,10 @@ export default function TreinoPage() {
   const [logging, setLogging] = useState(false);
   const [rotinaSel, setRotinaSel] = useState<Rotina | null>(null);
   const [escolher, setEscolher] = useState(false);
+  const [editor, setEditor] = useState<{ aberta: boolean; rotina: Rotina | null }>({
+    aberta: false,
+    rotina: null,
+  });
 
   const vol = volumeSemanal(treinos);
   const avs = avaliarVolume(vol);
@@ -58,6 +63,16 @@ export default function TreinoPage() {
         catalogo={catalogo}
         recordes={recordes}
         onFechar={() => setLogging(false)}
+      />
+    );
+  }
+
+  if (editor.aberta) {
+    return (
+      <RotinaEditor
+        rotina={editor.rotina}
+        catalogo={catalogo}
+        onFechar={() => setEditor({ aberta: false, rotina: null })}
       />
     );
   }
@@ -142,6 +157,33 @@ export default function TreinoPage() {
         <p className="mt-3 text-[11px] text-muted">
           Linha vertical = mínimo pra crescer (MEV). Verde = na faixa; amarelo = baixo/no teto; vermelho = excesso.
         </p>
+      </section>
+
+      {/* Rotinas (editáveis) */}
+      <section className="space-y-2">
+        <div className="flex items-center justify-between px-1">
+          <h2 className="text-sm font-bold uppercase tracking-wider">Minhas rotinas</h2>
+          <button
+            onClick={() => setEditor({ aberta: true, rotina: null })}
+            className="text-xs text-accent underline"
+          >
+            + nova
+          </button>
+        </div>
+        {rotinas.map((r) => (
+          <div key={r.id} className="flex items-center gap-3 rounded-2xl border border-line bg-card p-3.5">
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-semibold">{r.nome}</p>
+              <p className="text-xs text-muted">{r.exercicios.length} exercícios</p>
+            </div>
+            <button
+              onClick={() => setEditor({ aberta: true, rotina: r })}
+              className="rounded-lg border border-line px-3 py-1.5 text-xs font-semibold"
+            >
+              editar
+            </button>
+          </div>
+        ))}
       </section>
 
       {/* Histórico */}

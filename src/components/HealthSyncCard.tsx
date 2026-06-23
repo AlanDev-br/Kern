@@ -185,7 +185,15 @@ export function HealthSyncCard() {
           sub={resumo && resumo.treinoSessoes > 0 ? `${resumo.treinoSessoes} sessão(ões)` : undefined}
         />
         <Tile label="Passos" valor={resumo && resumo.passos > 0 ? resumo.passos.toLocaleString("pt-BR") : "—"} />
-        <Tile label="FC repouso" valor={resumo?.fcRepouso ? `${resumo.fcRepouso} bpm` : "—"} />
+        <Tile
+          label="FC repouso"
+          valor={resumo?.fcRepouso ? `${resumo.fcRepouso} bpm` : "—"}
+          sub={
+            resumo && !resumo.fcRepouso && (resumo.fcRepousoRegistros ?? 0) === 0 && (resumo.fcIntraHoras ?? 0) === 0
+              ? "Health Connect sem FC"
+              : undefined
+          }
+        />
       </div>
 
       {/* ajuste manual dos horários de sono */}

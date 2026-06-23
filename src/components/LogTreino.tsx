@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { db, type Rotina, type Treino } from "@/lib/db";
 import { grupoDoExercicio } from "@/lib/musculacao";
+import { ExercicioImagem } from "@/components/ExercicioImagem";
 
 interface SetLocal {
   peso: number;
@@ -148,15 +149,16 @@ export function LogTreino({
           const recorde = recordes[ex.nome] ?? 0;
           return (
             <div key={i} className="glass rounded-2xl p-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-bold">{ex.nome}</p>
-                  <p className="text-[11px] text-muted">
+              <div className="flex items-center gap-3">
+                <ExercicioImagem nome={ex.nome} size={56} />
+                <div className="min-w-0 flex-1">
+                  <p className="text-base font-bold leading-tight">{ex.nome}</p>
+                  <p className="text-xs text-muted">
                     {grupoDoExercicio(ex.nome)}
                     {recorde > 0 && ` · recorde ${recorde}kg`}
                   </p>
                 </div>
-                <button onClick={() => removerExercicio(i)} className="text-muted">✕</button>
+                <button onClick={() => removerExercicio(i)} className="px-1 text-lg text-muted">✕</button>
               </div>
 
               <div className="mt-3 space-y-1.5">
@@ -174,16 +176,16 @@ export function LogTreino({
                       <input
                         type="number" inputMode="decimal" value={s.peso || ""}
                         onChange={(e) => setVal(i, k, "peso", parseFloat(e.target.value) || 0)}
-                        className="w-full flex-1 rounded-lg border border-line bg-bg/50 px-2 py-1.5 text-center text-sm outline-none focus:border-accent"
+                        className="w-full flex-1 rounded-lg border border-line bg-bg/50 px-2 py-3 text-center text-base outline-none focus:border-accent"
                       />
                       <input
                         type="number" inputMode="numeric" value={s.reps || ""}
                         onChange={(e) => setVal(i, k, "reps", parseInt(e.target.value, 10) || 0)}
-                        className="w-full flex-1 rounded-lg border border-line bg-bg/50 px-2 py-1.5 text-center text-sm outline-none focus:border-accent"
+                        className="w-full flex-1 rounded-lg border border-line bg-bg/50 px-2 py-3 text-center text-base outline-none focus:border-accent"
                       />
                       <button
                         onClick={() => toggleFeito(i, k)}
-                        className={`flex h-8 w-8 items-center justify-center rounded-lg border-2 ${
+                        className={`flex h-11 w-11 items-center justify-center rounded-lg border-2 text-lg ${
                           s.feito ? "border-accent bg-accent text-bg" : "border-line text-transparent"
                         }`}
                       >
