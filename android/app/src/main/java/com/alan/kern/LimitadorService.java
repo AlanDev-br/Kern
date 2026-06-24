@@ -95,13 +95,12 @@ public class LimitadorService extends Service {
         String currentPkg = getForegroundPackage(this);
         if (currentPkg == null) return;
 
-        // Se o app atual for o Kern ou o Launcher do Android, ignora e reseta a trava do bloqueio
+        // Se o app atual for o Kern ou o Launcher do Android, ignora e SEMPRE rearma
+        // a trava — assim, ao voltar para um app no limite (mesmo direto do Kern,
+        // sem passar pela Home), ele é bloqueado de novo em vez de continuar liberado.
         if (currentPkg.equals(getPackageName()) || currentPkg.contains("launcher") || currentPkg.contains("home") || currentPkg.contains("systemui")) {
             lastPkg = currentPkg;
-            if (!currentPkg.equals(getPackageName())) {
-                // Se saiu do Kern para a Home, reseta para rearmar o bloqueio ao reabrir
-                lastBlockedPkg = null;
-            }
+            lastBlockedPkg = null;
             return;
         }
 
