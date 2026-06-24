@@ -29,6 +29,7 @@ import { ehNativo, pedirPermissaoNotificacoes, reagendarNotificacoes, agendarCoa
 import { direcionamentoPrincipal } from "./coach";
 import { seedTreinosSeNecessario } from "./treino-seed";
 import { seedBibliotecaSeNecessario } from "./biblioteca-seed";
+import { seedPlano4xSeNecessario } from "./plano-seed";
 import { agendar, marcarLido, type NotaRevisao } from "./biblioteca";
 import {
   xpForca as calcularXpForca,
@@ -267,6 +268,7 @@ export const useApp = create<AppState>((set, get) => ({
   carregar: async () => {
     await seedTreinosSeNecessario(); // embute o histórico de treino na 1ª vez
     await seedBibliotecaSeNecessario(); // semeia os conceitos curados na 1ª vez
+    await seedPlano4xSeNecessario(); // instala o plano 4x/semana (idempotente)
     const config = await getConfig();
     const dias = await getTodosDias();
     const diaHoje = await getDia(hojeChave());
