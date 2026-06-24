@@ -14,6 +14,7 @@ import { RotinaEditor } from "@/components/RotinaEditor";
 import { VolumeColunas } from "@/components/VolumeColunas";
 import { ClassificacaoForca } from "@/components/ClassificacaoForca";
 import { Periodizacao } from "@/components/Periodizacao";
+import { EstrategiaTreino } from "@/components/EstrategiaTreino";
 import { ImportarImagens } from "@/components/ImportarImagens";
 import { ComposicaoCorporal } from "@/components/ComposicaoCorporal";
 
@@ -183,6 +184,9 @@ export default function TreinoPage() {
           <span style={{ color: "#fb7185" }}>vermelho</span> = excesso.
         </p>
       </section>
+
+      {/* Estratégia do treino — plano, prioridades e o porquê */}
+      <EstrategiaTreino />
 
       {/* Classificação de força — rank por exercício e por grupo + mapa do corpo */}
       <ClassificacaoForca treinos={treinos} />
