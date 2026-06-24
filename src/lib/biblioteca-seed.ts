@@ -245,6 +245,93 @@ export const CONCEITOS_SEED: ConceitoSeed[] = [
       "Ao se pegar disperso ou prestes a fugir para o celular, volte a atenção por 60 segundos só para a tarefa atual, com os sentidos.",
     pergunta: "Como a atenção ao presente ajuda a conter a impulsividade?",
   },
+
+  // ── Diário Estoico — sabedoria estoica (Marco Aurélio, Sêneca, Epicteto) ──
+  // Conceitos da tradição estoica de domínio público; a aplicação é minha.
+  {
+    id: "est-dicotomia",
+    livro: "Diário Estoico",
+    autor: "Epicteto",
+    tema: "Dicotomia do controle",
+    dificuldade: "controle emocional",
+    titulo: "O que depende de você",
+    ideia:
+      "O estoicismo divide o mundo em dois: o que está sob seu controle (suas escolhas, esforço, atitude) e o que não está (resultados, opinião alheia, o passado). Sofrimento nasce de tentar controlar o incontrolável. Paz nasce de investir só no que é seu.",
+    citacao: "Há coisas que dependem de nós e outras que não. — Epicteto",
+    aplicacao:
+      "Diante de uma irritação, pergunte: 'isto está sob meu controle?'. Se não, solte. Se sim, aja — sem reclamar.",
+    pergunta: "Quais são as duas categorias da dicotomia do controle?",
+  },
+  {
+    id: "est-julgamento",
+    livro: "Diário Estoico",
+    autor: "Epicteto",
+    tema: "Julgamento",
+    dificuldade: "controle emocional",
+    titulo: "Não é o fato, é o que você pensa dele",
+    ideia:
+      "O que te perturba não é o evento em si, mas o julgamento que você faz dele. Entre o que acontece e a sua dor existe uma opinião — e a opinião pode ser revista. Mude a interpretação e a emoção muda junto.",
+    citacao: "Não são as coisas que perturbam os homens, mas as opiniões sobre elas. — Epicteto",
+    aplicacao:
+      "Quando algo te irritar, separe o fato cru ('ele não respondeu') do julgamento ('ele me despreza'). Ataque o julgamento.",
+    pergunta: "Segundo Epicteto, o que realmente causa a perturbação?",
+  },
+  {
+    id: "est-premeditatio",
+    livro: "Diário Estoico",
+    autor: "Sêneca",
+    tema: "Premeditação",
+    dificuldade: "controle emocional",
+    titulo: "Ensaiar a adversidade",
+    ideia:
+      "Imaginar de antemão o que pode dar errado (premeditatio malorum) tira o poder de choque do imprevisto e revela que quase tudo é suportável. Não é pessimismo — é preparo, para agir com calma quando a dificuldade vier.",
+    citacao: "É na bonança que a alma deve se preparar para a dificuldade. — Sêneca",
+    aplicacao:
+      "Antes de algo importante, gaste 2 min imaginando os obstáculos prováveis e como você responderia com serenidade.",
+    pergunta: "Para que serve a premeditatio malorum?",
+  },
+  {
+    id: "est-memento-mori",
+    livro: "Diário Estoico",
+    autor: "Marco Aurélio",
+    tema: "Finitude",
+    dificuldade: "controle emocional",
+    titulo: "Memento mori",
+    ideia:
+      "Lembrar que a vida é finita não é mórbido: é o que dá urgência e clareza. Saber que o tempo acaba faz você parar de adiar o que importa e de gastar energia com trivialidades e ofensas pequenas.",
+    citacao: "Você poderia deixar a vida agora mesmo; que isso governe o que faz. — Marco Aurélio",
+    aplicacao:
+      "Ao se irritar com algo pequeno, pergunte: 'isto vai importar daqui a um ano? E no fim da vida?'.",
+    pergunta: "Por que lembrar da morte (memento mori) ajuda a agir melhor hoje?",
+  },
+  {
+    id: "est-amor-fati",
+    livro: "Diário Estoico",
+    autor: "Marco Aurélio",
+    tema: "Aceitação",
+    dificuldade: "controle emocional",
+    titulo: "Amor fati — amar o destino",
+    ideia:
+      "Não basta aceitar o que acontece; o estoico aprende a usar tudo — inclusive o obstáculo — como combustível. O que está no caminho vira o caminho. Resistir ao que já é gasta energia; transformar é onde está a força.",
+    citacao: "O impedimento à ação faz avançar a ação. O que está no caminho vira o caminho. — Marco Aurélio",
+    aplicacao:
+      "Diante de um contratempo hoje, pergunte: 'como posso usar isto a meu favor?' em vez de só reclamar.",
+    pergunta: "O que significa 'o obstáculo é o caminho'?",
+  },
+  {
+    id: "est-agora",
+    livro: "Diário Estoico",
+    autor: "Marco Aurélio",
+    tema: "Presente",
+    dificuldade: "impulsividade",
+    titulo: "Governe só este momento",
+    ideia:
+      "Você não carrega o peso de toda a vida de uma vez — só do instante presente. Ninguém perde o passado nem o futuro, apenas o agora. Focar a ação no presente reduz a ansiedade e corta a fuga impulsiva para a distração.",
+    citacao: "Confina-te ao presente. — Marco Aurélio",
+    aplicacao:
+      "Sobrecarregado? Reduza a pergunta a 'qual é a única próxima ação, agora?' e faça só ela.",
+    pergunta: "Por que concentrar-se no presente reduz a ansiedade?",
+  },
 ];
 
 // Semeia os conceitos curados na 1ª vez (ou após reinstalar, quando o IndexedDB
