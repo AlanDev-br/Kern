@@ -84,6 +84,9 @@ export interface AppConfig {
   horarios: Record<string, string>; // taskId/evento -> "HH:MM"
   notificacoesAtivas: boolean;
   ultimoBackup?: string;
+  // Coach de IA (Groq) — chave fica só no dispositivo (local-first).
+  iaApiKey?: string;
+  iaModelo?: string;
   // Perfil físico — base da classificação de força (módulo de treino).
   perfil?: {
     sexo: "M" | "F";

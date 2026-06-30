@@ -5,6 +5,7 @@ import type {
   Divida,
   ConquistaDesbloqueada,
   AppConfig,
+  TaskDef,
 } from "./types";
 // CartaoLeitura é definido neste módulo (abaixo) e re-exportado para o restante.
 import { hojeChave } from "./dates";
@@ -63,6 +64,40 @@ export interface ImagemExercicio {
   url: string;
 }
 
+// Auto-avaliação das múltiplas inteligências (Gardner + emocional). Guarda um
+// snapshot por vez que o usuário refaz, pra ver evolução ao longo do tempo.
+export interface AvaliacaoMente {
+  id?: number;
+  data: string; // ISO
+  scores: Record<string, number>; // id da inteligência → 0..100
+}
+
+// Resultado de um mini-teste cognitivo (memória de trabalho, reação, atenção).
+// Mantém o histórico pra mostrar tendência. `valor` é a métrica bruta do teste;
+// `score` é normalizado 0..100 pra alimentar o atributo Inteligência.
+export interface ResultadoCognitivo {
+  id?: number;
+  data: string; // ISO
+  tipo: "reacao" | "digitos" | "stroop";
+  valor: number; // ms (reação) | dígitos (span) | acertos/seg (stroop)
+  score: number; // 0..100
+}
+
+// Tarefa do checklist diário, agora editável pelo usuário. Os valores iniciais
+// (3 inegociáveis + blocos) são semeados a partir de plan-data; daí em diante o
+// usuário pode criar, editar, remover e reordenar. `ordem` controla a exibição.
+export interface TarefaReg extends TaskDef {
+  ordem: number;
+}
+
+export interface CardioRegistro {
+  id: string; // ID único do Health Connect ou UUID aleatório (manual)
+  tipo: string; // "Corrida" | "Caminhada" | "Bicicleta" | "Elíptico" | "Outro"
+  minutos: number;
+  data: string; // formato "YYYY-MM-DD"
+  origem: "health_connect" | "manual";
+}
+
 // Cartão da Biblioteca: um conceito de livro para ler e internalizar via
 // repetição espaçada. Pode ser "curado" (semeado pelo app) ou "meu" (trecho que
 // o próprio usuário marcou e adicionou). Cada cartão carrega seu estado de
@@ -100,6 +135,10 @@ export class Reconstrucao90DB extends Dexie {
   exImagens!: Table<ImagemExercicio, string>;
   leituras!: Table<CartaoLeitura, string>;
   rascunhoTreino!: Table<TreinoRascunho, string>;
+  cardios!: Table<CardioRegistro, string>;
+  tarefas!: Table<TarefaReg, string>;
+  avaliacoesMente!: Table<AvaliacaoMente, number>;
+  testesCognitivos!: Table<ResultadoCognitivo, number>;
 
   constructor() {
     super("reconstrucao90");
@@ -163,6 +202,52 @@ export class Reconstrucao90DB extends Dexie {
       exImagens: "nome",
       leituras: "id, proximaRevisao, origem",
       rascunhoTreino: "id",
+    });
+    this.version(7).stores({
+      dias: "data",
+      revisoes: "semana",
+      dividas: "id",
+      conquistas: "id",
+      config: "id",
+      avatar: "id",
+      treinos: "id, inicio",
+      rotinas: "id",
+      exImagens: "nome",
+      leituras: "id, proximaRevisao, origem",
+      rascunhoTreino: "id",
+      cardios: "id, data, origem",
+    });
+    this.version(8).stores({
+      dias: "data",
+      revisoes: "semana",
+      dividas: "id",
+      conquistas: "id",
+      config: "id",
+      avatar: "id",
+      treinos: "id, inicio",
+      rotinas: "id",
+      exImagens: "nome",
+      leituras: "id, proximaRevisao, origem",
+      rascunhoTreino: "id",
+      cardios: "id, data, origem",
+      tarefas: "id, ordem, category",
+    });
+    this.version(9).stores({
+      dias: "data",
+      revisoes: "semana",
+      dividas: "id",
+      conquistas: "id",
+      config: "id",
+      avatar: "id",
+      treinos: "id, inicio",
+      rotinas: "id",
+      exImagens: "nome",
+      leituras: "id, proximaRevisao, origem",
+      rascunhoTreino: "id",
+      cardios: "id, data, origem",
+      tarefas: "id, ordem, category",
+      avaliacoesMente: "++id, data",
+      testesCognitivos: "++id, data, tipo",
     });
   }
 }

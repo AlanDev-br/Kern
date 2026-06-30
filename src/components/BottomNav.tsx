@@ -5,12 +5,12 @@ import { usePathname } from "next/navigation";
 
 const ITENS = [
   { href: "/", label: "Hoje", icon: "◎" },
+  { href: "/agenda/", label: "Agenda", icon: "☰" },
   { href: "/treino/", label: "Treino", icon: "💪" },
   { href: "/progresso/", label: "Progresso", icon: "▟" },
   { href: "/conquistas/", label: "Troféus", icon: "✦" },
-  { href: "/rotina/", label: "Rotina", icon: "☰" },
   { href: "/biblioteca/", label: "Leitura", icon: "📖" },
-  { href: "/config/", label: "Ajustes", icon: "⚙" },
+  { href: "/config/", label: "Perfil", icon: "👤" },
 ];
 
 export function BottomNav() {
