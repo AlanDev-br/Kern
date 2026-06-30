@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import { useApp } from "@/lib/store";
 import { nivelDoXp } from "@/lib/xp";
 import { rankDoNivel } from "@/lib/rank";
-import { temAvatar, carregarAvatarObjectURL } from "@/lib/avatar";
+import { carregarModeloParaRankObjectURL, AVATAR_PADRAO_URL } from "@/lib/avatar";
 
 const Avatar3D = dynamic(() => import("@/components/Avatar3D").then((m) => m.Avatar3D), {
   ssr: false,
@@ -17,53 +17,46 @@ export function AvatarHero() {
   const ctx = useApp((s) => s.ctx);
   const nivel = nivelDoXp(ctx.xpTotal);
   const rank = rankDoNivel(nivel.nivel);
+  const rankIndex = Math.min(Math.max(nivel.nivel - 1, 0), 6);
 
   const [objUrl, setObjUrl] = useState<string | null>(null);
-  const [tem, setTem] = useState<boolean | null>(null);
 
-  async function load() {
-    const existe = await temAvatar();
-    setTem(existe);
-    if (existe) {
-      const u = await carregarAvatarObjectURL();
+  useEffect(() => {
+    let vivo = true;
+    const revogar = (u: string | null) => {
+      if (u && u.startsWith("blob:")) URL.revokeObjectURL(u);
+    };
+    async function load() {
+      // modelo do upload do usuário (blob) ou, na ausência, o base embutido
+      const idb = await carregarModeloParaRankObjectURL(rankIndex);
+      const u = idb ?? AVATAR_PADRAO_URL;
+      if (!vivo) {
+        revogar(idb);
+        return;
+      }
       setObjUrl((prev) => {
-        if (prev) URL.revokeObjectURL(prev);
+        if (prev !== u) revogar(prev);
         return u;
       });
     }
-  }
-
-  useEffect(() => {
     load();
     const onVis = () => {
       if (document.visibilityState === "visible") load();
     };
     document.addEventListener("visibilitychange", onVis);
     return () => {
+      vivo = false;
       document.removeEventListener("visibilitychange", onVis);
       setObjUrl((u) => {
-        if (u) URL.revokeObjectURL(u);
+        revogar(u);
         return null;
       });
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    // recarrega o modelo quando o rank muda (corpo evolui)
+  }, [rankIndex]);
 
-  if (tem === null) {
+  if (!objUrl) {
     return <div className="h-[40vh] animate-pulse rounded-3xl bg-card/50" />;
-  }
-
-  if (!tem || !objUrl) {
-    return (
-      <Link
-        href="/avatar/"
-        className="glass flex h-44 flex-col items-center justify-center gap-2 rounded-3xl text-center active:scale-[0.98]"
-      >
-        <span className="text-4xl">🧍</span>
-        <span className="text-sm font-bold">Monte o seu avatar</span>
-        <span className="text-xs text-muted">Ele evolui de rank conforme você cumpre a prova</span>
-      </Link>
-    );
   }
 
   return (
@@ -77,7 +70,7 @@ export function AvatarHero() {
       />
 
       <div className="absolute inset-0">
-        <Avatar3D url={objUrl} streak={ctx.streakAtual} cor={rank.cor} />
+        <Avatar3D url={objUrl} streak={ctx.streakAtual} cor={rank.cor} rankIndex={rankIndex} />
       </div>
 
       {/* rank + nível */}

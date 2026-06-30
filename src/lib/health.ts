@@ -2,6 +2,7 @@
 
 import { Capacitor } from "@capacitor/core";
 import { HealthConnect } from "@devmaxime/capacitor-health-connect";
+import { db } from "./db";
 
 // Tipos lidos. "HeartRate" (intradiário) é usado só para estimar o despertar.
 const LEITURA_REQ = [
@@ -433,4 +434,60 @@ export async function lerSaudeHoje(): Promise<ResumoSaude> {
   }
 
   return resumo;
+}
+
+export async function sincronizarCardioRecente(): Promise<void> {
+  if (!saudeNativa()) return;
+  const status = await statusSaude();
+  if (status !== "ok") return;
+
+  try {
+    const agora = new Date();
+    const start = new Date(agora.getTime() - 4 * 24 * 3600 * 1000); // 4 dias atrás
+
+    const { records } = await HealthConnect.readRecords({
+      type: "ActivitySession",
+      start: start.toISOString(),
+      end: agora.toISOString(),
+    });
+
+    for (const r of records as Record<string, unknown>[]) {
+      // 70 = EXERCISE_TYPE_STRENGTH_TRAINING, 81 = EXERCISE_TYPE_WEIGHTLIFTING
+      const typeId = Number(r.exerciseTypeId) || 0;
+      if (typeId === 70 || typeId === 81) continue;
+
+      const ini = lerInstante(r, "startTime", "startDate", "start");
+      const fim = lerInstante(r, "endTime", "endDate", "end");
+      if (!ini || !fim) continue;
+
+      const minutos = Math.round((fim.getTime() - ini.getTime()) / 60000);
+      if (minutos <= 0) continue;
+
+      const recordId = (r.metadata as Record<string, unknown>)?.id as string || Math.random().toString();
+      const dataYmd = ini.toISOString().split("T")[0]; // YYYY-MM-DD
+
+      const mapearTipoCardio = (id: number, title?: string): string => {
+        if (title && title.trim().length > 0) return title;
+        switch (id) {
+          case 56: case 57: return "Corrida";
+          case 79: return "Caminhada";
+          case 8: case 9: return "Bicicleta";
+          case 25: return "Elíptico";
+          case 73: case 74: return "Natação";
+          case 36: return "HIIT";
+          default: return "Cardio";
+        }
+      };
+
+      await db.cardios.put({
+        id: recordId,
+        tipo: mapearTipoCardio(typeId, r.title as string),
+        minutos,
+        data: dataYmd,
+        origem: "health_connect",
+      });
+    }
+  } catch (e) {
+    console.error("Erro ao sincronizar cardio do Health Connect", e);
+  }
 }

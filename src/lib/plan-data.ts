@@ -18,13 +18,13 @@ export const INEGOCIAVEIS: TaskDef[] = [
   },
   {
     id: "ineg-treino",
-    titulo: "Treinar (ou caminhar 30 min)",
+    titulo: "Movimento do dia (treino ou caminhada)",
     descricao:
-      "Maior redutor de ansiedade sem remédio. Em dia fraco, vale caminhar 30 min — mas não pula.",
+      "Não é treinar todo dia: a meta é treinar 4x/semana. Em dia de descanso, 30 min de caminhada já fecha o inegociável — o que conta é mover o corpo todo dia, sem quebrar o streak.",
     category: "inegociavel",
     xp: 30,
     horario: "07:15",
-    icone: "💪",
+    icone: "🚶",
   },
   {
     id: "ineg-leitura",

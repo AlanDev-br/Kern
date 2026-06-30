@@ -1,12 +1,11 @@
 "use client";
 
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { useApp } from "@/lib/store";
-import { INEGOCIAVEIS, BLOCOS } from "@/lib/plan-data";
 import { nivelDoXp } from "@/lib/xp";
 import { diaDoPlano, nomeDiaSemana } from "@/lib/dates";
 import { ProgressRing } from "@/components/ProgressRing";
-import { TaskItem } from "@/components/TaskItem";
 import { ScreenTimeCard } from "@/components/ScreenTimeCard";
 import { HealthSyncCard } from "@/components/HealthSyncCard";
 import { CoachCard } from "@/components/CoachCard";
@@ -21,12 +20,15 @@ function saudacao() {
 }
 
 export default function HojePage() {
-  const { config, diaHoje, ctx, toggleTarefa } = useApp();
+  const { config, diaHoje, ctx, tarefas } = useApp();
+
+  const inegociaveis = tarefas.filter((t) => t.category === "inegociavel");
 
   const nivel = nivelDoXp(ctx.xpTotal);
   const diaN = config ? diaDoPlano(config.dataInicio) : 1;
-  const feitos = INEGOCIAVEIS.filter((t) => diaHoje.concluidas.includes(t.id)).length;
-  const progIneg = feitos / INEGOCIAVEIS.length;
+  const feitos = inegociaveis.filter((t) => diaHoje.concluidas.includes(t.id)).length;
+  const progIneg = inegociaveis.length > 0 ? feitos / inegociaveis.length : 0;
+  const totalFeitos = tarefas.filter((t) => diaHoje.concluidas.includes(t.id)).length;
 
   return (
     <div className="space-y-6">
@@ -47,7 +49,7 @@ export default function HojePage() {
       <section className="glass relative overflow-hidden rounded-3xl p-5">
         <div className="flex items-center gap-5">
           <ProgressRing progress={progIneg} size={120}>
-            <span className="text-3xl font-extrabold">{feitos}/3</span>
+            <span className="text-3xl font-extrabold">{feitos}/{inegociaveis.length}</span>
             <span className="text-[10px] uppercase tracking-widest text-muted">
               inegociáveis
             </span>
@@ -78,41 +80,46 @@ export default function HojePage() {
         </div>
       </section>
 
-      {/* Sincronização Huawei Band via Health Connect */}
-      <HealthSyncCard />
-
-      {/* Coach adaptativo — direcionamento do dia */}
+      {/* Coach adaptativo — direcionamento do dia (em destaque, logo no topo) */}
       <CoachCard />
+
+      {/* Coach de IA — mentor conversacional (corpo, mente, hábitos) */}
+      <Link
+        href="/coach/"
+        className="glass flex items-center gap-4 rounded-2xl p-4 transition-transform active:scale-[0.98]"
+      >
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-xl">🧭</span>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-bold">Falar com o Coach IA</p>
+          <p className="text-xs text-muted">Mentor fundamentado que lê seus dados e te orienta</p>
+        </div>
+        <span className="shrink-0 text-muted">›</span>
+      </Link>
+
+      {/* Resumo do dia → leva para a Agenda (onde fica o tick das tarefas) */}
+      <Link
+        href="/agenda/"
+        className="glass flex items-center gap-4 rounded-3xl p-5 transition-transform active:scale-[0.98]"
+      >
+        <ProgressRing progress={progIneg} size={64}>
+          <span className="text-sm font-extrabold">{feitos}/{inegociaveis.length}</span>
+        </ProgressRing>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-bold">Agenda do dia</p>
+          <p className="text-xs text-muted">
+            {feitos === inegociaveis.length && inegociaveis.length > 0
+              ? "Inegociáveis fechados. Segue o ritmo."
+              : `${totalFeitos} de ${tarefas.length} tarefas feitas hoje`}
+          </p>
+        </div>
+        <span className="shrink-0 text-muted">›</span>
+      </Link>
 
       {/* Cartão de Foco / Biblioteca */}
       <RevisaoLeituraCard />
 
-      {/* Inegociáveis */}
-      <section className="space-y-2.5">
-        <SectionTitle titulo="Os 3 inegociáveis" sub="A espinha. Mesmo no pior dia." />
-        {INEGOCIAVEIS.map((t) => (
-          <TaskItem
-            key={t.id}
-            task={t}
-            destaque
-            done={diaHoje.concluidas.includes(t.id)}
-            onToggle={() => toggleTarefa(t.id)}
-          />
-        ))}
-      </section>
-
-      {/* Blocos */}
-      <section className="space-y-2.5">
-        <SectionTitle titulo="Blocos do dia" sub="Reforço. Cada um soma." />
-        {BLOCOS.map((t) => (
-          <TaskItem
-            key={t.id}
-            task={t}
-            done={diaHoje.concluidas.includes(t.id)}
-            onToggle={() => toggleTarefa(t.id)}
-          />
-        ))}
-      </section>
+      {/* Sincronização Huawei Band via Health Connect */}
+      <HealthSyncCard />
 
       {/* Tempo de tela (automático no Android) */}
       <ScreenTimeCard />
@@ -125,15 +132,6 @@ function Stat({ valor, label }: { valor: string; label: string }) {
     <div className="flex-1 rounded-xl border border-line bg-bg/40 px-3 py-2 text-center">
       <p className="text-base font-bold">{valor}</p>
       <p className="text-[10px] uppercase tracking-wider text-muted">{label}</p>
-    </div>
-  );
-}
-
-function SectionTitle({ titulo, sub }: { titulo: string; sub: string }) {
-  return (
-    <div className="flex items-baseline justify-between px-1">
-      <h2 className="text-sm font-bold uppercase tracking-wider">{titulo}</h2>
-      <span className="text-xs text-muted">{sub}</span>
     </div>
   );
 }

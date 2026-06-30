@@ -16,6 +16,7 @@ import {
   salvarDia,
   getTodosDias,
   type CartaoLeitura,
+  type TarefaReg,
 } from "./db";
 import { hojeChave } from "./dates";
 import {
@@ -29,6 +30,16 @@ import { ehNativo, pedirPermissaoNotificacoes, reagendarNotificacoes, agendarCoa
 import { direcionamentoPrincipal } from "./coach";
 import { seedTreinosSeNecessario } from "./treino-seed";
 import { seedBibliotecaSeNecessario } from "./biblioteca-seed";
+import { seedPlano4xSeNecessario } from "./plano-seed";
+import { seedTarefasSeNecessario } from "./tarefas-seed";
+import {
+  listarTarefas,
+  criarTarefa as persistCriarTarefa,
+  editarTarefa as persistEditarTarefa,
+  removerTarefa as persistRemoverTarefa,
+  reordenarTarefas as persistReordenarTarefas,
+  type NovaTarefa,
+} from "./tarefas";
 import { agendar, marcarLido, type NotaRevisao } from "./biblioteca";
 import {
   xpForca as calcularXpForca,
@@ -60,6 +71,7 @@ interface AppState {
   conquistasIds: string[];
   temasDisp: ThemeDef[];
   cartoes: CartaoLeitura[];
+  tarefas: TarefaReg[]; // checklist editável (inegociáveis + blocos)
   xpForca: number; // XP acumulado por recordes de treino
   fila: Celebracao[];
 
@@ -80,6 +92,11 @@ interface AppState {
   // Treino / força
   recarregarForca: () => Promise<void>;
   atualizarPerfil: (perfil: PerfilFisico) => Promise<void>;
+  // Checklist editável
+  criarTarefa: (dados: NovaTarefa) => Promise<void>;
+  editarTarefa: (id: string, patch: Partial<Omit<TarefaReg, "id" | "ordem">>) => Promise<void>;
+  removerTarefa: (id: string) => Promise<void>;
+  reordenarTarefas: (idsEmOrdem: string[]) => Promise<void>;
 }
 
 // Campos que o usuário fornece ao capturar um trecho próprio.
@@ -219,9 +236,10 @@ async function aplicarConcluidas(
   temasAntesIds: string[],
   cartoes: CartaoLeitura[],
   xpForcaAtual: number,
+  tarefas: TarefaReg[],
 ): Promise<Resultado> {
   const fechouAntes = diaAntes.fechouInegociaveis;
-  const { xp, fechouInegociaveis } = calcularXpDia(concluidas);
+  const { xp, fechouInegociaveis } = calcularXpDia(concluidas, tarefas);
   const novoDia: DiaRegistro = { ...diaAntes, concluidas, xp, fechouInegociaveis };
   await salvarDia(novoDia);
 
@@ -261,16 +279,20 @@ export const useApp = create<AppState>((set, get) => ({
   conquistasIds: [],
   temasDisp: [],
   cartoes: [],
+  tarefas: [],
   xpForca: 0,
   fila: [],
 
   carregar: async () => {
     await seedTreinosSeNecessario(); // embute o histórico de treino na 1ª vez
     await seedBibliotecaSeNecessario(); // semeia os conceitos curados na 1ª vez
+    await seedPlano4xSeNecessario(); // instala o plano 4x/semana (idempotente)
+    await seedTarefasSeNecessario(); // semeia o checklist editável na 1ª vez
     const config = await getConfig();
     const dias = await getTodosDias();
     const diaHoje = await getDia(hojeChave());
     const cartoes = await db.leituras.toArray();
+    const tarefas = await listarTarefas();
     const treinos = await db.treinos.toArray();
     const xpForca = calcularXpForca(treinos, config.perfil ?? null);
     const ctx = construirContexto(dias, cartoes, xpForca);
@@ -282,6 +304,7 @@ export const useApp = create<AppState>((set, get) => ({
       dias,
       diaHoje,
       cartoes,
+      tarefas,
       xpForca,
       ctx,
       conquistasIds,
@@ -293,7 +316,7 @@ export const useApp = create<AppState>((set, get) => ({
     try {
       if (ehNativo() && config.notificacoesAtivas) {
         await pedirPermissaoNotificacoes();
-        await reagendarNotificacoes(config);
+        await reagendarNotificacoes(config, tarefas);
         // notificação do coach com o direcionamento nº1 do dia
         const dir = direcionamentoPrincipal({ dias, diaHoje, ctx });
         await agendarCoach(`${dir.titulo} — ${dir.acao}`);
@@ -311,7 +334,7 @@ export const useApp = create<AppState>((set, get) => ({
   },
 
   toggleTarefa: async (id: string) => {
-    const { diaHoje, conquistasIds, temasDisp, cartoes, xpForca } = get();
+    const { diaHoje, conquistasIds, temasDisp, cartoes, xpForca, tarefas } = get();
     const concluidas = diaHoje.concluidas.includes(id)
       ? diaHoje.concluidas.filter((x) => x !== id)
       : [...diaHoje.concluidas, id];
@@ -322,6 +345,7 @@ export const useApp = create<AppState>((set, get) => ({
       temasDisp.map((t) => t.id),
       cartoes,
       xpForca,
+      tarefas,
     );
     set({
       diaHoje: r.novoDia,
@@ -335,7 +359,7 @@ export const useApp = create<AppState>((set, get) => ({
 
   // marca como concluída sem desmarcar (idempotente) — usado pela auto-sync de saúde
   marcarConcluida: async (id: string) => {
-    const { diaHoje, conquistasIds, temasDisp, cartoes, xpForca } = get();
+    const { diaHoje, conquistasIds, temasDisp, cartoes, xpForca, tarefas } = get();
     if (diaHoje.concluidas.includes(id)) return;
     const concluidas = [...diaHoje.concluidas, id];
     const r = await aplicarConcluidas(
@@ -345,6 +369,7 @@ export const useApp = create<AppState>((set, get) => ({
       temasDisp.map((t) => t.id),
       cartoes,
       xpForca,
+      tarefas,
     );
     set({
       diaHoje: r.novoDia,
@@ -358,7 +383,7 @@ export const useApp = create<AppState>((set, get) => ({
 
   // define manualmente o horário de acordar e marca o inegociável correspondente
   setAcordarManual: async (hhmm: string) => {
-    const { diaHoje, conquistasIds, temasDisp, cartoes, xpForca } = get();
+    const { diaHoje, conquistasIds, temasDisp, cartoes, xpForca, tarefas } = get();
     const base = { ...diaHoje, acordarManual: hhmm };
     const concluidas = base.concluidas.includes("ineg-acordar")
       ? base.concluidas
@@ -370,6 +395,7 @@ export const useApp = create<AppState>((set, get) => ({
       temasDisp.map((t) => t.id),
       cartoes,
       xpForca,
+      tarefas,
     );
     set({
       diaHoje: r.novoDia,
@@ -517,9 +543,67 @@ export const useApp = create<AppState>((set, get) => ({
     });
   },
 
+  // ── Checklist editável ──────────────────────────────────────
+  // Após qualquer mudança nas tarefas, recarrega a lista, recomputa o dia de
+  // hoje (editar XP/categoria reflete na hora) e reagenda as notificações.
+  criarTarefa: async (dados: NovaTarefa) => {
+    await persistCriarTarefa(dados);
+    await recarregarTarefas(get, set);
+  },
+
+  editarTarefa: async (id, patch) => {
+    await persistEditarTarefa(id, patch);
+    await recarregarTarefas(get, set);
+  },
+
+  removerTarefa: async (id: string) => {
+    await persistRemoverTarefa(id);
+    await recarregarTarefas(get, set);
+  },
+
+  reordenarTarefas: async (idsEmOrdem: string[]) => {
+    await persistReordenarTarefas(idsEmOrdem);
+    await recarregarTarefas(get, set);
+  },
+
   proximaCelebracao: () => {
     set({ fila: get().fila.slice(1) });
   },
 }));
+
+// Recarrega o checklist e propaga os efeitos: recomputa o XP/fechamento de hoje
+// com as novas definições, atualiza o contexto e reagenda as notificações.
+async function recarregarTarefas(
+  get: () => AppState,
+  set: (patch: Partial<AppState>) => void,
+): Promise<void> {
+  const { diaHoje, conquistasIds, temasDisp, cartoes, xpForca, config } = get();
+  const tarefas = await listarTarefas();
+  const r = await aplicarConcluidas(
+    diaHoje,
+    diaHoje.concluidas,
+    conquistasIds,
+    temasDisp.map((t) => t.id),
+    cartoes,
+    xpForca,
+    tarefas,
+  );
+  set({
+    tarefas,
+    diaHoje: r.novoDia,
+    dias: r.dias,
+    ctx: r.ctx,
+    conquistasIds: r.conquistasIds,
+    temasDisp: r.temasDisp,
+    fila: [...get().fila, ...r.fila],
+  });
+  try {
+    if (ehNativo() && config?.notificacoesAtivas) {
+      await reagendarNotificacoes(config, tarefas);
+    }
+  } catch {
+    /* sem notificações disponíveis */
+  }
+}
 
 export { getTema };

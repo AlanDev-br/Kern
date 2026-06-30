@@ -1,21 +1,27 @@
-import type { DiaRegistro, ConquistaContexto } from "./types";
+import type { DiaRegistro, ConquistaContexto, TaskDef } from "./types";
 import type { CartaoLeitura } from "./db";
 import { chaveDia, chaveSemana, parseChave } from "./dates";
 import { CONQUISTAS, INEGOCIAVEIS, BLOCOS, BONUS_INEGOCIAVEIS } from "./plan-data";
 import { xpBiblioteca, contagensBiblioteca } from "./biblioteca";
 
-// Recalcula o XP de um dia a partir das tarefas concluídas.
-export function calcularXpDia(concluidas: string[]): {
+// Recalcula o XP de um dia a partir das tarefas concluídas. `tarefas` é a lista
+// editável do usuário; sem ela, cai no plano padrão (compatibilidade). O dia só
+// "fecha" se houver ao menos um inegociável e todos estiverem cumpridos.
+export function calcularXpDia(
+  concluidas: string[],
+  tarefas: TaskDef[] = [...INEGOCIAVEIS, ...BLOCOS],
+): {
   xp: number;
   fechouInegociaveis: boolean;
 } {
-  const todas = [...INEGOCIAVEIS, ...BLOCOS];
   let xp = 0;
   for (const id of concluidas) {
-    const t = todas.find((x) => x.id === id);
+    const t = tarefas.find((x) => x.id === id);
     if (t) xp += t.xp;
   }
-  const fechouInegociaveis = INEGOCIAVEIS.every((t) => concluidas.includes(t.id));
+  const inegociaveis = tarefas.filter((t) => t.category === "inegociavel");
+  const fechouInegociaveis =
+    inegociaveis.length > 0 && inegociaveis.every((t) => concluidas.includes(t.id));
   if (fechouInegociaveis) xp += BONUS_INEGOCIAVEIS;
   return { xp, fechouInegociaveis };
 }

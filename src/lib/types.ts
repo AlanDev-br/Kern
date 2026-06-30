@@ -84,6 +84,9 @@ export interface AppConfig {
   horarios: Record<string, string>; // taskId/evento -> "HH:MM"
   notificacoesAtivas: boolean;
   ultimoBackup?: string;
+  // Coach de IA (Groq) — chave fica só no dispositivo (local-first).
+  iaApiKey?: string;
+  iaModelo?: string;
   // Perfil físico — base da classificação de força (módulo de treino).
   perfil?: {
     sexo: "M" | "F";
@@ -91,5 +94,7 @@ export interface AppConfig {
     idade: number; // anos
     altura?: number; // cm — referência para o rank de tamanho
     medidas?: Record<string, number>; // circunferências (cm) por id de medida
+    gorduraPct?: number; // % de gordura (manual, de qualquer balança)
+    massaMuscularKg?: number; // massa muscular em kg (manual)
   };
 }

@@ -12,6 +12,7 @@ import {
   nivelDoIndex,
   ROTULO_LIFT,
   MEDIDAS,
+  limiares,
   type LiftId,
   type PerfilFisico,
 } from "@/lib/forca";
@@ -52,6 +53,8 @@ function Painel({
   xpForca: number;
   onEditar: () => void;
 }) {
+  const [expandedLift, setExpandedLift] = useState<LiftId | null>(null);
+
   // Só o bloco de treino atual conta: após uma semana sem treinar, os recordes
   // antigos deixam de valer e a classificação zera até serem rebatidos.
   const ativos = useMemo(() => blocoAtivo(treinos), [treinos]);
@@ -120,13 +123,26 @@ function Painel({
         <div className="space-y-2">
           {liftsComDados.map((lift) => {
             const c = classificar(lift, best[lift]!, perfil);
+            const isExpanded = expandedLift === lift;
+            const lims = limiares(lift, perfil);
             return (
-              <div key={lift} className="rounded-xl bg-bg/40 p-3">
-                <div className="flex items-center justify-between">
+              <div key={lift} className="rounded-xl bg-bg/40 p-3 transition-all duration-300">
+                <div
+                  className="flex items-center justify-between cursor-pointer hover:opacity-85 transition-opacity"
+                  onClick={() => setExpandedLift(isExpanded ? null : lift)}
+                >
                   <span className="text-sm font-semibold">{ROTULO_LIFT[lift]}</span>
-                  <span className="text-sm font-bold" style={{ color: c.cor }}>
-                    {c.rotulo}
-                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-sm font-bold" style={{ color: c.cor }}>
+                      {c.rotulo}
+                    </span>
+                    <span
+                      className="text-muted text-[10px] transition-transform duration-300 inline-block"
+                      style={{ transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)" }}
+                    >
+                      ▼
+                    </span>
+                  </div>
                 </div>
                 <div className="mt-1.5 flex items-center gap-2">
                   <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-line">
@@ -137,13 +153,67 @@ function Painel({
                   </div>
                   <span className="text-[11px] tabular-nums text-muted">{Math.round(c.e1rm)}kg agora</span>
                 </div>
-                {c.alvoProximo != null && (
+                {c.alvoProximo != null && !isExpanded && (
                   <p className="mt-1.5 text-[11px] text-muted">
                     Para <span className="font-semibold" style={{ color: nivelDoIndex(c.nivelIndex + 1).cor }}>
                       {nivelDoIndex(c.nivelIndex + 1).rotulo}
                     </span>: 1RM ≥ <span className="font-bold tabular-nums text-fg">{Math.round(c.alvoProximo)}kg</span>{" "}
                     (faltam {Math.max(0, Math.round(c.alvoProximo - c.e1rm))}kg)
                   </p>
+                )}
+
+                {isExpanded && (
+                  <div className="mt-4 border-t border-line/30 pt-3">
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted mb-2">
+                      Objetivos de Carga (1RM Estimado)
+                    </h4>
+                    <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
+                      {Array.from({ length: 12 }).map((_, idx) => {
+                        const lvl = nivelDoIndex(idx);
+                        const target = Math.round(lims[idx]);
+                        const isAchieved = idx <= c.nivelIndex;
+                        const isCurrent = idx === c.nivelIndex;
+                        const diff = Math.max(0, target - Math.round(c.e1rm));
+
+                        return (
+                          <div
+                            key={idx}
+                            className={`flex items-center justify-between rounded-lg px-2 py-1 text-[11px] transition-all ${
+                              isCurrent
+                                ? "bg-accent/10 border border-accent/30 font-bold"
+                                : isAchieved
+                                ? "bg-bg/25 text-fg/80"
+                                : "bg-bg/10 text-muted/40"
+                            }`}
+                          >
+                            <div className="flex items-center gap-1.5">
+                              <span
+                                className="h-1.5 w-1.5 rounded-full"
+                                style={{ backgroundColor: lvl.cor }}
+                              />
+                              <span className={isCurrent ? "text-accent" : ""}>
+                                {lvl.rotulo}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <span className="tabular-nums font-semibold">
+                                {target}kg
+                              </span>
+                              {isCurrent ? (
+                                <span className="text-[8px] uppercase tracking-wider bg-accent/20 text-accent px-1 rounded">Você</span>
+                              ) : isAchieved ? (
+                                <span className="text-accent text-[9px]">✓</span>
+                              ) : (
+                                <span className="text-[9px] text-muted/30 font-normal">
+                                  (+{diff}kg)
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
                 )}
               </div>
             );

@@ -2,8 +2,7 @@
 
 import { Capacitor } from "@capacitor/core";
 import { LocalNotifications } from "@capacitor/local-notifications";
-import type { AppConfig } from "./types";
-import { getTask } from "./plan-data";
+import type { AppConfig, TaskDef } from "./types";
 
 export function ehNativo(): boolean {
   return Capacitor.isNativePlatform();
@@ -27,9 +26,14 @@ function hm(horario: string): { hour: number; minute: number } {
   return { hour: h, minute: m };
 }
 
-// Reagenda todas as notificações locais a partir da config.
+// Reagenda todas as notificações locais a partir da config e do checklist.
 // Em horário fixo, recorrente — confiável via AlarmManager no Android.
-export async function reagendarNotificacoes(config: AppConfig): Promise<void> {
+// Cada tarefa com horário vira uma notificação diária; a config.horarios pode
+// sobrescrever o horário-base da tarefa (mesma chave = id da tarefa).
+export async function reagendarNotificacoes(
+  config: AppConfig,
+  tarefas: TaskDef[] = [],
+): Promise<void> {
   if (!ehNativo()) return;
 
   // limpa as pendentes antes de reagendar
@@ -43,22 +47,14 @@ export async function reagendarNotificacoes(config: AppConfig): Promise<void> {
   const notifs: Parameters<typeof LocalNotifications.schedule>[0]["notifications"] = [];
   let id = 1;
 
-  // notificações diárias dos blocos com horário
-  const diarias: string[] = [
-    "ineg-acordar",
-    "ineg-treino",
-    "bloco-carreira",
-    "ineg-leitura",
-    "bloco-telasoff",
-  ];
-  for (const taskId of diarias) {
-    const horario = config.horarios[taskId];
+  // notificações diárias das tarefas com horário (base na tarefa, override na config)
+  for (const t of tarefas) {
+    const horario = config.horarios[t.id] ?? t.horario;
     if (!horario) continue;
-    const t = getTask(taskId);
     notifs.push({
       id: id++,
-      title: t ? `${t.icone} ${t.titulo}` : "Reconstrução 90",
-      body: t?.descricao ?? "Hora de cumprir o plano.",
+      title: `${t.icone} ${t.titulo}`,
+      body: t.descricao || "Hora de cumprir o plano.",
       schedule: { on: hm(horario), repeats: true, allowWhileIdle: true },
     });
   }
