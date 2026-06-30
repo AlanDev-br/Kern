@@ -1,9 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useLiveQuery } from "dexie-react-hooks";
 import { db, type Rotina, type Treino, type TreinoRascunho } from "@/lib/db";
 import { grupoDoExercicio } from "@/lib/musculacao";
 import { ExercicioImagem } from "@/components/ExercicioImagem";
+import { ExercicioDetalhesModal } from "@/components/ExercicioDetalhesModal";
+import { CardPosTreino } from "@/components/CardPosTreino";
+import { SeletorExercicio } from "@/components/SeletorExercicio";
 
 interface SetLocal {
   peso: number;
@@ -75,11 +79,18 @@ export function LogTreino({
   anteriores: Record<string, { peso: number; reps: number }[]>; // última sessão por exercício
   onFechar: () => void;
 }) {
+  const treinos = useLiveQuery(() => db.treinos.toArray(), []) ?? [];
+  const [exercicioDetalhado, setExercicioDetalhado] = useState<string | null>(null);
+  // Treino salvo → mostra o card de pós-treino (com snapshot dos recordes anteriores).
+  const [concluido, setConcluido] = useState<{ treino: Treino; recordes: Record<string, number> } | null>(null);
+  // Seletor de exercício (adicionar / substituir) e confirmação de descarte.
+  const [seletor, setSeletor] = useState<{ modo: "add" | "sub"; index?: number } | null>(null);
+  const [confirmarCancelar, setConfirmarCancelar] = useState(false);
+
   // Ao retomar um rascunho, preserva o horário de início (cronômetro contínuo).
   const [inicio] = useState(() => (rascunho ? new Date(rascunho.inicio) : new Date()));
   const [agora, setAgora] = useState(() => Date.now());
   const [titulo, setTitulo] = useState(rascunho?.titulo ?? rotina?.nome ?? "Treino");
-  const [novoEx, setNovoEx] = useState("");
   const [exercicios, setExercicios] = useState<ExLocal[]>(() => {
     if (rascunho) return rascunho.exercicios.map((e) => ({ nome: e.nome, sets: e.sets.map((s) => ({ ...s })) }));
     if (rotina)
@@ -127,8 +138,6 @@ export function LogTreino({
 
   const restanteDescanso = descansoFim ? Math.max(0, Math.ceil((descansoFim - agora) / 1000)) : 0;
 
-  const datalistId = useMemo(() => "cat-" + Math.random().toString(36).slice(2), []);
-
   // volume da sessão: conta toda série marcada como feita (a tonelagem soma o
   // que tiver peso×reps). Marcar ✓ já conta, mesmo usando os valores herdados da
   // sessão anterior — sem precisar redigitar.
@@ -147,7 +156,6 @@ export function LogTreino({
     const n = nome.trim();
     if (!n) return;
     setExercicios((xs) => [...xs, { nome: n, sets: [{ peso: 0, reps: 0, tipo: "normal" }] }]);
-    setNovoEx("");
   }
   function addSet(i: number) {
     setExercicios((xs) =>
@@ -203,9 +211,31 @@ export function LogTreino({
     await db.rascunhoTreino.delete("atual");
   }
 
-  async function sair() {
+  // Minimizar: mantém o rascunho (aparece "Retomar treino" na aba Treino).
+  function minimizar() {
+    onFechar();
+  }
+
+  // Cancelar: descarta o treino de vez (chamado após confirmação).
+  async function cancelarTreino() {
     await descartarRascunho();
     onFechar();
+  }
+
+  // Substitui o exercício i por outro, mantendo a contagem de séries (zeradas).
+  function substituirExercicio(i: number, nome: string) {
+    setExercicios((xs) =>
+      xs.map((ex, j) =>
+        j === i ? { nome, sets: ex.sets.map(() => ({ peso: 0, reps: 0, tipo: "normal" })) } : ex,
+      ),
+    );
+  }
+
+  function onEscolherExercicio(nome: string) {
+    if (!seletor) return;
+    if (seletor.modo === "add") addExercicio(nome);
+    else if (seletor.index != null) substituirExercicio(seletor.index, nome);
+    setSeletor(null);
   }
 
   async function concluir() {
@@ -218,7 +248,7 @@ export function LogTreino({
           .map((s) => ({ peso: s.peso, reps: s.reps, tipo: s.tipo })),
       }))
       .filter((ex) => ex.sets.length > 0);
-    if (limpos.length === 0) return sair();
+    if (limpos.length === 0) return minimizar();
     const treino: Treino = {
       id: inicio.toISOString(),
       titulo: titulo.trim() || "Treino",
@@ -226,22 +256,40 @@ export function LogTreino({
       fim: new Date().toISOString(),
       exercicios: limpos,
     };
+    const recordesAntes = { ...recordes }; // snapshot antes do save propagar
     await db.treinos.put(treino);
     await descartarRascunho();
-    onFechar();
+    setConcluido({ treino, recordes: recordesAntes });
+  }
+
+  if (concluido) {
+    return (
+      <CardPosTreino
+        treino={concluido.treino}
+        recordesAnteriores={concluido.recordes}
+        onFechar={onFechar}
+      />
+    );
   }
 
   return (
     <div className="fixed inset-0 z-50 mx-auto flex w-full max-w-md flex-col bg-bg">
       <div className="border-b border-line p-4 pt-[max(1rem,env(safe-area-inset-top))]">
-        <div className="flex items-center gap-3">
-          <button onClick={sair} className="text-sm font-medium text-muted">sair</button>
+        <div className="flex items-center gap-2">
+          <button onClick={minimizar} className="shrink-0 text-sm font-medium text-muted">‹ Minimizar</button>
           <input
             value={titulo}
             onChange={(e) => setTitulo(e.target.value)}
             className="flex-1 bg-transparent text-center text-base font-bold outline-none"
           />
-          <button onClick={concluir} className="rounded-lg bg-accent px-3 py-1.5 text-sm font-bold text-bg">
+          <button
+            onClick={() => setConfirmarCancelar(true)}
+            aria-label="Descartar treino"
+            className="shrink-0 px-1 text-base text-muted"
+          >
+            🗑
+          </button>
+          <button onClick={concluir} className="shrink-0 rounded-lg bg-accent px-3 py-1.5 text-sm font-bold text-bg">
             Concluir
           </button>
         </div>
@@ -253,28 +301,6 @@ export function LogTreino({
         </div>
       </div>
 
-      {/* Cronômetro de descanso entre séries */}
-      {restanteDescanso > 0 && (
-        <div className="flex items-center gap-3 border-b border-line bg-accent-soft px-4 py-2.5">
-          <span className="text-xs font-semibold uppercase tracking-wider text-muted">descanso</span>
-          <span className="text-2xl font-extrabold tabular-nums text-accent">{mmss(restanteDescanso * 1000)}</span>
-          <div className="ml-auto flex gap-2">
-            <button
-              onClick={() => setDescansoFim((f) => (f ?? Date.now()) + 15000)}
-              className="rounded-lg border border-line px-2.5 py-1 text-xs font-bold"
-            >
-              +15s
-            </button>
-            <button
-              onClick={() => setDescansoFim(null)}
-              className="rounded-lg bg-accent px-2.5 py-1 text-xs font-bold text-bg"
-            >
-              pular
-            </button>
-          </div>
-        </div>
-      )}
-
       <div className="flex-1 space-y-4 overflow-y-auto p-4 pb-28">
         {exercicios.map((ex, i) => {
           const recorde = recordes[ex.nome] ?? 0;
@@ -282,14 +308,33 @@ export function LogTreino({
           return (
             <div key={i} className="glass rounded-2xl p-4">
               <div className="flex items-center gap-3">
-                <ExercicioImagem nome={ex.nome} size={56} />
+                <button
+                  type="button"
+                  onClick={() => setExercicioDetalhado(ex.nome)}
+                  className="flex-shrink-0 text-left active:scale-95 transition-transform"
+                >
+                  <ExercicioImagem nome={ex.nome} size={56} />
+                </button>
                 <div className="min-w-0 flex-1">
-                  <p className="text-base font-bold leading-tight">{ex.nome}</p>
+                  <button
+                    type="button"
+                    onClick={() => setExercicioDetalhado(ex.nome)}
+                    className="text-left font-bold text-base leading-tight hover:text-accent transition-colors outline-none"
+                  >
+                    {ex.nome}
+                  </button>
                   <p className="text-xs text-muted">
                     {grupoDoExercicio(ex.nome)}
                     {recorde > 0 && ` · recorde ${recorde}kg`}
                   </p>
                 </div>
+                <button
+                  onClick={() => setSeletor({ modo: "sub", index: i })}
+                  aria-label="Substituir exercício"
+                  className="px-1 text-base text-muted active:text-accent"
+                >
+                  ⇄
+                </button>
                 <button onClick={() => removerExercicio(i)} className="px-1 text-lg text-muted">✕</button>
               </div>
 
@@ -347,25 +392,103 @@ export function LogTreino({
           );
         })}
 
-        <div className="glass rounded-2xl p-3">
-          <input
-            list={datalistId}
-            value={novoEx}
-            onChange={(e) => setNovoEx(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && addExercicio(novoEx)}
-            placeholder="Adicionar exercício…"
-            className="w-full rounded-lg border border-line bg-bg/50 px-3 py-2 text-sm text-fg outline-none focus:border-accent"
-          />
-          <datalist id={datalistId}>
-            {catalogo.map((c) => (
-              <option key={c} value={c} />
-            ))}
-          </datalist>
-          <button onClick={() => addExercicio(novoEx)} className="mt-2 w-full rounded-lg bg-accent py-2 text-sm font-bold text-bg">
-            + exercício
-          </button>
-        </div>
+        <button
+          onClick={() => setSeletor({ modo: "add" })}
+          className="w-full rounded-2xl border border-dashed border-line py-3.5 text-sm font-semibold text-accent active:scale-[0.99]"
+        >
+          + Adicionar exercício
+        </button>
       </div>
+
+      {/* Barra de descanso — rodapé sempre visível */}
+      <div className="border-t border-line bg-card px-4 py-2.5 pb-[max(0.6rem,env(safe-area-inset-bottom))]">
+        {restanteDescanso > 0 ? (
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted">descanso</span>
+            <span className="text-2xl font-extrabold tabular-nums text-accent">{mmss(restanteDescanso * 1000)}</span>
+            <div className="ml-auto flex gap-2">
+              <button
+                onClick={() => setDescansoFim((f) => Math.max(Date.now(), (f ?? Date.now()) - 15000))}
+                className="rounded-lg border border-line px-2.5 py-1 text-xs font-bold"
+              >
+                −15s
+              </button>
+              <button
+                onClick={() => setDescansoFim((f) => (f ?? Date.now()) + 15000)}
+                className="rounded-lg border border-line px-2.5 py-1 text-xs font-bold"
+              >
+                +15s
+              </button>
+              <button
+                onClick={() => setDescansoFim(null)}
+                className="rounded-lg bg-accent px-2.5 py-1 text-xs font-bold text-bg"
+              >
+                pular
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted">descanso entre séries</span>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setDescansoAlvo((v) => Math.max(15, v - 15))}
+                className="flex h-7 w-7 items-center justify-center rounded-lg border border-line text-base font-bold"
+              >
+                −
+              </button>
+              <span className="w-12 text-center text-base font-extrabold tabular-nums">{mmss(descansoAlvo * 1000)}</span>
+              <button
+                onClick={() => setDescansoAlvo((v) => Math.min(600, v + 15))}
+                className="flex h-7 w-7 items-center justify-center rounded-lg border border-line text-base font-bold"
+              >
+                +
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+      {exercicioDetalhado && (
+        <ExercicioDetalhesModal
+          nome={exercicioDetalhado}
+          treinos={treinos}
+          onFechar={() => setExercicioDetalhado(null)}
+        />
+      )}
+
+      {seletor && (
+        <SeletorExercicio
+          catalogo={catalogo}
+          titulo={seletor.modo === "add" ? "Adicionar exercício" : "Substituir exercício"}
+          onEscolher={onEscolherExercicio}
+          onFechar={() => setSeletor(null)}
+        />
+      )}
+
+      {confirmarCancelar && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/60 p-6">
+          <div className="glass w-full max-w-sm rounded-3xl p-5">
+            <h3 className="text-lg font-bold">Descartar treino?</h3>
+            <p className="mt-1 text-sm text-muted">
+              Você perde o que registrou nesta sessão. Para continuar depois, use “Minimizar”.
+            </p>
+            <div className="mt-5 flex gap-3">
+              <button
+                onClick={() => setConfirmarCancelar(false)}
+                className="flex-1 rounded-xl border border-line py-3 text-sm font-semibold text-muted"
+              >
+                Voltar
+              </button>
+              <button
+                onClick={cancelarTreino}
+                className="flex-1 rounded-xl bg-rose-500 py-3 text-sm font-bold text-white"
+              >
+                Descartar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

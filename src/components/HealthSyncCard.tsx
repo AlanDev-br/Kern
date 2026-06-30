@@ -8,6 +8,7 @@ import {
   pedirPermissoesSaude,
   lerSaudeHoje,
   todasPermissoes,
+  sincronizarCardioRecente,
   type StatusSaude,
   type ResumoSaude,
   type OrigemAcordar,
@@ -62,6 +63,7 @@ export function HealthSyncCard() {
       if (st === "ok") {
         const r = await lerSaudeHoje();
         setResumo(r);
+        await sincronizarCardioRecente();
         if (r.acordouEm || r.acordarEstimado) await marcarConcluida("ineg-acordar");
         if (r.treinoSessoes > 0) await marcarConcluida("ineg-treino");
       }
