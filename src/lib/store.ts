@@ -97,6 +97,8 @@ interface AppState {
   editarTarefa: (id: string, patch: Partial<Omit<TarefaReg, "id" | "ordem">>) => Promise<void>;
   removerTarefa: (id: string) => Promise<void>;
   reordenarTarefas: (idsEmOrdem: string[]) => Promise<void>;
+  xpMeditacao: number;
+  completarMeditacao: (minutos: number, tipo: "meditacao" | "foco") => Promise<void>;
 }
 
 // Campos que o usuário fornece ao capturar um trecho próprio.
@@ -182,9 +184,10 @@ async function recomputarBiblioteca(
   conquistasIds: string[],
   temasAntesIds: string[],
   xpForcaAtual: number,
+  xpMeditacaoAtual: number,
 ): Promise<{ ctx: ConquistaContexto; fila: Celebracao[]; conquistasIds: string[]; temasDisp: ThemeDef[] }> {
   const dias = await getTodosDias();
-  const ctx = construirContexto(dias, cartoes, xpForcaAtual);
+  const ctx = construirContexto(dias, cartoes, xpForcaAtual, xpMeditacaoAtual);
   const desb = await detectarDesbloqueios(ctx, conquistasIds, temasAntesIds);
   return { ctx, fila: desb.fila, conquistasIds: desb.conquistasIds, temasDisp: desb.temasDisp };
 }
@@ -237,6 +240,7 @@ async function aplicarConcluidas(
   cartoes: CartaoLeitura[],
   xpForcaAtual: number,
   tarefas: TarefaReg[],
+  xpMeditacaoAtual: number,
 ): Promise<Resultado> {
   const fechouAntes = diaAntes.fechouInegociaveis;
   const { xp, fechouInegociaveis } = calcularXpDia(concluidas, tarefas);
@@ -244,7 +248,7 @@ async function aplicarConcluidas(
   await salvarDia(novoDia);
 
   const dias = await getTodosDias();
-  const ctx = construirContexto(dias, cartoes, xpForcaAtual);
+  const ctx = construirContexto(dias, cartoes, xpForcaAtual, xpMeditacaoAtual);
 
   const fila: Celebracao[] = [];
 
@@ -281,6 +285,7 @@ export const useApp = create<AppState>((set, get) => ({
   cartoes: [],
   tarefas: [],
   xpForca: 0,
+  xpMeditacao: 0,
   fila: [],
 
   carregar: async () => {
@@ -295,7 +300,9 @@ export const useApp = create<AppState>((set, get) => ({
     const tarefas = await listarTarefas();
     const treinos = await db.treinos.toArray();
     const xpForca = calcularXpForca(treinos, config.perfil ?? null);
-    const ctx = construirContexto(dias, cartoes, xpForca);
+    const meditacoes = await db.meditacoes.toArray();
+    const xpMeditacao = meditacoes.reduce((sum, m) => sum + (m.xp ?? 0), 0);
+    const ctx = construirContexto(dias, cartoes, xpForca, xpMeditacao);
     const conquistasIds = (await db.conquistas.toArray()).map((c) => c.id);
     aplicarTema(config.temaAtivo);
     set({
@@ -306,6 +313,7 @@ export const useApp = create<AppState>((set, get) => ({
       cartoes,
       tarefas,
       xpForca,
+      xpMeditacao,
       ctx,
       conquistasIds,
       temasDisp: temasDesbloqueados(ctx.xpTotal),
@@ -328,13 +336,13 @@ export const useApp = create<AppState>((set, get) => ({
 
   recarregarDias: async () => {
     const dias = await getTodosDias();
-    const { cartoes, xpForca } = get();
-    const ctx = construirContexto(dias, cartoes, xpForca);
+    const { cartoes, xpForca, xpMeditacao } = get();
+    const ctx = construirContexto(dias, cartoes, xpForca, xpMeditacao);
     set({ dias, ctx, temasDisp: temasDesbloqueados(ctx.xpTotal) });
   },
 
   toggleTarefa: async (id: string) => {
-    const { diaHoje, conquistasIds, temasDisp, cartoes, xpForca, tarefas } = get();
+    const { diaHoje, conquistasIds, temasDisp, cartoes, xpForca, xpMeditacao, tarefas } = get();
     const concluidas = diaHoje.concluidas.includes(id)
       ? diaHoje.concluidas.filter((x) => x !== id)
       : [...diaHoje.concluidas, id];
@@ -346,6 +354,7 @@ export const useApp = create<AppState>((set, get) => ({
       cartoes,
       xpForca,
       tarefas,
+      xpMeditacao,
     );
     set({
       diaHoje: r.novoDia,
@@ -359,7 +368,7 @@ export const useApp = create<AppState>((set, get) => ({
 
   // marca como concluída sem desmarcar (idempotente) — usado pela auto-sync de saúde
   marcarConcluida: async (id: string) => {
-    const { diaHoje, conquistasIds, temasDisp, cartoes, xpForca, tarefas } = get();
+    const { diaHoje, conquistasIds, temasDisp, cartoes, xpForca, xpMeditacao, tarefas } = get();
     if (diaHoje.concluidas.includes(id)) return;
     const concluidas = [...diaHoje.concluidas, id];
     const r = await aplicarConcluidas(
@@ -370,6 +379,7 @@ export const useApp = create<AppState>((set, get) => ({
       cartoes,
       xpForca,
       tarefas,
+      xpMeditacao,
     );
     set({
       diaHoje: r.novoDia,
@@ -383,7 +393,7 @@ export const useApp = create<AppState>((set, get) => ({
 
   // define manualmente o horário de acordar e marca o inegociável correspondente
   setAcordarManual: async (hhmm: string) => {
-    const { diaHoje, conquistasIds, temasDisp, cartoes, xpForca, tarefas } = get();
+    const { diaHoje, conquistasIds, temasDisp, cartoes, xpForca, xpMeditacao, tarefas } = get();
     const base = { ...diaHoje, acordarManual: hhmm };
     const concluidas = base.concluidas.includes("ineg-acordar")
       ? base.concluidas
@@ -396,6 +406,7 @@ export const useApp = create<AppState>((set, get) => ({
       cartoes,
       xpForca,
       tarefas,
+      xpMeditacao,
     );
     set({
       diaHoje: r.novoDia,
@@ -428,13 +439,13 @@ export const useApp = create<AppState>((set, get) => ({
 
   // Marca a 1ª leitura de um conceito: dá XP e o coloca no ciclo de revisão.
   lerCartao: async (id: string) => {
-    const { cartoes, conquistasIds, temasDisp, xpForca } = get();
+    const { cartoes, conquistasIds, temasDisp, xpForca, xpMeditacao } = get();
     const alvo = cartoes.find((c) => c.id === id);
     if (!alvo || alvo.lido) return;
-    const atualizado = marcarLido(alvo);
-    await db.leituras.put(atualizado);
-    const novos = cartoes.map((c) => (c.id === id ? atualizado : c));
-    const r = await recomputarBiblioteca(novos, conquistasIds, temasDisp.map((t) => t.id), xpForca);
+    const updated = marcarLido(alvo);
+    await db.leituras.put(updated);
+    const novos = cartoes.map((c) => (c.id === id ? updated : c));
+    const r = await recomputarBiblioteca(novos, conquistasIds, temasDisp.map((t) => t.id), xpForca, xpMeditacao);
     set({
       cartoes: novos,
       ctx: r.ctx,
@@ -445,14 +456,14 @@ export const useApp = create<AppState>((set, get) => ({
   },
 
   // Aplica uma nota de revisão (difícil/ok/fácil) e reagenda o cartão.
-  revisarCartao: async (id: string, nota: NotaRevisao) => {
-    const { cartoes, conquistasIds, temasDisp, xpForca } = get();
+  revisarCartao: async (id: string, status: NotaRevisao) => {
+    const { cartoes, conquistasIds, temasDisp, xpForca, xpMeditacao } = get();
     const alvo = cartoes.find((c) => c.id === id);
     if (!alvo) return;
-    const atualizado = agendar(alvo, nota);
-    await db.leituras.put(atualizado);
-    const novos = cartoes.map((c) => (c.id === id ? atualizado : c));
-    const r = await recomputarBiblioteca(novos, conquistasIds, temasDisp.map((t) => t.id), xpForca);
+    const updated = agendar(alvo, status);
+    await db.leituras.put(updated);
+    const novos = cartoes.map((c) => (c.id === id ? updated : c));
+    const r = await recomputarBiblioteca(novos, conquistasIds, temasDisp.map((t) => t.id), xpForca, xpMeditacao);
     set({
       cartoes: novos,
       ctx: r.ctx,
@@ -464,7 +475,7 @@ export const useApp = create<AppState>((set, get) => ({
 
   // Captura um trecho próprio do usuário; já entra como lido e agendado.
   adicionarCartao: async (dados: NovoCartao) => {
-    const { cartoes, conquistasIds, temasDisp, xpForca } = get();
+    const { cartoes, conquistasIds, temasDisp, xpForca, xpMeditacao } = get();
     const hoje = hojeChave();
     const novo: CartaoLeitura = {
       id: crypto.randomUUID(),
@@ -484,7 +495,7 @@ export const useApp = create<AppState>((set, get) => ({
     };
     await db.leituras.put(novo);
     const novos = [...cartoes, novo];
-    const r = await recomputarBiblioteca(novos, conquistasIds, temasDisp.map((t) => t.id), xpForca);
+    const r = await recomputarBiblioteca(novos, conquistasIds, temasDisp.map((t) => t.id), xpForca, xpMeditacao);
     set({
       cartoes: novos,
       ctx: r.ctx,
@@ -496,10 +507,10 @@ export const useApp = create<AppState>((set, get) => ({
 
   // Remove um cartão (apenas trechos próprios são removíveis pela UI).
   removerCartao: async (id: string) => {
-    const { cartoes, conquistasIds, temasDisp, xpForca } = get();
+    const { cartoes, conquistasIds, temasDisp, xpForca, xpMeditacao } = get();
     await db.leituras.delete(id);
     const novos = cartoes.filter((c) => c.id !== id);
-    const r = await recomputarBiblioteca(novos, conquistasIds, temasDisp.map((t) => t.id), xpForca);
+    const r = await recomputarBiblioteca(novos, conquistasIds, temasDisp.map((t) => t.id), xpForca, xpMeditacao);
     set({
       cartoes: novos,
       ctx: r.ctx,
@@ -511,11 +522,11 @@ export const useApp = create<AppState>((set, get) => ({
   // Recalcula o XP de força a partir do histórico de treino (ex.: após concluir
   // um treino com novo recorde) e reflete no nível/temas.
   recarregarForca: async () => {
-    const { cartoes, config } = get();
+    const { cartoes, config, xpMeditacao } = get();
     const treinos = await db.treinos.toArray();
     const xpForca = calcularXpForca(treinos, config?.perfil ?? null);
     const dias = await getTodosDias();
-    const ctx = construirContexto(dias, cartoes, xpForca);
+    const ctx = construirContexto(dias, cartoes, xpForca, xpMeditacao);
     const medalhas = detectarRankUps(treinos, config?.perfil);
     set({
       xpForca,
@@ -528,11 +539,11 @@ export const useApp = create<AppState>((set, get) => ({
   // Salva o perfil físico e recalcula a classificação/XP de força.
   atualizarPerfil: async (perfil: PerfilFisico) => {
     const config = await persistConfig({ perfil });
-    const { cartoes } = get();
+    const { cartoes, xpMeditacao } = get();
     const treinos = await db.treinos.toArray();
     const xpForca = calcularXpForca(treinos, perfil);
     const dias = await getTodosDias();
-    const ctx = construirContexto(dias, cartoes, xpForca);
+    const ctx = construirContexto(dias, cartoes, xpForca, xpMeditacao);
     const medalhas = detectarRankUps(treinos, perfil);
     set({
       config,
@@ -549,6 +560,31 @@ export const useApp = create<AppState>((set, get) => ({
   criarTarefa: async (dados: NovaTarefa) => {
     await persistCriarTarefa(dados);
     await recarregarTarefas(get, set);
+  },
+  completarMeditacao: async (minutos: number, tipo: "meditacao" | "foco") => {
+    const xpGanho = minutos;
+    const hoje = hojeChave();
+    const novoRegistro = {
+      tipo,
+      minutos,
+      data: hoje,
+      xp: xpGanho,
+      criadoEm: new Date().toISOString(),
+    };
+    await db.meditacoes.put(novoRegistro);
+
+    const { xpMeditacao, dias, cartoes, xpForca, conquistasIds, temasDisp } = get();
+    const novoXpMeditacao = xpMeditacao + xpGanho;
+    const ctx = construirContexto(dias, cartoes, xpForca, novoXpMeditacao);
+    const desb = await detectarDesbloqueios(ctx, conquistasIds, temasDisp.map((t) => t.id));
+
+    set({
+      xpMeditacao: novoXpMeditacao,
+      ctx,
+      conquistasIds: desb.conquistasIds,
+      temasDisp: desb.temasDisp,
+      fila: [...get().fila, ...desb.fila],
+    });
   },
 
   editarTarefa: async (id, patch) => {
@@ -577,7 +613,7 @@ async function recarregarTarefas(
   get: () => AppState,
   set: (patch: Partial<AppState>) => void,
 ): Promise<void> {
-  const { diaHoje, conquistasIds, temasDisp, cartoes, xpForca, config } = get();
+  const { diaHoje, conquistasIds, temasDisp, cartoes, xpForca, config, xpMeditacao } = get();
   const tarefas = await listarTarefas();
   const r = await aplicarConcluidas(
     diaHoje,
@@ -587,6 +623,7 @@ async function recarregarTarefas(
     cartoes,
     xpForca,
     tarefas,
+    xpMeditacao,
   );
   set({
     tarefas,

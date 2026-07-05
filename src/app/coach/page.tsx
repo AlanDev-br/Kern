@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useApp } from "@/lib/store";
 import { db } from "@/lib/db";
@@ -44,6 +44,24 @@ export default function CoachPage() {
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState("");
   const fimRef = useRef<HTMLDivElement>(null);
+
+  // Carrega histórico de conversas salvo no IndexedDB
+  useEffect(() => {
+    async function carregarHistorico() {
+      const salvas = await db.conversasCoach.orderBy("data").toArray();
+      if (salvas.length > 0) {
+        setMensagens(salvas.map((m) => ({ role: m.role, content: m.content })));
+      }
+    }
+    carregarHistorico();
+  }, []);
+
+  async function limparHistorico() {
+    if (confirm("Deseja realmente limpar todo o histórico de conversas com o Coach?")) {
+      await db.conversasCoach.clear();
+      setMensagens([]);
+    }
+  }
 
   // Setup. A chave do .env.local (CHAVE_AMBIENTE) ativa o coach automaticamente;
   // a da UI (config.iaApiKey) tem prioridade se o usuário colar uma.
@@ -159,9 +177,25 @@ export default function CoachPage() {
     setMensagens(novo);
     setInput("");
     setCarregando(true);
+
+    // Persiste mensagem do Alan
+    await db.conversasCoach.put({
+      role: "user",
+      content: msg,
+      data: new Date().toISOString(),
+    });
+
     try {
       const resposta = await chamarCoach(chaveEfetiva, modeloEfetivo, contexto, novo);
       setMensagens((m) => [...m, { role: "assistant", content: resposta }]);
+
+      // Persiste resposta do Coach
+      await db.conversasCoach.put({
+        role: "assistant",
+        content: resposta,
+        data: new Date().toISOString(),
+      });
+
       setTimeout(() => fimRef.current?.scrollIntoView({ behavior: "smooth" }), 50);
     } catch (e) {
       setErro(e instanceof Error ? e.message : "Falha ao falar com o coach.");
@@ -230,13 +264,23 @@ export default function CoachPage() {
           <h1 className="text-2xl font-bold tracking-tight">Coach IA</h1>
           <p className="text-sm text-muted">Mentor de corpo, mente e hábitos.</p>
         </div>
-        {config?.iaApiKey ? (
-          <button onClick={() => atualizarConfig({ iaApiKey: undefined })} className="text-xs text-muted underline">
-            trocar chave
-          </button>
-        ) : (
-          <span className="text-[10px] uppercase tracking-wider text-muted">via .env</span>
-        )}
+        <div className="flex items-center gap-3">
+          {mensagens.length > 0 && (
+            <button
+              onClick={limparHistorico}
+              className="text-xs text-rose-400 font-semibold active:scale-95 transition-transform hover:text-rose-300"
+            >
+              limpar conversa
+            </button>
+          )}
+          {config?.iaApiKey ? (
+            <button onClick={() => atualizarConfig({ iaApiKey: undefined })} className="text-xs text-muted underline">
+              trocar chave
+            </button>
+          ) : (
+            <span className="text-[10px] uppercase tracking-wider text-muted">via .env</span>
+          )}
+        </div>
       </header>
 
       <div className="mt-4 flex-1 space-y-3">

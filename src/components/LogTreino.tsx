@@ -14,6 +14,7 @@ interface SetLocal {
   reps: number;
   tipo?: string;
   feito?: boolean;
+  rir?: number;
 }
 interface ExLocal {
   nome: string;
@@ -183,7 +184,7 @@ export function LogTreino({
       }),
     );
   }
-  function setVal(i: number, s: number, campo: "peso" | "reps", v: number) {
+  function setVal(i: number, s: number, campo: "peso" | "reps" | "rir", v: any) {
     setExercicios((xs) =>
       xs.map((ex, j) =>
         j === i ? { ...ex, sets: ex.sets.map((st, k) => (k === s ? { ...st, [campo]: v } : st)) } : ex,
@@ -290,7 +291,7 @@ export function LogTreino({
         // grava séries marcadas como feitas ou que tenham algum valor digitado
         sets: ex.sets
           .filter((s) => s.feito || s.reps > 0 || s.peso > 0)
-          .map((s) => ({ peso: s.peso, reps: s.reps, tipo: s.tipo })),
+          .map((s) => ({ peso: s.peso, reps: s.reps, tipo: s.tipo, rir: s.rir })),
         observacoes: ex.observacoes?.trim() || undefined,
       }))
       .filter((ex) => ex.sets.length > 0);
@@ -443,37 +444,70 @@ export function LogTreino({
                   <span className="w-7">set</span>
                   <span className="flex-1">kg</span>
                   <span className="flex-1">reps</span>
+                  <span className="w-12 text-center">rir</span>
                   <span className="w-8 text-center">ok</span>
                 </div>
                 {ex.sets.map((s, k) => {
                   const pr = s.feito && s.reps > 0 && s.peso > recorde && s.peso > 0;
                   const prev = prevSets?.[k];
+                  const meta = prev ? (() => {
+                    if (prev.peso <= 0 || prev.reps <= 0) return null;
+                    if (prev.reps < 10) return { peso: prev.peso, reps: prev.reps + 1 };
+                    const delta = prev.peso >= 50 ? 2 : 1;
+                    return { peso: prev.peso + delta, reps: prev.reps };
+                  })() : null;
+
                   return (
-                    <div key={k} className={`flex items-center gap-2 rounded-lg ${s.feito ? "bg-accent-soft" : ""}`}>
-                      <span className="w-7 text-center text-base font-semibold text-fg">{k + 1}</span>
-                      <input
-                        type="number" inputMode="decimal" value={s.peso || ""}
-                        placeholder={prev ? String(prev.peso) : "kg"}
-                        onChange={(e) => setVal(i, k, "peso", parseFloat(e.target.value) || 0)}
-                        className="w-full flex-1 rounded-lg border border-line bg-bg/50 px-2 py-3.5 text-center text-lg font-semibold text-fg outline-none placeholder:font-normal placeholder:text-muted/60 focus:border-accent"
-                      />
-                      <input
-                        type="number" inputMode="numeric" value={s.reps || ""}
-                        placeholder={prev ? String(prev.reps) : "reps"}
-                        onChange={(e) => setVal(i, k, "reps", parseInt(e.target.value, 10) || 0)}
-                        className="w-full flex-1 rounded-lg border border-line bg-bg/50 px-2 py-3.5 text-center text-lg font-semibold text-fg outline-none placeholder:font-normal placeholder:text-muted/60 focus:border-accent"
-                      />
-                      <button
-                        onClick={() => toggleFeito(i, k)}
-                        aria-label={s.feito ? "Desmarcar série" : "Marcar série"}
-                        className={`flex h-12 w-12 items-center justify-center rounded-lg border-2 text-xl transition-colors ${
-                          s.feito ? "border-accent bg-accent text-bg" : "border-muted/50 text-muted/40"
-                        }`}
-                      >
-                        ✓
-                      </button>
-                      <span className="w-4 text-xs">{pr ? "🏆" : ""}</span>
-                      <button onClick={() => removerSet(i, k)} className="w-5 text-lg text-muted">−</button>
+                    <div key={k} className="space-y-1">
+                      <div className={`flex items-center gap-2 rounded-lg p-0.5 ${s.feito ? "bg-accent-soft" : ""}`}>
+                        <span className="w-7 text-center text-base font-semibold text-fg">{k + 1}</span>
+                        <input
+                          type="number" inputMode="decimal" value={s.peso || ""}
+                          placeholder={prev ? String(prev.peso) : "kg"}
+                          onChange={(e) => setVal(i, k, "peso", parseFloat(e.target.value) || 0)}
+                          className="w-full flex-1 rounded-lg border border-line bg-bg/50 px-2 py-2.5 text-center text-base font-bold text-fg outline-none placeholder:font-normal placeholder:text-muted/60 focus:border-accent"
+                        />
+                        <input
+                          type="number" inputMode="numeric" value={s.reps || ""}
+                          placeholder={prev ? String(prev.reps) : "reps"}
+                          onChange={(e) => setVal(i, k, "reps", parseInt(e.target.value, 10) || 0)}
+                          className="w-full flex-1 rounded-lg border border-line bg-bg/50 px-2 py-2.5 text-center text-base font-bold text-fg outline-none placeholder:font-normal placeholder:text-muted/60 focus:border-accent"
+                        />
+
+                        {/* RIR dropdown */}
+                        <div className="flex shrink-0 items-center justify-center w-12">
+                          <select
+                            value={s.rir ?? ""}
+                            onChange={(e) => setVal(i, k, "rir", e.target.value === "" ? undefined : parseInt(e.target.value, 10))}
+                            className="rounded bg-bg/60 border border-line text-xs font-bold text-fg/80 px-1 py-2 outline-none focus:border-accent"
+                          >
+                            <option value="">-</option>
+                            <option value="0">0</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4+</option>
+                          </select>
+                        </div>
+
+                        <button
+                          onClick={() => toggleFeito(i, k)}
+                          aria-label={s.feito ? "Desmarcar série" : "Marcar série"}
+                          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border-2 text-base transition-colors ${
+                            s.feito ? "border-accent bg-accent text-bg" : "border-muted/50 text-muted/40"
+                          }`}
+                        >
+                          ✓
+                        </button>
+                        <span className="w-4 text-xs">{pr ? "🏆" : ""}</span>
+                        <button onClick={() => removerSet(i, k)} className="w-5 text-lg text-muted">−</button>
+                      </div>
+
+                      {meta && !s.feito && (
+                        <div className="pl-9 text-[10px] font-bold text-accent/80 flex items-center gap-1 leading-none pb-1">
+                          <span>🎯 Sugestão: {meta.peso}kg × {meta.reps} reps</span>
+                        </div>
+                      )}
                     </div>
                   );
                 })}

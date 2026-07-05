@@ -18,6 +18,7 @@ import {
   salvarTeste,
 } from "@/lib/mente";
 import { TesteReacao, TesteDigitos, TesteStroop } from "@/components/MenteTestes";
+import { MeditacaoTimer } from "@/components/MeditacaoTimer";
 
 type Modal = null | "quiz" | "reacao" | "digitos" | "stroop";
 
@@ -58,6 +59,9 @@ export default function MentePage() {
           <p className="text-sm text-muted">Inteligência em vários âmbitos — não só exatas.</p>
         </div>
       </header>
+
+      {/* Meditação & Foco Timer */}
+      <MeditacaoTimer />
 
       {/* Radar das múltiplas inteligências */}
       <section className="glass rounded-3xl p-4">

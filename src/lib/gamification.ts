@@ -87,13 +87,14 @@ export function construirContexto(
   dias: DiaRegistro[],
   cartoes: CartaoLeitura[] = [],
   xpForca = 0,
+  xpMeditacoes = 0,
 ): ConquistaContexto {
   const { atual, melhor } = calcularStreak(dias);
   const { conceitosLidos, revisoesTotais } = contagensBiblioteca(cartoes);
   return {
     // Biblioteca e recordes de força são fontes de XP próprias, somadas ao XP
     // do checklist diário.
-    xpTotal: xpTotal(dias) + xpBiblioteca(cartoes) + xpForca,
+    xpTotal: xpTotal(dias) + xpBiblioteca(cartoes) + xpForca + xpMeditacoes,
     streakAtual: atual,
     melhorStreak: melhor,
     diasComCheck: dias.filter((d) => d.concluidas.length > 0).length,

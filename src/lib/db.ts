@@ -22,10 +22,12 @@ export interface SetReg {
   peso: number;
   reps: number;
   tipo?: string; // normal, warmup, falha...
+  rir?: number;  // repetições em reserva (0..4, etc)
 }
 export interface ExercicioReg {
   nome: string;
   sets: SetReg[];
+  observacoes?: string;
 }
 export interface Treino {
   id: string; // inicio ISO (único por sessão)
@@ -40,6 +42,23 @@ export interface SetRascunho {
   reps: number;
   tipo?: string;
   feito?: boolean;
+  rir?: number;
+}
+
+export interface MensagemCoach {
+  id?: number;
+  role: "user" | "assistant";
+  content: string;
+  data: string; // data/hora de envio (ISO)
+}
+
+export interface MeditacaoSession {
+  id?: number;
+  tipo: "meditacao" | "foco";
+  minutos: number;
+  data: string; // formato "YYYY-MM-DD"
+  xp: number;
+  criadoEm: string; // ISO
 }
 // Treino em andamento, salvo continuamente para sobreviver a um reinício do app
 // (Android pode encerrar o app em segundo plano por pressão de memória). Linha
@@ -48,13 +67,20 @@ export interface TreinoRascunho {
   id: "atual";
   titulo: string;
   inicio: string; // ISO — preserva o cronômetro ao retomar
-  exercicios: { nome: string; sets: SetRascunho[] }[];
+  exercicios: { nome: string; sets: SetRascunho[]; observacoes?: string }[];
   atualizadoEm: string; // ISO
 }
 export interface Rotina {
   id: string;
   nome: string;
   exercicios: { nome: string; series: number }[];
+}
+
+// Configuração individualizada por exercício (descanso padrão, observações gerais).
+export interface ExercicioConfig {
+  nome: string; // chave primária = nome do exercício
+  descansoAlvo?: number; // em segundos
+  observacaoGeral?: string; // notas permanentes
 }
 
 // Imagem (URL) associada a um exercício — sugerida automaticamente ou definida
@@ -139,6 +165,9 @@ export class Reconstrucao90DB extends Dexie {
   tarefas!: Table<TarefaReg, string>;
   avaliacoesMente!: Table<AvaliacaoMente, number>;
   testesCognitivos!: Table<ResultadoCognitivo, number>;
+  exercicioConfigs!: Table<ExercicioConfig, string>;
+  conversasCoach!: Table<MensagemCoach, number>;
+  meditacoes!: Table<MeditacaoSession, number>;
 
   constructor() {
     super("reconstrucao90");
@@ -248,6 +277,44 @@ export class Reconstrucao90DB extends Dexie {
       tarefas: "id, ordem, category",
       avaliacoesMente: "++id, data",
       testesCognitivos: "++id, data, tipo",
+    });
+    this.version(10).stores({
+      dias: "data",
+      revisoes: "semana",
+      dividas: "id",
+      conquistas: "id",
+      config: "id",
+      avatar: "id",
+      treinos: "id, inicio",
+      rotinas: "id",
+      exImagens: "nome",
+      leituras: "id, proximaRevisao, origem",
+      rascunhoTreino: "id",
+      cardios: "id, data, origem",
+      tarefas: "id, ordem, category",
+      avaliacoesMente: "++id, data",
+      testesCognitivos: "++id, data, tipo",
+      exercicioConfigs: "nome",
+    });
+    this.version(11).stores({
+      dias: "data",
+      revisoes: "semana",
+      dividas: "id",
+      conquistas: "id",
+      config: "id",
+      avatar: "id",
+      treinos: "id, inicio",
+      rotinas: "id",
+      exImagens: "nome",
+      leituras: "id, proximaRevisao, origem",
+      rascunhoTreino: "id",
+      cardios: "id, data, origem",
+      tarefas: "id, ordem, category",
+      avaliacoesMente: "++id, data",
+      testesCognitivos: "++id, data, tipo",
+      exercicioConfigs: "nome",
+      conversasCoach: "++id, data",
+      meditacoes: "++id, data",
     });
   }
 }
