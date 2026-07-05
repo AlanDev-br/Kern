@@ -18,6 +18,7 @@ interface SetLocal {
 interface ExLocal {
   nome: string;
   sets: SetLocal[];
+  observacoes?: string;
 }
 
 // Descanso padrão entre séries (segundos). Ajustável na hora pelo cronômetro.
@@ -80,6 +81,7 @@ export function LogTreino({
   onFechar: () => void;
 }) {
   const treinos = useLiveQuery(() => db.treinos.toArray(), []) ?? [];
+  const exConfigs = useLiveQuery(() => db.exercicioConfigs.toArray(), []) ?? [];
   const [exercicioDetalhado, setExercicioDetalhado] = useState<string | null>(null);
   // Treino salvo → mostra o card de pós-treino (com snapshot dos recordes anteriores).
   const [concluido, setConcluido] = useState<{ treino: Treino; recordes: Record<string, number> } | null>(null);
@@ -87,16 +89,31 @@ export function LogTreino({
   const [seletor, setSeletor] = useState<{ modo: "add" | "sub"; index?: number } | null>(null);
   const [confirmarCancelar, setConfirmarCancelar] = useState(false);
 
+  // Mapeia configurações de exercícios salvos
+  const exConfigsMap = useMemo(() => {
+    const m: Record<string, { descansoAlvo?: number; observacaoGeral?: string }> = {};
+    for (const c of exConfigs) {
+      m[c.nome] = c;
+    }
+    return m;
+  }, [exConfigs]);
+
   // Ao retomar um rascunho, preserva o horário de início (cronômetro contínuo).
   const [inicio] = useState(() => (rascunho ? new Date(rascunho.inicio) : new Date()));
   const [agora, setAgora] = useState(() => Date.now());
   const [titulo, setTitulo] = useState(rascunho?.titulo ?? rotina?.nome ?? "Treino");
   const [exercicios, setExercicios] = useState<ExLocal[]>(() => {
-    if (rascunho) return rascunho.exercicios.map((e) => ({ nome: e.nome, sets: e.sets.map((s) => ({ ...s })) }));
+    if (rascunho)
+      return rascunho.exercicios.map((e) => ({
+        nome: e.nome,
+        sets: e.sets.map((s) => ({ ...s })),
+        observacoes: e.observacoes ?? "",
+      }));
     if (rotina)
       return rotina.exercicios.map((e) => ({
         nome: e.nome,
         sets: Array.from({ length: Math.max(1, e.series) }, () => ({ peso: 0, reps: 0, tipo: "normal" })),
+        observacoes: "",
       }));
     return [];
   });
@@ -155,7 +172,7 @@ export function LogTreino({
   function addExercicio(nome: string) {
     const n = nome.trim();
     if (!n) return;
-    setExercicios((xs) => [...xs, { nome: n, sets: [{ peso: 0, reps: 0, tipo: "normal" }] }]);
+    setExercicios((xs) => [...xs, { nome: n, sets: [{ peso: 0, reps: 0, tipo: "normal" }], observacoes: "" }]);
   }
   function addSet(i: number) {
     setExercicios((xs) =>
@@ -173,8 +190,33 @@ export function LogTreino({
       ),
     );
   }
+  function setObservacoesExercicio(i: number, val: string) {
+    setExercicios((xs) =>
+      xs.map((ex, j) => (j === i ? { ...ex, observacoes: val } : ex))
+    );
+  }
+  async function alterarDescansoExercicio(nome: string, delta: number) {
+    const atual = exConfigsMap[nome]?.descansoAlvo ?? DESCANSO_PADRAO;
+    const novo = Math.max(15, Math.min(600, atual + delta));
+    const configExistente = exConfigsMap[nome];
+    await db.exercicioConfigs.put({
+      nome,
+      descansoAlvo: novo,
+      observacaoGeral: configExistente?.observacaoGeral ?? "",
+    });
+  }
   function toggleFeito(i: number, s: number) {
     let marcou = false;
+    let nomeEx = "";
+    const ex = exercicios[i];
+    if (ex) {
+      nomeEx = ex.nome;
+      const st = ex.sets[s];
+      if (st && !st.feito) {
+        marcou = true;
+      }
+    }
+
     setExercicios((xs) =>
       xs.map((ex, j) => {
         if (j !== i) return ex;
@@ -185,7 +227,6 @@ export function LogTreino({
             if (k !== s) return st;
             if (st.feito) return { ...st, feito: false };
             // ao marcar, herda peso/reps da última sessão se o campo estiver vazio
-            marcou = true;
             const prev = ref?.[k] ?? ref?.[ref.length - 1];
             return {
               ...st,
@@ -198,7 +239,11 @@ export function LogTreino({
       }),
     );
     // inicia o descanso ao concluir uma série
-    if (marcou) setDescansoFim(Date.now() + descansoAlvo * 1000);
+    if (marcou) {
+      const tempo = exConfigsMap[nomeEx]?.descansoAlvo ?? DESCANSO_PADRAO;
+      setDescansoFim(Date.now() + tempo * 1000);
+      setDescansoAlvo(tempo);
+    }
   }
   function removerSet(i: number, s: number) {
     setExercicios((xs) => xs.map((ex, j) => (j === i ? { ...ex, sets: ex.sets.filter((_, k) => k !== s) } : ex)));
@@ -226,7 +271,7 @@ export function LogTreino({
   function substituirExercicio(i: number, nome: string) {
     setExercicios((xs) =>
       xs.map((ex, j) =>
-        j === i ? { nome, sets: ex.sets.map(() => ({ peso: 0, reps: 0, tipo: "normal" })) } : ex,
+        j === i ? { nome, sets: ex.sets.map(() => ({ peso: 0, reps: 0, tipo: "normal" })), observacoes: "" } : ex,
       ),
     );
   }
@@ -246,6 +291,7 @@ export function LogTreino({
         sets: ex.sets
           .filter((s) => s.feito || s.reps > 0 || s.peso > 0)
           .map((s) => ({ peso: s.peso, reps: s.reps, tipo: s.tipo })),
+        observacoes: ex.observacoes?.trim() || undefined,
       }))
       .filter((ex) => ex.sets.length > 0);
     if (limpos.length === 0) return minimizar();
@@ -261,6 +307,7 @@ export function LogTreino({
     await descartarRascunho();
     setConcluido({ treino, recordes: recordesAntes });
   }
+
 
   if (concluido) {
     return (
@@ -305,6 +352,19 @@ export function LogTreino({
         {exercicios.map((ex, i) => {
           const recorde = recordes[ex.nome] ?? 0;
           const prevSets = anteriores[ex.nome];
+          
+          // Encontra a última observação para sugerir como placeholder
+          const ultObs = (() => {
+            const ordenados = [...treinos].sort((a, b) => b.inicio.localeCompare(a.inicio));
+            for (const t of ordenados) {
+              const e = t.exercicios.find((exer) => exer.nome === ex.nome);
+              if (e && e.observacoes) return e.observacoes;
+            }
+            return "";
+          })();
+
+          const customRest = exConfigsMap[ex.nome]?.descansoAlvo ?? DESCANSO_PADRAO;
+
           return (
             <div key={i} className="glass rounded-2xl p-4">
               <div className="flex items-center gap-3">
@@ -313,7 +373,7 @@ export function LogTreino({
                   onClick={() => setExercicioDetalhado(ex.nome)}
                   className="flex-shrink-0 text-left active:scale-95 transition-transform"
                 >
-                  <ExercicioImagem nome={ex.nome} size={56} />
+                  <ExercicioImagem nome={ex.nome} size={56} interativo={false} />
                 </button>
                 <div className="min-w-0 flex-1">
                   <button
@@ -328,18 +388,51 @@ export function LogTreino({
                     {recorde > 0 && ` · recorde ${recorde}kg`}
                   </p>
                 </div>
+
+                {/* Controles inline de descanso por exercício */}
+                <div className="flex items-center gap-1 shrink-0 bg-bg/40 border border-line/50 rounded-lg p-0.5">
+                  <button
+                    type="button"
+                    onClick={() => alterarDescansoExercicio(ex.nome, -15)}
+                    className="flex h-5 w-5 items-center justify-center rounded text-xs font-black text-muted hover:text-accent active:bg-card/45"
+                  >
+                    −
+                  </button>
+                  <span className="w-10 text-center text-[10px] font-extrabold tabular-nums text-fg/80">
+                    {mmss(customRest * 1000)}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => alterarDescansoExercicio(ex.nome, 15)}
+                    className="flex h-5 w-5 items-center justify-center rounded text-xs font-black text-muted hover:text-accent active:bg-card/45"
+                  >
+                    +
+                  </button>
+                </div>
+
                 <button
                   onClick={() => setSeletor({ modo: "sub", index: i })}
                   aria-label="Substituir exercício"
-                  className="px-1 text-base text-muted active:text-accent"
+                  className="px-1 text-base text-muted active:text-accent ml-1"
                 >
                   ⇄
                 </button>
                 <button onClick={() => removerExercicio(i)} className="px-1 text-lg text-muted">✕</button>
               </div>
 
+              {/* Campo para Observações do Exercício na Sessão */}
+              <div className="mt-3">
+                <input
+                  type="text"
+                  placeholder={ultObs ? `Última: "${ultObs}"` : "Observação (ex: máquina regulada no 4)..."}
+                  value={ex.observacoes ?? ""}
+                  onChange={(e) => setObservacoesExercicio(i, e.target.value)}
+                  className="w-full rounded-xl border border-line bg-bg/25 px-3 py-2 text-xs text-fg outline-none placeholder:text-muted/50 focus:border-accent"
+                />
+              </div>
+
               {prevSets && prevSets.length > 0 && (
-                <p className="mt-2 text-xs text-fg/70">
+                <p className="mt-2 text-xs text-fg/70 pl-0.5">
                   <span className="text-muted">Última vez:</span>{" "}
                   {prevSets.map((s) => `${s.peso}×${s.reps}`).join(" · ")}
                 </p>
@@ -400,6 +493,7 @@ export function LogTreino({
         </button>
       </div>
 
+
       {/* Barra de descanso — rodapé sempre visível */}
       <div className="border-t border-line bg-card px-4 py-2.5 pb-[max(0.6rem,env(safe-area-inset-bottom))]">
         {restanteDescanso > 0 ? (
@@ -443,6 +537,12 @@ export function LogTreino({
                 className="flex h-7 w-7 items-center justify-center rounded-lg border border-line text-base font-bold"
               >
                 +
+              </button>
+              <button
+                onClick={() => setDescansoFim(Date.now() + descansoAlvo * 1000)}
+                className="rounded-lg bg-accent px-2.5 py-1 text-xs font-bold text-bg active:scale-95 transition-transform"
+              >
+                iniciar
               </button>
             </div>
           </div>

@@ -8,6 +8,7 @@ import { diaDoPlano } from "@/lib/dates";
 import { volumeSemanal, avaliarVolume } from "@/lib/musculacao";
 import { calcularAtributos } from "@/lib/atributos";
 import { scoreMente } from "@/lib/mente";
+import { nivelDoXp } from "@/lib/xp";
 import {
   chamarCoach,
   montarContexto,
@@ -88,6 +89,40 @@ export default function CoachPage() {
       ? `${p.sexo}, ${p.pesoCorporal}kg${p.altura ? `, ${p.altura}cm` : ""}${p.gorduraPct ? `, ${p.gorduraPct}% gordura` : ""}`
       : undefined;
 
+    const nivelInfo = nivelDoXp(ctx.xpTotal);
+
+    // Sumarizar os últimos treinos
+    const ultimosTreinos = [...treinos]
+      .sort((a, b) => b.inicio.localeCompare(a.inicio))
+      .slice(0, 5)
+      .map((t) => {
+        const dataStr = new Date(t.inicio).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+        const resumoExs = t.exercicios.map((e) => {
+          const seriesEfetivas = e.sets.filter((s) => s.tipo !== "warmup").length;
+          const maxPeso = Math.max(...e.sets.map((s) => s.peso), 0);
+          return `${e.nome} (${seriesEfetivas}s, máx ${maxPeso}kg)`;
+        }).join(", ");
+        return `  * ${dataStr} - ${t.titulo}: ${resumoExs}`;
+      })
+      .join("\n");
+
+    // Obter recordes pessoais
+    const recordesMap: Record<string, { peso: number; reps: number; data: string }> = {};
+    for (const t of treinos) {
+      const dataStr = new Date(t.inicio).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+      for (const ex of t.exercicios) {
+        for (const s of ex.sets) {
+          if (s.peso > (recordesMap[ex.nome]?.peso ?? 0)) {
+            recordesMap[ex.nome] = { peso: s.peso, reps: s.reps, data: dataStr };
+          }
+        }
+      }
+    }
+    const recordesFormatados = Object.entries(recordesMap)
+      .map(([nome, r]) => `  * ${nome}: ${r.peso}kg para ${r.reps} reps (em ${r.data})`)
+      .slice(0, 15)
+      .join("\n");
+
     const dados: ContextoCoach = {
       diaPlano: diaDoPlano(config.dataInicio),
       streakAtual: ctx.streakAtual,
@@ -101,6 +136,11 @@ export default function CoachPage() {
       revisoes: ctx.revisoesTotais,
       menteScore,
       perfil,
+      xpTotal: ctx.xpTotal,
+      nivel: nivelInfo.nivel,
+      nivelNome: nivelInfo.nome,
+      historicoTreinos: ultimosTreinos || "Nenhum treino registrado ainda.",
+      recordesPessoais: recordesFormatados || "Nenhum recorde registrado ainda.",
     };
     return montarContexto(dados);
   }, [config, ctx, xpForca, tarefas, diaHoje, treinos, cardios, avaliacoes, testes]);

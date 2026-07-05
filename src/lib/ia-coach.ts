@@ -88,6 +88,11 @@ export interface ContextoCoach {
   menteScore: number;
   sonoMedio?: string;
   perfil?: string; // ex.: "M, 70kg, 175cm, 18% gordura"
+  xpTotal: number;
+  nivel: number;
+  nivelNome: string;
+  historicoTreinos?: string;
+  recordesPessoais?: string;
 }
 
 export function montarContexto(c: ContextoCoach): string {
@@ -96,6 +101,7 @@ export function montarContexto(c: ContextoCoach): string {
     ? c.volumeMusculo.map((v) => `${v.grupo} ${v.series} séries (${v.status})`).join("; ")
     : "sem treinos de força na semana";
   return `DADOS ATUAIS DO ALAN (dia ${c.diaPlano} de 90):
+- Nível de Desenvolvimento: Nível ${c.nivel} (${c.nivelNome}) com ${c.xpTotal} XP total
 - Streak: ${c.streakAtual} dias (melhor ${c.melhorStreak}; ${c.diasFechados} dias fechados no total)
 - Inegociáveis de hoje: ${c.inegociaveisHoje}
 - Atributos (0–100): ${attrs}
@@ -103,7 +109,9 @@ export function montarContexto(c: ContextoCoach): string {
 - Cardio na semana: ${c.cardioMinSemana} min
 - Leitura: ${c.conceitosLidos} conceitos lidos, ${c.revisoes} revisões; Mente ${c.menteScore}/100
 ${c.sonoMedio ? `- Sono médio: ${c.sonoMedio}` : ""}
-${c.perfil ? `- Perfil físico: ${c.perfil}` : ""}`;
+${c.perfil ? `- Perfil físico: ${c.perfil}` : ""}
+${c.historicoTreinos ? `- Histórico Recente de Treinos:\n${c.historicoTreinos}` : ""}
+${c.recordesPessoais ? `- Recordes Pessoais (Cargas Máximas):\n${c.recordesPessoais}` : ""}`;
 }
 
 export interface Mensagem {

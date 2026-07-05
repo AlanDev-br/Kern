@@ -4,7 +4,15 @@ import { useEffect, useRef, useState } from "react";
 import { resolverImagem, buscarImagens, definirImagem, removerImagem } from "@/lib/exercise-images";
 import { grupoDoExercicio } from "@/lib/musculacao";
 
-export function ExercicioImagem({ nome, size = 64 }: { nome: string; size?: number }) {
+export function ExercicioImagem({
+  nome,
+  size = 64,
+  interativo = true,
+}: {
+  nome: string;
+  size?: number;
+  interativo?: boolean;
+}) {
   const [url, setUrl] = useState<string | null>(null);
   const [picking, setPicking] = useState(false);
   const [opcoes, setOpcoes] = useState<{ nome: string; url: string }[]>([]);
@@ -49,20 +57,37 @@ export function ExercicioImagem({ nome, size = 64 }: { nome: string; size?: numb
 
   return (
     <>
-      <button
-        onClick={abrir}
-        className="flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-line bg-white"
-        style={{ width: size, height: size }}
-      >
-        {url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={url} alt={nome} className="h-full w-full object-contain" />
-        ) : (
-          <span className="px-1 text-center text-[9px] leading-tight text-muted">
-            {grupoDoExercicio(nome)}
-          </span>
-        )}
-      </button>
+      {interativo ? (
+        <button
+          onClick={abrir}
+          type="button"
+          className="flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-line bg-white"
+          style={{ width: size, height: size }}
+        >
+          {url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={url} alt={nome} className="h-full w-full object-contain" />
+          ) : (
+            <span className="px-1 text-center text-[9px] leading-tight text-muted">
+              {grupoDoExercicio(nome)}
+            </span>
+          )}
+        </button>
+      ) : (
+        <div
+          className="flex shrink-0 items-center justify-center overflow-hidden rounded-xl border border-line bg-white"
+          style={{ width: size, height: size }}
+        >
+          {url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={url} alt={nome} className="h-full w-full object-contain" />
+          ) : (
+            <span className="px-1 text-center text-[9px] leading-tight text-muted">
+              {grupoDoExercicio(nome)}
+            </span>
+          )}
+        </div>
+      )}
 
       {picking && (
         <div
