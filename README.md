@@ -2,9 +2,9 @@
 
 # Kern
 
-**Sistema operacional pessoal de reconstrução em 90 dias — corpo, mente e hábitos em um só app.**
+**App mobile de hábitos com avatar 3D procedural, coach de IA e arquitetura local-first — empacotado como Android nativo.**
 
-Local-first · gamificado · com coach de IA · empacotado como app Android nativo.
+Three.js/R3F a 60 FPS em celulares intermediários · Groq · Dexie/IndexedDB · Capacitor + plugin Java próprio.
 
 ![Next.js](https://img.shields.io/badge/Next.js-000000?logo=nextdotjs&logoColor=white)
 ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
@@ -14,13 +14,15 @@ Local-first · gamificado · com coach de IA · empacotado como app Android nati
 ![Dexie](https://img.shields.io/badge/Dexie-IndexedDB-orange)
 ![Groq](https://img.shields.io/badge/IA-Groq-F55036)
 
+🌐 [Demo web](https://kern-sable.vercel.app) · 📖 [Estudo de caso](https://portifolio-alan-chi.vercel.app/work/kern)
+
 </div>
 
 ---
 
 ## 🎯 Sobre
 
-O **Kern** nasceu de um plano pessoal de 90 dias e virou um app completo de acompanhamento de hábitos com uma pegada de RPG. A ideia central: transformar **prova acumulada** (treinos, leitura, disciplina, sono) em **poder visível** — um avatar que evolui, atributos que sobem e um mentor que orienta o dia.
+O **Kern** nasceu de um plano pessoal de 90 dias e virou um app completo de acompanhamento de hábitos com uma pegada de RPG. A ideia central: transformar **prova acumulada** (treinos, leitura, disciplina, sono) em **poder visível** — um **avatar 3D que evolui** com seus dados, atributos que sobem e um mentor de IA que orienta o dia.
 
 É **local-first**: tudo roda offline no dispositivo (IndexedDB), sem backend e sem coletar dados do usuário.
 
@@ -72,7 +74,7 @@ O **Kern** nasceu de um plano pessoal de 90 dias e virou um app completo de acom
 
 - **Local-first de verdade:** sem backend; todo o estado vive no IndexedDB com migrações versionadas (Dexie).
 - **Plugin nativo Android próprio** em Java para tempo de tela / limitador de apps.
-- **Motor 3D procedural:** manipulação de esqueleto (bone scaling) para gerar variações corporais a partir de um único modelo.
+- **Motor 3D procedural:** manipulação de esqueleto (bone scaling) para gerar variações corporais a partir de um único modelo — **60 FPS em celulares intermediários**, com DPR dinâmico via `<PerformanceMonitor>` quando o hardware aperta.
 - **IA com conhecimento embutido:** a "inteligência de domínio" fica no código, não na nuvem — o modelo só personaliza com os dados do usuário.
 - **Geração de imagem no cliente** (html-to-image) para o card compartilhável.
 - **Privacidade:** nenhum dado sai do dispositivo; a chave de IA fica local (`.env.local`).
