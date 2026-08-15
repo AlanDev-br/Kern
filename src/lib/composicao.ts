@@ -37,8 +37,9 @@ export interface ComposicaoDerivada {
   gorduraPct?: number;
   massaGordaKg?: number;
   massaMagraKg?: number;
-  aguaPct?: number;
-  massaMuscularKg?: number;
+  aguaL?: number; // água corporal total, em litros
+  aguaPct?: number; // a mesma água, como % do peso
+  massaMuscularKg?: number; // músculo esquelético
   massaOsseaKg?: number;
   tmb: number; // taxa metabólica basal (kcal/dia)
   /** De onde saiu a estimativa de gordura — a tela mostra isso, para o número
@@ -85,6 +86,36 @@ function gorduraAntropometrica(imc: number, p: PerfilFisico): number {
   return clamp(1.2 * imc + 0.23 * p.idade - 10.8 * sexo - 5.4, 3, 65);
 }
 
+/**
+ * Água corporal total (litros), por bioimpedância.
+ *
+ * Este é o número que a impedância mede melhor: a corrente atravessa a água
+ * corporal, e é a hidratação que mais mexe na resistência. Usa a forma clássica
+ * altura²/R (Kushner & Schoeller) em vez de multiplicar a massa magra por uma
+ * constante — do jeito antigo, "água" era só a massa magra disfarçada, subia e
+ * descia junto e não dizia nada de novo.
+ */
+function aguaTotalLitros(m: MedidaCorporal, p: PerfilFisico): number | undefined {
+  if (!m.impedancia || !p.altura) return undefined;
+  const indice = (p.altura * p.altura) / m.impedancia;
+  const tbw = 0.5561 * indice + 0.0955 * m.pesoKg + 1.726;
+  return Number.isFinite(tbw) && tbw > 0 && tbw < m.pesoKg ? tbw : undefined;
+}
+
+/**
+ * Massa muscular esquelética (kg) — equação de Janssen, também por impedância.
+ *
+ * Atenção ao comparar com o app da Xiaomi: o número dele é "massa muscular" no
+ * sentido amplo (inclui água e vísceras) e sai bem maior. Este aqui é músculo
+ * esquelético, que é o que responde a treino.
+ */
+function musculoEsqueletico(m: MedidaCorporal, p: PerfilFisico): number | undefined {
+  if (!m.impedancia || !p.altura) return undefined;
+  const indice = (p.altura * p.altura) / m.impedancia;
+  const smm = 0.401 * indice + (p.sexo === "M" ? 3.825 : 0) - 0.071 * p.idade + 5.102;
+  return Number.isFinite(smm) && smm > 0 && smm < m.pesoKg ? smm : undefined;
+}
+
 /** Mifflin-St Jeor — padrão para gasto basal quando não há massa magra confiável. */
 function tmbMifflin(pesoKg: number, alturaCm: number, idade: number, sexo: "M" | "F"): number {
   const base = 10 * pesoKg + 6.25 * alturaCm - 5 * idade;
@@ -112,19 +143,24 @@ export function derivar(m: MedidaCorporal, p: PerfilFisico): ComposicaoDerivada 
   const massaGordaKg = (m.pesoKg * gorduraPct) / 100;
   const massaMagraKg = m.pesoKg - massaGordaKg;
 
-  // Água e massa óssea são proporções estáveis da massa magra — estimativas
-  // grosseiras, exibidas como tal. Só fazem sentido quando houve impedância.
-  const aguaPct = porBia ? clamp((massaMagraKg * 0.732 * 100) / m.pesoKg, 25, 75) : undefined;
+  // Água e músculo saem da impedância, não da massa magra — cada um responde a
+  // uma coisa diferente (hidratação e treino), que é o que os torna úteis.
+  const aguaL = aguaTotalLitros(m, p);
+  const smm = musculoEsqueletico(m, p);
+
+  // Massa óssea não tem equação de bioimpedância que se sustente: nenhuma
+  // balança mede osso, todas estimam por proporção. Mantida por ser um número
+  // que a pessoa espera ver, e marcada como grosseira na interface — ela mal se
+  // move e não deve orientar decisão nenhuma.
   const massaOsseaKg = porBia ? Math.round(massaMagraKg * 0.042 * 10) / 10 : undefined;
-  const massaMuscularKg =
-    porBia && massaOsseaKg ? Math.round((massaMagraKg - massaOsseaKg) * 10) / 10 : undefined;
 
   return {
     gorduraPct: Math.round(gorduraPct * 10) / 10,
     massaGordaKg: Math.round(massaGordaKg * 10) / 10,
     massaMagraKg: Math.round(massaMagraKg * 10) / 10,
-    aguaPct: aguaPct ? Math.round(aguaPct * 10) / 10 : undefined,
-    massaMuscularKg,
+    aguaL: aguaL ? Math.round(aguaL * 10) / 10 : undefined,
+    aguaPct: aguaL ? Math.round((aguaL / m.pesoKg) * 1000) / 10 : undefined,
+    massaMuscularKg: smm ? Math.round(smm * 10) / 10 : undefined,
     massaOsseaKg,
     tmb: porBia ? tmbKatch(massaMagraKg) : tmbMifflin(m.pesoKg, alturaCm, p.idade, p.sexo),
     fonteGordura,

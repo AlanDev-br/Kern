@@ -95,7 +95,9 @@ export interface AppConfig {
     altura?: number; // cm — referência para o rank de tamanho
     medidas?: Record<string, number>; // circunferências (cm) por id de medida
     gorduraPct?: number; // % de gordura (manual, de qualquer balança)
-    massaMuscularKg?: number; // massa muscular em kg (manual)
+    // Músculo esquelético (kg). Vem da balança quando há impedância, ou digitado.
+    // Sai menor que o "massa muscular" do app da Xiaomi, que soma água e vísceras.
+    massaMuscularKg?: number;
     // Calibração da estimativa de gordura contra um exame real (DEXA, adipômetro):
     // deslocamento fixo em pontos percentuais, somado ao valor derivado. Existe
     // porque toda bioimpedância é estimativa — inclusive a do app da balança.

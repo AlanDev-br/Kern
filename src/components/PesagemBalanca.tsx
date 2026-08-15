@@ -22,6 +22,28 @@ import { derivar, type MedidaCorporal, type PerfilFisico } from "@/lib/composica
 // hex cru ao lado do valor interpretado: se o peso bater com a realidade, o
 // parser está certo e o painel pode ser ignorado para sempre.
 
+// `fraca` marca o número que existe para constar, não para orientar decisão —
+// osso é o caso: nenhuma balança mede, todas estimam, e ele mal se move.
+function Metrica({
+  rotulo,
+  valor,
+  nota,
+  fraca,
+}: {
+  rotulo: string;
+  valor: string;
+  nota?: string;
+  fraca?: boolean;
+}) {
+  return (
+    <div className={`rounded-xl bg-bg/40 p-3 ${fraca ? "opacity-60" : ""}`}>
+      <p className="text-[10px] uppercase tracking-wider text-muted">{rotulo}</p>
+      <p className="text-2xl font-extrabold tabular-nums">{valor}</p>
+      {nota && <p className="text-[11px] text-muted">{nota}</p>}
+    </div>
+  );
+}
+
 function estadoTexto(l: LeituraBruta | null, ativo: boolean): string {
   if (!ativo) return "Toque para começar";
   if (!l) return "Procurando a balança…";
@@ -165,22 +187,48 @@ export function PesagemBalanca() {
       {/* Resultado da pesagem */}
       {ultima && derivada && (
         <div className="mt-4 grid grid-cols-2 gap-2">
-          <div className="rounded-xl bg-bg/40 p-3">
-            <p className="text-[10px] uppercase tracking-wider text-muted">Gordura</p>
-            <p className="text-2xl font-extrabold tabular-nums">{derivada.gorduraPct}%</p>
-            <p className="text-[11px] text-muted">
-              {derivada.fonteGordura === "bia" ? "por bioimpedância" : "estimada pelo IMC"}
-            </p>
-          </div>
-          <div className="rounded-xl bg-bg/40 p-3">
-            <p className="text-[10px] uppercase tracking-wider text-muted">Massa magra</p>
-            <p className="text-2xl font-extrabold tabular-nums">{derivada.massaMagraKg} kg</p>
-            <p className="text-[11px] text-muted">gasto basal {derivada.tmb} kcal</p>
-          </div>
+          <Metrica
+            rotulo="Gordura"
+            valor={`${derivada.gorduraPct}%`}
+            nota={derivada.fonteGordura === "bia" ? "por bioimpedância" : "estimada pelo IMC"}
+          />
+          <Metrica
+            rotulo="Massa magra"
+            valor={`${derivada.massaMagraKg} kg`}
+            nota={`gordura ${derivada.massaGordaKg} kg`}
+          />
+          {derivada.massaMuscularKg && (
+            <Metrica
+              rotulo="Músculo"
+              valor={`${derivada.massaMuscularKg} kg`}
+              nota="esquelético — o que treino move"
+            />
+          )}
+          {derivada.aguaL && (
+            <Metrica
+              rotulo="Água"
+              valor={`${derivada.aguaL} L`}
+              nota={`${derivada.aguaPct}% do peso`}
+            />
+          )}
+          <Metrica
+            rotulo="Gasto basal"
+            valor={`${derivada.tmb}`}
+            nota="kcal/dia em repouso"
+          />
+          {derivada.massaOsseaKg && (
+            <Metrica
+              rotulo="Ossos"
+              valor={`${derivada.massaOsseaKg} kg`}
+              nota="estimativa grosseira"
+              fraca
+            />
+          )}
           {!ultima.impedancia && (
             <p className="col-span-2 text-[11px] text-amber-400">
               Sem leitura de bioimpedância nesta pesagem — o peso foi registrado, mas a gordura
-              acima é só estimativa por IMC.
+              acima é só estimativa por IMC. Refaça descalço, com os pés cobrindo as faixas de
+              metal.
             </p>
           )}
         </div>
