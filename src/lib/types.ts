@@ -96,5 +96,9 @@ export interface AppConfig {
     medidas?: Record<string, number>; // circunferências (cm) por id de medida
     gorduraPct?: number; // % de gordura (manual, de qualquer balança)
     massaMuscularKg?: number; // massa muscular em kg (manual)
+    // Calibração da estimativa de gordura contra um exame real (DEXA, adipômetro):
+    // deslocamento fixo em pontos percentuais, somado ao valor derivado. Existe
+    // porque toda bioimpedância é estimativa — inclusive a do app da balança.
+    ajusteGorduraPP?: number;
   };
 }

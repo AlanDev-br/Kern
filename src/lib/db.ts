@@ -9,6 +9,7 @@ import type {
 } from "./types";
 // CartaoLeitura é definido neste módulo (abaixo) e re-exportado para o restante.
 import { hojeChave } from "./dates";
+import type { MedidaCorporal } from "./composicao";
 
 // Guarda o GLB do avatar (Blob) no próprio IndexedDB → render offline.
 export interface AvatarRegistro {
@@ -168,6 +169,7 @@ export class Reconstrucao90DB extends Dexie {
   exercicioConfigs!: Table<ExercicioConfig, string>;
   conversasCoach!: Table<MensagemCoach, number>;
   meditacoes!: Table<MeditacaoSession, number>;
+  medidasCorporais!: Table<MedidaCorporal, string>;
 
   constructor() {
     super("reconstrucao90");
@@ -316,6 +318,29 @@ export class Reconstrucao90DB extends Dexie {
       conversasCoach: "++id, data",
       meditacoes: "++id, data",
     });
+    // v12 — pesagens da balança. Guarda o bruto (peso + impedância); as métricas
+    // de composição são derivadas em `composicao.ts`, nunca gravadas.
+    this.version(12).stores({
+      dias: "data",
+      revisoes: "semana",
+      dividas: "id",
+      conquistas: "id",
+      config: "id",
+      avatar: "id",
+      treinos: "id, inicio",
+      rotinas: "id",
+      exImagens: "nome",
+      leituras: "id, proximaRevisao, origem",
+      rascunhoTreino: "id",
+      cardios: "id, data, origem",
+      tarefas: "id, ordem, category",
+      avaliacoesMente: "++id, data",
+      testesCognitivos: "++id, data, tipo",
+      exercicioConfigs: "nome",
+      conversasCoach: "++id, data",
+      meditacoes: "++id, data",
+      medidasCorporais: "id, data, origem",
+    });
   }
 }
 
@@ -362,4 +387,24 @@ export async function salvarDia(dia: DiaRegistro): Promise<void> {
 
 export async function getTodosDias(): Promise<DiaRegistro[]> {
   return db.dias.toArray();
+}
+
+/**
+ * Grava uma pesagem. A balança repete a leitura várias vezes enquanto a pessoa
+ * está em cima dela, e o `id` (instante ISO) evita duplicar a mesma medição.
+ * Mais de uma pesagem no mesmo dia é permitida de propósito — a de manhã e a da
+ * noite contam histórias diferentes, e é a média móvel que suaviza isso.
+ */
+export async function salvarMedida(m: MedidaCorporal): Promise<void> {
+  await db.medidasCorporais.put(m);
+}
+
+export async function getMedidas(): Promise<MedidaCorporal[]> {
+  return db.medidasCorporais.orderBy("data").toArray();
+}
+
+/** Última pesagem registrada, de qualquer origem. */
+export async function getUltimaMedida(): Promise<MedidaCorporal | undefined> {
+  const todas = await db.medidasCorporais.orderBy("id").reverse().limit(1).toArray();
+  return todas[0];
 }
