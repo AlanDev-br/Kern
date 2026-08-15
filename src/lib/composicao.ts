@@ -10,6 +10,9 @@
 // nada. Guardar só o número derivado seria uma via de mão única.
 
 import type { AppConfig } from "./types";
+// IMC tem uma única fonte no app (`forca.ts`, que já devolve faixa e cor para a
+// interface). Aqui ele é insumo de cálculo, não uma segunda definição.
+import { imc as imcInfo } from "./forca";
 
 export type PerfilFisico = NonNullable<AppConfig["perfil"]>;
 
@@ -31,7 +34,6 @@ export interface MedidaCorporal {
 
 /** Métricas derivadas. Nenhuma delas é gravada: são calculadas sob demanda. */
 export interface ComposicaoDerivada {
-  imc: number;
   gorduraPct?: number;
   massaGordaKg?: number;
   massaMagraKg?: number;
@@ -96,11 +98,10 @@ function tmbKatch(massaMagraKg: number): number {
 
 export function derivar(m: MedidaCorporal, p: PerfilFisico): ComposicaoDerivada {
   const alturaCm = p.altura ?? 175;
-  const alturaM = alturaCm / 100;
-  const imc = m.pesoKg / (alturaM * alturaM);
+  const imcValor = imcInfo(m.pesoKg, alturaCm)?.valor ?? 0;
 
   const porBia = gorduraPorBia(m, p);
-  let gorduraPct = porBia ?? gorduraAntropometrica(imc, p);
+  let gorduraPct = porBia ?? gorduraAntropometrica(imcValor, p);
   const fonteGordura: ComposicaoDerivada["fonteGordura"] = porBia ? "bia" : "antropometrica";
 
   // Calibração contra exame real, quando houver.
@@ -119,7 +120,6 @@ export function derivar(m: MedidaCorporal, p: PerfilFisico): ComposicaoDerivada 
     porBia && massaOsseaKg ? Math.round((massaMagraKg - massaOsseaKg) * 10) / 10 : undefined;
 
   return {
-    imc: Math.round(imc * 10) / 10,
     gorduraPct: Math.round(gorduraPct * 10) / 10,
     massaGordaKg: Math.round(massaGordaKg * 10) / 10,
     massaMagraKg: Math.round(massaMagraKg * 10) / 10,
