@@ -17,6 +17,7 @@ import {
   type PerfilFisico,
 } from "@/lib/forca";
 import { CorpoRank, type GrupoVisual } from "@/components/CorpoRank";
+import { GuiaMedidasModal } from "@/components/GuiaMedidasModal";
 
 const ORDEM_LIFTS: LiftId[] = ["supino", "desenvolvimento", "agachamento", "terra", "remada"];
 
@@ -246,6 +247,7 @@ function PerfilForm({
   const [idade, setIdade] = useState(perfilInicial?.idade || 0);
   const [altura, setAltura] = useState(perfilInicial?.altura || 0);
   const [medidas, setMedidas] = useState<Record<string, number>>(perfilInicial?.medidas ?? {});
+  const [guiaAbertaId, setGuiaAbertaId] = useState<string | null>(null);
 
   const valido = peso > 0 && idade > 0 && altura > 0;
 
@@ -282,17 +284,42 @@ function PerfilForm({
         <NumCampo label="Altura (cm)" valor={altura} onChange={setAltura} />
       </div>
 
-      <h3 className="mt-4 mb-1 text-xs font-bold uppercase tracking-wider text-muted">Medidas (cm) · opcional</h3>
+      <div className="mt-4 mb-1 flex items-center justify-between">
+        <h3 className="text-xs font-bold uppercase tracking-wider text-muted">Medidas (cm) · opcional</h3>
+        <button
+          type="button"
+          onClick={() => setGuiaAbertaId("peito")}
+          className="text-xs font-semibold text-accent underline outline-none"
+        >
+          Como medir?
+        </button>
+      </div>
       <div className="grid grid-cols-3 gap-2">
         {MEDIDAS.map((m) => (
-          <NumCampo
-            key={m.id}
-            label={m.rotulo}
-            valor={medidas[m.id] || 0}
-            onChange={(v) => setMedidas((md) => ({ ...md, [m.id]: v }))}
-          />
+          <div key={m.id} className="relative">
+            <NumCampo
+              label={m.rotulo}
+              valor={medidas[m.id] || 0}
+              onChange={(v) => setMedidas((md) => ({ ...md, [m.id]: v }))}
+            />
+            <button
+              type="button"
+              onClick={() => setGuiaAbertaId(m.id)}
+              className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-bg/60 text-[9px] text-muted/65 hover:text-accent font-extrabold outline-none"
+              title={`Ver guia para ${m.rotulo}`}
+            >
+              ?
+            </button>
+          </div>
         ))}
       </div>
+
+      {guiaAbertaId && (
+        <GuiaMedidasModal
+          medidaInicialId={guiaAbertaId}
+          onFechar={() => setGuiaAbertaId(null)}
+        />
+      )}
 
       <div className="mt-4 flex gap-2">
         {podeFechar && (

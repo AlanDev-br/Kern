@@ -11,8 +11,10 @@ import { exportarBackup, importarBackup } from "@/lib/backup";
 import { APPS_SOCIAIS } from "@/lib/social-apps";
 import { ExercicioDetalhesModal } from "@/components/ExercicioDetalhesModal";
 import { ComposicaoCorporal } from "@/components/ComposicaoCorporal";
+import { PesagemBalanca } from "@/components/PesagemBalanca";
 import { grupoDoExercicio, GRUPOS } from "@/lib/musculacao";
 import { estimar1RM } from "@/lib/forca";
+import { GuiaMedidasModal } from "@/components/GuiaMedidasModal";
 import {
   tempoTelaDisponivel,
   obterEstadoLimitador,
@@ -48,6 +50,7 @@ export default function ConfigPage() {
 
   // Controles de Sub-Gavetas (Modal/Sheet)
   const [gavetaAberta, setGavetaAberta] = useState<"exercicios" | "medicoes" | "calendario" | "ajustes" | null>(null);
+  const [guiaAbertaId, setGuiaAbertaId] = useState<string | null>(null);
 
   // Estados de Busca e Filtro de Exercícios
   const [buscaEx, setBuscaEx] = useState("");
@@ -705,6 +708,9 @@ export default function ConfigPage() {
           </header>
 
           <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5 pb-28">
+            {/* Pesagem pela balança — alimenta o perfil abaixo sem digitação */}
+            <PesagemBalanca />
+
             {/* Composição corporal: % gordura, massa muscular, IMC e metas */}
             <ComposicaoCorporal />
 
@@ -769,15 +775,41 @@ export default function ConfigPage() {
 
             {/* Medidas de Circunferência */}
             <div className="glass rounded-2xl p-4 space-y-3.5">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-accent">Circunferências (cm)</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-accent">Circunferências (cm)</h3>
+                <button
+                  type="button"
+                  onClick={() => setGuiaAbertaId("peito")}
+                  className="text-xs font-semibold text-accent underline outline-none"
+                >
+                  Como medir?
+                </button>
+              </div>
               
               <div className="grid grid-cols-2 gap-3.5">
                 {["Peito", "Braço Esq", "Braço Dir", "Cintura", "Quadril", "Coxa Esq", "Coxa Dir"].map((medida) => {
                   const chave = medida.toLowerCase().replace(" ", "");
                   const valor = config.perfil?.medidas?.[chave] ?? "";
                   return (
-                    <div key={medida} className="space-y-1">
-                      <label className="text-[10px] text-muted uppercase tracking-wider font-semibold">{medida}</label>
+                    <div key={medida} className="space-y-1 relative">
+                      <div className="flex items-center justify-between">
+                        <label className="text-[10px] text-muted uppercase tracking-wider font-semibold">{medida}</label>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            let mappedId = "peito";
+                            if (chave.startsWith("braço")) mappedId = "braco";
+                            else if (chave.startsWith("coxa")) mappedId = "coxa";
+                            else if (chave === "cintura") mappedId = "cintura";
+                            else if (chave === "quadril") mappedId = "quadril";
+                            setGuiaAbertaId(mappedId);
+                          }}
+                          className="text-[9px] text-muted/50 hover:text-accent font-extrabold outline-none"
+                          title="Como medir?"
+                        >
+                          ?
+                        </button>
+                      </div>
                       <input
                         type="number"
                         step="0.1"
@@ -1077,6 +1109,14 @@ export default function ConfigPage() {
           nome={exercicioDetalhado}
           treinos={treinos}
           onFechar={() => setExercicioDetalhado(null)}
+        />
+      )}
+
+      {/* Modal de Guia de Medidas Corporal */}
+      {guiaAbertaId && (
+        <GuiaMedidasModal
+          medidaInicialId={guiaAbertaId}
+          onFechar={() => setGuiaAbertaId(null)}
         />
       )}
     </div>
