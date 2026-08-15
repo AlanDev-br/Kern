@@ -43,6 +43,12 @@ O **Kern** nasceu de um plano pessoal de 90 dias e virou um app completo de acom
 - **Card de pós-treino** compartilhável como imagem (resumo, recordes e músculos trabalhados).
 - Substituição de exercício e seletor próprio durante o treino.
 
+### ⚖️ Balança e composição corporal
+- Lê a **Mi Body Composition Scale 2 direto por Bluetooth**, sem parear e sem o app da fabricante — a balança transmite peso e impedância em broadcast, e o app escuta.
+- Gordura, massa magra e muscular, água, proteína, gordura visceral, gasto basal e massa óssea, calculados a partir da impedância medida.
+- O banco guarda o **dado bruto**: se a fórmula melhorar, o histórico inteiro é recalculado.
+- Média móvel de 7 dias e tendência em kg/semana — peso de um dia é hidratação, não gordura.
+
 ### 🧬 Avatar evolutivo
 - Avatar 3D que **evolui com o rank**: um **motor procedural** engrossa peito, ombros, braços e coxas escalando os ossos do esqueleto — com compensação para não deformar cabeça, mãos e pés.
 - Aura, partículas e escala que intensificam conforme a consistência.
@@ -115,6 +121,16 @@ android/          projeto Capacitor + plugin nativo
 ## 🗺️ Status
 
 Em uso pessoal e evolução contínua. Próximos focos: refino do coach de IA, calibração dos atributos e versão iOS.
+
+## 📄 Licença
+
+[GPL-3.0-or-later](LICENSE).
+
+O módulo de composição corporal (`src/lib/composicao-xiaomi.ts`) é portado do
+[openScale](https://github.com/oliexdev/openScale), que por sua vez deriva do
+[bodymiscale](https://github.com/dckiller51/bodymiscale) — ambos GPL-3.0. É de lá que
+vem a massa magra calibrada para o hardware da balança, e com ela os números que
+conversam com o aparelho em vez de divergir dele.
 
 ---
 

@@ -44,6 +44,13 @@ function Metrica({
   );
 }
 
+/** Leitura do índice de gordura visceral — o número sozinho não diz nada. */
+function faixaVisceral(v: number): string {
+  if (v < 10) return "saudável";
+  if (v < 15) return "atenção";
+  return "alto";
+}
+
 function estadoTexto(l: LeituraBruta | null, ativo: boolean): string {
   if (!ativo) return "Toque para começar";
   if (!l) return "Procurando a balança…";
@@ -198,29 +205,34 @@ export function PesagemBalanca() {
             nota={`gordura ${derivada.massaGordaKg} kg`}
           />
           {derivada.massaMuscularKg && (
+            <Metrica rotulo="Músculo" valor={`${derivada.massaMuscularKg} kg`} />
+          )}
+          {derivada.aguaPct && (
+            <Metrica rotulo="Água" valor={`${derivada.aguaPct}%`} nota="do peso corporal" />
+          )}
+          {derivada.gorduraVisceral && (
             <Metrica
-              rotulo="Músculo"
-              valor={`${derivada.massaMuscularKg} kg`}
-              nota="esquelético — o que treino move"
+              rotulo="Gordura visceral"
+              valor={`${derivada.gorduraVisceral}`}
+              nota={faixaVisceral(derivada.gorduraVisceral)}
             />
           )}
-          {derivada.aguaL && (
+          {derivada.proteinaPct && (
+            <Metrica rotulo="Proteína" valor={`${derivada.proteinaPct}%`} />
+          )}
+          <Metrica rotulo="Gasto basal" valor={`${derivada.tmb}`} nota="kcal/dia em repouso" />
+          {derivada.idadeMetabolica && (
             <Metrica
-              rotulo="Água"
-              valor={`${derivada.aguaL} L`}
-              nota={`${derivada.aguaPct}% do peso`}
+              rotulo="Idade metabólica"
+              valor={`${derivada.idadeMetabolica}`}
+              nota="cálculo do Kern, não da Xiaomi"
             />
           )}
-          <Metrica
-            rotulo="Gasto basal"
-            valor={`${derivada.tmb}`}
-            nota="kcal/dia em repouso"
-          />
           {derivada.massaOsseaKg && (
             <Metrica
               rotulo="Ossos"
               valor={`${derivada.massaOsseaKg} kg`}
-              nota="estimativa grosseira"
+              nota="estimativa — nenhuma balança mede osso"
               fraca
             />
           )}
