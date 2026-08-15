@@ -18,7 +18,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import { db } from "@/lib/db";
-import { grupoDoExercicio, GRUPOS, type Grupo, volumeSemanal, avaliarVolume } from "@/lib/musculacao";
+import { grupoDoExercicio, GRUPOS, type Grupo, volumeSemanal, avaliarVolume, obterMusculosAlvo } from "@/lib/musculacao";
 import { CorpoHeatmap } from "@/components/CorpoHeatmap";
 import { ExercicioDetalhesModal } from "@/components/ExercicioDetalhesModal";
 import { ClassificacaoForca } from "@/components/ClassificacaoForca";
@@ -189,15 +189,20 @@ export default function EstatisticasPage() {
 
       for (const t of list) {
         for (const ex of t.exercicios) {
-          const g = grupoDoExercicio(ex.nome);
+          const alvos = obterMusculosAlvo(ex.nome);
           const series = ex.sets.filter((s) => s.tipo !== "warmup").length;
 
-          if (g === "Peito") vol.Peito += series;
-          else if (g === "Costas") vol.Costas += series;
-          else if (g === "Ombros") vol.Ombros += series;
-          else if (g === "Bíceps" || g === "Tríceps") vol.Braços += series;
-          else if (g === "Quadríceps" || g === "Posteriores" || g === "Glúteos" || g === "Panturrilha") vol.Pernas += series;
-          else if (g === "Core") vol.Core += series;
+          for (const alvo of alvos) {
+            const g = alvo.grupo;
+            const valor = series * alvo.fator;
+
+            if (g === "Peito") vol.Peito += valor;
+            else if (g === "Costas") vol.Costas += valor;
+            else if (g === "Ombros") vol.Ombros += valor;
+            else if (g === "Bíceps" || g === "Tríceps") vol.Braços += valor;
+            else if (g === "Quadríceps" || g === "Posteriores" || g === "Glúteos" || g === "Panturrilha") vol.Pernas += valor;
+            else if (g === "Core") vol.Core += valor;
+          }
         }
       }
       return vol;
@@ -243,10 +248,12 @@ export default function EstatisticasPage() {
       if (!sem) continue;
 
       for (const ex of t.exercicios) {
-        const g = grupoDoExercicio(ex.nome);
-        if (g in sem.setsPorGrupo) {
-          const sets = ex.sets.filter((s) => s.tipo !== "warmup").length;
-          sem.setsPorGrupo[g] += sets;
+        const alvos = obterMusculosAlvo(ex.nome);
+        const sets = ex.sets.filter((s) => s.tipo !== "warmup").length;
+        for (const alvo of alvos) {
+          if (alvo.grupo in sem.setsPorGrupo) {
+            sem.setsPorGrupo[alvo.grupo] += sets * alvo.fator;
+          }
         }
       }
     }
@@ -533,7 +540,7 @@ export default function EstatisticasPage() {
                       </div>
                       <span className="tabular-nums font-semibold opacity-60">
                         {/* total séries no período */}
-                        {dadosLinhasSéries.reduce((acc, sem) => acc + (sem[g] ?? 0), 0)}
+                        {Number(dadosLinhasSéries.reduce((acc, sem) => acc + (sem[g] ?? 0), 0).toFixed(1))}
                       </span>
                     </button>
                   );

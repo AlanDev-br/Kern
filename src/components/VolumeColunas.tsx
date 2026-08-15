@@ -35,7 +35,7 @@ export function VolumeColunas({ avaliacoes }: { avaliacoes: AvaliacaoGrupo[] }) 
             <div key={a.grupo} className="flex flex-1 basis-12 flex-col items-center gap-2">
               {/* Indicador numérico com a cor da zona */}
               <span className="text-xs font-bold tabular-nums" style={{ color: cor }}>
-                {a.series}
+                {Number(a.series.toFixed(1))}
               </span>
               
               {/* Container - Retângulo de vidro premium */}

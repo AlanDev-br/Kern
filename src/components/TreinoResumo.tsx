@@ -11,7 +11,7 @@ import {
   CartesianGrid,
 } from "recharts";
 import type { Treino } from "@/lib/db";
-import { grupoDoExercicio, GRUPOS, type Grupo } from "@/lib/musculacao";
+import { grupoDoExercicio, GRUPOS, type Grupo, obterMusculosAlvo } from "@/lib/musculacao";
 
 // Resumo de treino embutido na aba Treino: números palpáveis dos últimos 30 dias
 // (com variação vs. os 30 anteriores) + tendência de séries por músculo (4 semanas).
@@ -86,8 +86,13 @@ export function TreinoResumo({ treinos }: { treinos: Treino[] }) {
       const sem = semanas.find((s) => ts >= s.de && ts < s.ate);
       if (!sem) continue;
       for (const ex of t.exercicios) {
-        const g = grupoDoExercicio(ex.nome);
-        if (g in sem.grupos) sem.grupos[g] += ex.sets.filter((s) => s.tipo !== "warmup").length;
+        const alvos = obterMusculosAlvo(ex.nome);
+        const series = ex.sets.filter((s) => s.tipo !== "warmup").length;
+        for (const alvo of alvos) {
+          if (alvo.grupo in sem.grupos) {
+            sem.grupos[alvo.grupo] += series * alvo.fator;
+          }
+        }
       }
     }
     return semanas.map((s) => ({ semana: s.label, ...s.grupos }));
