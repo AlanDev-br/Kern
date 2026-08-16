@@ -74,9 +74,20 @@ export function PesagemBalanca() {
 
   useEffect(() => {
     void iniciarBle().then(setStatus);
-    // Se a tela sair do ar no meio da pesagem, o scan tem de parar junto —
-    // scan BLE aberto é consumo de bateria em segundo plano.
+
+    // Ao mandar o app para segundo plano, o scan para junto. Sem isso ele ficava
+    // rodando com o Kern fechado: gasta bateria e divide o rádio Bluetooth com
+    // qualquer outro app que precise da balança.
+    const aoTrocarVisibilidade = () => {
+      if (document.visibilityState === "hidden") {
+        void pararRef.current?.();
+        setAtivo(false);
+      }
+    };
+    document.addEventListener("visibilitychange", aoTrocarVisibilidade);
+
     return () => {
+      document.removeEventListener("visibilitychange", aoTrocarVisibilidade);
       void pararRef.current?.();
     };
   }, []);
@@ -109,6 +120,12 @@ export function PesagemBalanca() {
     setErro(null);
     setLeitura(null);
     setUltima(null);
+
+    // Encerra um scan anterior antes de abrir outro. Dois toques seguidos em
+    // "pesar" deixavam dois scans registrados, e o Android bloqueia o app por
+    // 30s quando ele inicia scan demais em pouco tempo.
+    await pararRef.current?.();
+    pararRef.current = null;
 
     const s = await iniciarBle();
     setStatus(s);
