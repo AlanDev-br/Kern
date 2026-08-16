@@ -10,6 +10,8 @@ import { calcularAtributos } from "@/lib/atributos";
 import { scoreMente } from "@/lib/mente";
 import { nivelDoXp } from "@/lib/xp";
 import { derivar, serieComMedia, calcularTendencia } from "@/lib/composicao";
+import { calcularRecorte, descreverRecorte, diasSemRecorde, gruposAbandonados } from "@/lib/recorte";
+import { lerSaudePeriodo } from "@/lib/health";
 import {
   chamarCoach,
   montarContexto,
@@ -42,6 +44,30 @@ export default function CoachPage() {
   const avaliacoes = useLiveQuery(() => db.avaliacoesMente.orderBy("data").reverse().toArray(), []) ?? [];
   const testes = useLiveQuery(() => db.testesCognitivos.toArray(), []) ?? [];
   const medidas = useLiveQuery(() => db.medidasCorporais.orderBy("data").toArray(), []) ?? [];
+
+  // Sono e FC vêm do Health Connect, que é assíncrono e só existe no APK. Fica
+  // fora do useMemo: se falhar ou vier vazio, o resto do contexto não pode parar.
+  const [saude, setSaude] = useState<string | undefined>();
+  useEffect(() => {
+    const idade = config?.perfil?.idade ?? 0;
+    lerSaudePeriodo(7, idade)
+      .then((s) => {
+        const partes: string[] = [];
+        if (s.sonoMedioMin) {
+          const h = Math.floor(s.sonoMedioMin / 60);
+          const m = s.sonoMedioMin % 60;
+          partes.push(`sono médio ${h}h${String(m).padStart(2, "0")} em ${s.noitesComRegistro} noites`);
+        } else {
+          partes.push("sono não disponível (o aparelho não escreve no Health Connect)");
+        }
+        if (s.fcRepousoMedia) partes.push(`FC de repouso ${s.fcRepousoMedia} bpm`);
+        if (s.vo2max) partes.push(`VO2 máx estimado ${s.vo2max} ml/kg/min (por FC de repouso, estimativa)`);
+        else partes.push("VO2 máx indisponível — depende da FC de repouso");
+        if (s.sessoesTreino) partes.push(`${s.sessoesTreino} sessões registradas no relógio`);
+        setSaude(partes.join(", "));
+      })
+      .catch(() => setSaude(undefined));
+  }, [config?.perfil?.idade]);
 
   const [mensagens, setMensagens] = useState<Mensagem[]>([]);
   const [input, setInput] = useState("");
@@ -158,6 +184,14 @@ export default function CoachPage() {
         : lista;
     }
 
+    // Progressão: a derivada do treino, não a fotografia. É o que separa
+    // "treinou 14 séries" de "treinou menos e não bate recorde há 3 semanas".
+    const r7 = calcularRecorte(treinos, 7);
+    const r30 = calcularRecorte(treinos, 30);
+    const abandonados = gruposAbandonados(treinos)
+      .map((g) => `${g.grupo} (${g.dias}d)`)
+      .join(", ");
+
     const nivelInfo = nivelDoXp(ctx.xpTotal);
 
     // Sumarizar os últimos treinos
@@ -208,6 +242,11 @@ export default function CoachPage() {
       composicao,
       tendenciaPeso,
       circunferencias,
+      recorte7: descreverRecorte(r7),
+      recorte30: descreverRecorte(r30),
+      diasSemRecorde: diasSemRecorde(treinos),
+      gruposAbandonados: abandonados || undefined,
+      cardiorrespiratorio: saude,
       xpTotal: ctx.xpTotal,
       nivel: nivelInfo.nivel,
       nivelNome: nivelInfo.nome,
@@ -215,7 +254,7 @@ export default function CoachPage() {
       recordesPessoais: recordesFormatados || "Nenhum recorde registrado ainda.",
     };
     return montarContexto(dados);
-  }, [config, ctx, xpForca, tarefas, diaHoje, treinos, cardios, avaliacoes, testes, medidas]);
+  }, [config, ctx, xpForca, tarefas, diaHoje, treinos, cardios, avaliacoes, testes, medidas, saude]);
 
   async function salvarChave() {
     if (!chave.trim()) return;

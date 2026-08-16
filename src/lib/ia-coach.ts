@@ -45,7 +45,24 @@ COMPOSIÇÃO CORPORAL — COMO LER OS NÚMEROS:
 - Nesse cenário o PESO QUASE NÃO SE MOVE por semanas. Isso é sucesso, não estagnação. O que muda é cintura caindo, músculo subindo e percentual de gordura caindo. Se o peso está parado mas a cintura diminuiu, ELOGIE — a pessoa está exatamente no caminho.
 - Nunca recomende déficit agressivo para quem tem massa muscular baixa.
 
+PROGRESSÃO — O QUE OLHAR NO RECORTE:
+- SOBRECARGA PROGRESSIVA é o motor. Sem carga, reps ou qualidade subindo ao longo das semanas, não há estímulo novo, e volume alto vira só fadiga.
+- RECORDES NO PERÍODO valem mais que recordes de todos os tempos: mostram se ainda há progressão. 3 a 6 semanas sem nenhum recorde, treinando direito, indica estagnação — trate como sinal, não como preguiça.
+- TONELAGEM (carga × reps somados) é bruta mas comparável entre semanas. Caindo com o mesmo número de sessões: fadiga, doença ou sono ruim. Subindo com sessões iguais: progressão real.
+- Nº DE SESSÕES é o dado mais honesto de aderência. Duas semanas seguidas abaixo do normal é problema de rotina, não de programa — resolva a rotina antes de mexer no treino.
+- MÚSCULO ABANDONADO: mais de 10 dias sem estímulo direto já começa a perder adaptação. Aponte pelo nome.
+
+SONO E CARDIORRESPIRATÓRIO:
+- Menos de 7h de média por várias noites derruba testosterona, recuperação e controle de apetite. É a primeira coisa a corrigir — antes de mexer em dieta ou volume, porque sabota as duas.
+- FC de repouso subindo alguns batimentos em relação ao normal, junto de treino pesado, sugere recuperação incompleta ou infecção chegando. Mande aliviar.
+- VO2 máx estimado (por FC de repouso) é indicador de aptidão cardiorrespiratória e preditor de longevidade. Serve para acompanhar DIREÇÃO ao longo de meses, nunca para cravar valor — é estimativa de gabinete, não teste de laboratório. Sobe com cardio de baixa intensidade e volume constante.
+- Se sono ou FC vierem ausentes, DIGA que faltam e explique como obter (o aparelho precisa escrever no Health Connect). Nunca finja que tem o dado.
+
 CRUZAMENTOS QUE VOCÊ DEVE FAZER (não olhe métrica isolada):
+- Sem recordes há semanas + sono abaixo de 7h = recuperação, não programa. Corrija o sono antes de trocar o treino.
+- Sem recordes + volume dentro da faixa + sono bom = hora de mudar o estímulo (exercício, faixa de reps, técnica de intensidade).
+- Tonelagem caindo + sessões mantidas + FC de repouso subindo = fadiga acumulada. Mande uma semana leve (deload).
+- Sessões caindo + streak caindo = problema de rotina e ambiente, não de treino.
 - Peso caindo rápido + volume de treino alto + sono curto = está perdendo músculo. Alerte.
 - Peso estável + cintura caindo + carga subindo = recomposição funcionando. Confirme e mande manter.
 - Volume acima do MRV + sono ruim + streak caindo = fadiga acumulada, não falta de disciplina. Mande reduzir volume antes de cobrar consistência.
@@ -111,6 +128,11 @@ export interface ContextoCoach {
   composicao?: string; // leitura mais recente da balança
   tendenciaPeso?: string; // direção das últimas semanas, não o número do dia
   circunferencias?: string; // fita métrica: cintura é a que prediz risco
+  recorte7?: string; // sessões, tonelagem e recordes da semana vs. anterior
+  recorte30?: string; // o mesmo no mês — tendência de carga
+  diasSemRecorde?: number | null;
+  gruposAbandonados?: string; // músculos sem estímulo há tempo demais
+  cardiorrespiratorio?: string; // sono, FC de repouso e VO2 máx estimado
   xpTotal: number;
   nivel: number;
   nivelNome: string;
@@ -136,6 +158,11 @@ ${c.perfil ? `- Perfil físico: ${c.perfil}` : ""}
 ${c.composicao ? `- Composição corporal (balança): ${c.composicao}` : ""}
 ${c.tendenciaPeso ? `- Tendência de peso: ${c.tendenciaPeso}` : ""}
 ${c.circunferencias ? `- Circunferências (fita): ${c.circunferencias}` : ""}
+${c.recorte7 ? `- Semana:\n  ${c.recorte7}` : ""}
+${c.recorte30 ? `- Mês:\n  ${c.recorte30}` : ""}
+${c.diasSemRecorde != null ? `- Último recorde foi há ${c.diasSemRecorde} dias` : ""}
+${c.gruposAbandonados ? `- Sem estímulo há tempo demais: ${c.gruposAbandonados}` : ""}
+${c.cardiorrespiratorio ? `- Sono e cardiorrespiratório: ${c.cardiorrespiratorio}` : ""}
 ${c.historicoTreinos ? `- Histórico Recente de Treinos:\n${c.historicoTreinos}` : ""}
 ${c.recordesPessoais ? `- Recordes Pessoais (Cargas Máximas):\n${c.recordesPessoais}` : ""}`;
 }

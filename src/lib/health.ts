@@ -491,3 +491,118 @@ export async function sincronizarCardioRecente(): Promise<void> {
     console.error("Erro ao sincronizar cardio do Health Connect", e);
   }
 }
+
+// ── Agregado de vários dias, para o coach ────────────────────────────────────
+//
+// `lerSaudeHoje` responde "como foi hoje". O coach precisa de outra coisa: como
+// tem sido a semana. Uma noite ruim não muda conduta; cinco mudam.
+
+export interface ResumoPeriodo {
+  dias: number;
+  /** Média por noite, em minutos. Null quando o aparelho não manda sono. */
+  sonoMedioMin: number | null;
+  noitesComRegistro: number;
+  fcRepousoMedia: number | null;
+  /** Estimativa de VO2 máx (ml/kg/min), ou null quando falta FC de repouso. */
+  vo2max: number | null;
+  sessoesTreino: number;
+  passosMediaDia: number | null;
+}
+
+/**
+ * VO2 máx estimado pela razão entre frequência cardíaca máxima e de repouso
+ * (Uth et al., 2004): VO2máx ≈ 15,3 × FCmáx / FCrepouso. A FCmáx sai de Tanaka
+ * (208 − 0,7 × idade), mais fiel que a regra dos 220 menos a idade.
+ *
+ * É estimativa de gabinete, não teste ergoespirométrico: serve para acompanhar a
+ * direção ao longo dos meses, não para cravar um número. Sem FC de repouso —
+ * caso da maioria das pulseiras que não escrevem no Health Connect — devolve
+ * null, e o coach trata como dado ausente em vez de inventar.
+ */
+export function estimarVo2max(fcRepouso: number | null, idade: number): number | null {
+  if (!fcRepouso || fcRepouso < 30 || fcRepouso > 120 || !idade) return null;
+  const fcMax = 208 - 0.7 * idade;
+  const vo2 = 15.3 * (fcMax / fcRepouso);
+  return vo2 > 15 && vo2 < 90 ? Math.round(vo2 * 10) / 10 : null;
+}
+
+export async function lerSaudePeriodo(dias = 7, idade = 0): Promise<ResumoPeriodo> {
+  const vazio: ResumoPeriodo = {
+    dias,
+    sonoMedioMin: null,
+    noitesComRegistro: 0,
+    fcRepousoMedia: null,
+    vo2max: null,
+    sessoesTreino: 0,
+    passosMediaDia: null,
+  };
+  if (!saudeNativa()) return vazio;
+
+  const fim = new Date();
+  const inicio = new Date(fim.getTime() - dias * 86400000);
+  const perms = await permissoesConcedidas();
+
+  if (perms.sono) {
+    try {
+      const { records } = await HealthConnect.readRecords({
+        type: "SleepSession",
+        start: inicio.toISOString(),
+        end: fim.toISOString(),
+      });
+      // Uma noite pode vir fatiada em vários registros (ciclos): agrupa pela
+      // data do fim, senão a média por noite fica dividida pelo número de pedaços.
+      const porNoite = new Map<string, number>();
+      for (const r of records as Record<string, unknown>[]) {
+        const i = lerInstante(r, "startTime", "startDate", "start");
+        const f = lerInstante(r, "endTime", "endDate", "end");
+        if (!i || !f) continue;
+        const chave = f.toISOString().slice(0, 10);
+        const min = Math.round((f.getTime() - i.getTime()) / 60000);
+        if (min > 0) porNoite.set(chave, (porNoite.get(chave) ?? 0) + min);
+      }
+      if (porNoite.size > 0) {
+        const total = [...porNoite.values()].reduce((s, v) => s + v, 0);
+        vazio.sonoMedioMin = Math.round(total / porNoite.size);
+        vazio.noitesComRegistro = porNoite.size;
+      }
+    } catch {
+      // sem sono no período — segue com null
+    }
+  }
+
+  if (perms.fcRepouso) {
+    try {
+      const { records } = await HealthConnect.readRecords({
+        type: "RestingHeartRate",
+        start: inicio.toISOString(),
+        end: fim.toISOString(),
+      });
+      const valores: number[] = [];
+      for (const r of records as Record<string, unknown>[]) {
+        const v = lerNumero(r, "beatsPerMinute", "bpm", "value");
+        if (v && v > 30 && v < 120) valores.push(v);
+      }
+      if (valores.length > 0) {
+        vazio.fcRepousoMedia = Math.round(valores.reduce((s, v) => s + v, 0) / valores.length);
+        vazio.vo2max = estimarVo2max(vazio.fcRepousoMedia, idade);
+      }
+    } catch {
+      // sem FC no período
+    }
+  }
+
+  if (perms.treino) {
+    try {
+      const { records } = await HealthConnect.readRecords({
+        type: "ActivitySession",
+        start: inicio.toISOString(),
+        end: fim.toISOString(),
+      });
+      vazio.sessoesTreino = records.length;
+    } catch {
+      // sem sessões
+    }
+  }
+
+  return vazio;
+}
