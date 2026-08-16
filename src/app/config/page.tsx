@@ -12,6 +12,7 @@ import { APPS_SOCIAIS } from "@/lib/social-apps";
 import { ExercicioDetalhesModal } from "@/components/ExercicioDetalhesModal";
 import { ComposicaoCorporal } from "@/components/ComposicaoCorporal";
 import { PesagemBalanca } from "@/components/PesagemBalanca";
+import { EvolucaoCorporal } from "@/components/EvolucaoCorporal";
 import { grupoDoExercicio, GRUPOS } from "@/lib/musculacao";
 import { estimar1RM } from "@/lib/forca";
 import { GuiaMedidasModal } from "@/components/GuiaMedidasModal";
@@ -710,6 +711,9 @@ export default function ConfigPage() {
           <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5 pb-28">
             {/* Pesagem pela balança — alimenta o perfil abaixo sem digitação */}
             <PesagemBalanca />
+
+            {/* Histórico e evolução das pesagens */}
+            <EvolucaoCorporal />
 
             {/* Composição corporal: % gordura, massa muscular, IMC e metas */}
             <ComposicaoCorporal />
