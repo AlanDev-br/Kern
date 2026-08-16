@@ -9,6 +9,7 @@ import { volumeSemanal, avaliarVolume } from "@/lib/musculacao";
 import { calcularAtributos } from "@/lib/atributos";
 import { scoreMente } from "@/lib/mente";
 import { nivelDoXp } from "@/lib/xp";
+import { derivar, serieComMedia, calcularTendencia } from "@/lib/composicao";
 import {
   chamarCoach,
   montarContexto,
@@ -21,7 +22,9 @@ import {
 
 const SUGESTOES = [
   "Analise meu dia e me diga o foco nº1 + 2 ajustes concretos.",
+  "Leia minha composição corporal e diga se devo cortar ou comer mais.",
   "Meu treino da semana está bom? O que ajustar pra hipertrofia natural?",
+  "Minha cintura e meu percentual de gordura combinam? O que priorizar?",
   "Como começar a manhã pra mudar meu estado mental?",
   "Estou desmotivado hoje. Me ajuda a sair desse estado.",
 ];
@@ -38,6 +41,7 @@ export default function CoachPage() {
   const cardios = useLiveQuery(() => db.cardios.toArray(), []) ?? [];
   const avaliacoes = useLiveQuery(() => db.avaliacoesMente.orderBy("data").reverse().toArray(), []) ?? [];
   const testes = useLiveQuery(() => db.testesCognitivos.toArray(), []) ?? [];
+  const medidas = useLiveQuery(() => db.medidasCorporais.orderBy("data").toArray(), []) ?? [];
 
   const [mensagens, setMensagens] = useState<Mensagem[]>([]);
   const [input, setInput] = useState("");
@@ -104,8 +108,55 @@ export default function CoachPage() {
 
     const p = config.perfil;
     const perfil = p && p.pesoCorporal > 0
-      ? `${p.sexo}, ${p.pesoCorporal}kg${p.altura ? `, ${p.altura}cm` : ""}${p.gorduraPct ? `, ${p.gorduraPct}% gordura` : ""}`
+      ? `${p.sexo}, ${p.pesoCorporal}kg${p.altura ? `, ${p.altura}cm` : ""}${p.idade ? `, ${p.idade} anos` : ""}`
       : undefined;
+
+    // Composição e tendência: o coach precisa da DIREÇÃO, não do número do dia —
+    // pesagem isolada é hidratação, e ele foi instruído a não comentar uma só.
+    let composicao: string | undefined;
+    let tendenciaPeso: string | undefined;
+    if (p && medidas.length > 0) {
+      const ultima = medidas[medidas.length - 1];
+      const d = derivar(ultima, p);
+      const partes = [
+        `${ultima.pesoKg}kg`,
+        d.gorduraPct ? `${d.gorduraPct}% gordura` : null,
+        d.massaMuscularKg ? `${d.massaMuscularKg}kg músculo` : null,
+        d.massaMagraKg ? `${d.massaMagraKg}kg massa magra` : null,
+        d.aguaPct ? `água ${d.aguaPct}%` : null,
+        d.gorduraVisceral ? `visceral ${d.gorduraVisceral}` : null,
+        `basal ${d.tmb}kcal`,
+        ultima.impedancia ? null : "(sem bioimpedância — gordura só estimada por IMC)",
+      ].filter(Boolean);
+      composicao = `${partes.join(", ")} — medido em ${ultima.data}`;
+
+      const serie = serieComMedia(medidas, p);
+      const t = calcularTendencia(serie);
+      if (t.leitura === "sem-dados") {
+        tendenciaPeso = `só ${t.amostras} pesagem(ns) — ainda não dá para ler tendência`;
+      } else {
+        const rotulo =
+          t.leitura === "estavel"
+            ? "estável (variação dentro do ruído de hidratação)"
+            : t.leitura === "perdendo"
+              ? `perdendo ${Math.abs(t.kgPorSemana)}kg/semana`
+              : `ganhando ${t.kgPorSemana}kg/semana`;
+        tendenciaPeso = `${rotulo}, pela média móvel de 7 dias sobre ${t.amostras} pesagens`;
+      }
+    }
+
+    // Cintura é a métrica que prediz risco melhor que percentual de gordura.
+    const med = p?.medidas ?? {};
+    const circs = Object.entries(med).filter(([, v]) => v > 0);
+    let circunferencias: string | undefined;
+    if (circs.length > 0) {
+      const lista = circs.map(([k, v]) => `${k} ${v}cm`).join(", ");
+      const cintura = med.cintura;
+      const razao = cintura && p?.altura ? (cintura / p.altura).toFixed(2) : null;
+      circunferencias = razao
+        ? `${lista} — razão cintura/altura ${razao} (acima de 0,5 indica excesso central)`
+        : lista;
+    }
 
     const nivelInfo = nivelDoXp(ctx.xpTotal);
 
@@ -154,6 +205,9 @@ export default function CoachPage() {
       revisoes: ctx.revisoesTotais,
       menteScore,
       perfil,
+      composicao,
+      tendenciaPeso,
+      circunferencias,
       xpTotal: ctx.xpTotal,
       nivel: nivelInfo.nivel,
       nivelNome: nivelInfo.nome,
@@ -161,7 +215,7 @@ export default function CoachPage() {
       recordesPessoais: recordesFormatados || "Nenhum recorde registrado ainda.",
     };
     return montarContexto(dados);
-  }, [config, ctx, xpForca, tarefas, diaHoje, treinos, cardios, avaliacoes, testes]);
+  }, [config, ctx, xpForca, tarefas, diaHoje, treinos, cardios, avaliacoes, testes, medidas]);
 
   async function salvarChave() {
     if (!chave.trim()) return;
