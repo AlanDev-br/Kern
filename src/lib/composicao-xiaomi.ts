@@ -35,29 +35,52 @@ export interface EntradaXiaomi {
 const limitar = (v: number, min: number, max: number) => Math.max(min, Math.min(v, max));
 
 /**
- * Massa magra (kg) — fórmula calibrada para a balança. Teto de 98% do peso.
- * Calcule esta primeiro: as outras recebem o resultado dela.
- *
- * LIMITAÇÃO conhecida, e é do original: não há termo de sexo aqui. Como mulheres
- * têm naturalmente mais gordura essencial, a estimativa sai baixa demais para
- * elas — num teste, mulher de 60 kg com 550 Ω deu 15,5% de gordura, que seria
- * nível atlético. Sexo só entra depois, no osso e na gordura visceral. Se o app
- * um dia servir a mais gente, esta é a conta que precisa de correção.
+ * Coeficiente de massa magra — a base calibrada para o hardware da balança.
+ * Não tem termo de sexo de propósito: a diferença entre homens e mulheres entra
+ * na etapa seguinte, ao converter em gordura.
  */
-export function massaMagra(e: EntradaXiaomi): number {
+export function coeficienteMassaMagra(e: EntradaXiaomi): number {
   const h = e.alturaCm;
-  const lbm =
+  return (
     (h * 9.058) / 100 * (h / 100) +
     e.pesoKg * 0.32 +
     12.226 -
     e.impedancia * 0.0068 -
-    e.idade * 0.0542;
-  return Math.min(lbm, e.pesoKg * 0.98);
+    e.idade * 0.0542
+  );
 }
 
-/** Gordura (%) pelo modelo de 2 compartimentos de Siri (1956). */
-export function gordura(pesoKg: number, lbm: number): number {
-  return limitar(((pesoKg - lbm) / pesoKg) * 100, 5, 75);
+/**
+ * Gordura corporal (%), com a correção por sexo do algoritmo do Zepp Life.
+ *
+ * É aqui que homens e mulheres se separam, e a diferença é grande: mulheres
+ * levam um subtrator de 9,25 (7,25 acima dos 49 anos) contra 0,8 dos homens —
+ * reflete a gordura essencial maior, que a bioimpedância sozinha não distingue.
+ * Sem isso, o cálculo dava nível atlético para qualquer mulher.
+ *
+ * Os coeficientes por faixa de peso e altura são do original e parecem
+ * arbitrários porque são: saíram de calibração contra o aparelho, não de teoria.
+ */
+export function gordura(e: EntradaXiaomi): number {
+  const homem = e.sexo === "M";
+
+  const subtrator = homem ? 0.8 : e.idade <= 49 ? 9.25 : 7.25;
+
+  let coeficiente = 1.0;
+  if (homem && e.pesoKg < 61.0) {
+    coeficiente = 0.98;
+  } else if (!homem && e.pesoKg > 60.0) {
+    coeficiente = 0.96;
+    if (e.alturaCm > 160.0) coeficiente *= 1.03;
+  } else if (!homem && e.pesoKg < 50.0) {
+    coeficiente = 1.02;
+    if (e.alturaCm > 160.0) coeficiente *= 1.03;
+  }
+
+  const base = coeficienteMassaMagra(e);
+  const pct = (1.0 - ((base - subtrator) * coeficiente) / e.pesoKg) * 100.0;
+  // O original salta para 75 acima de 63: passou disso, a leitura não é confiável.
+  return limitar(pct > 63.0 ? 75.0 : pct, 5, 75);
 }
 
 /** Água (%) — constante 0,73 de Pace & Rathbun (1945) aplicada à massa magra. */
@@ -75,10 +98,10 @@ export function proteina(pesoKg: number, lbm: number): number {
  * para 8,0 vêm do original; parecem arbitrários porque são: nenhuma balança mede
  * osso de verdade.
  */
-export function massaOssea(lbm: number, sexo: "M" | "F"): number {
+export function massaOssea(coefMassaMagra: number, sexo: "M" | "F"): number {
   const homem = sexo === "M";
   const base = homem ? 0.18016894 : 0.245691014;
-  let osso = (base - lbm * 0.05158) * -1;
+  let osso = (base - coefMassaMagra * 0.05158) * -1;
   osso = osso > 2.2 ? osso + 0.1 : osso - 0.1;
   if ((homem && osso > 5.2) || (!homem && osso > 5.1)) osso = 8.0;
   return limitar(osso, 0.5, 8);
@@ -185,20 +208,21 @@ export interface ResultadoXiaomi {
   idadeMetabolica: number;
 }
 
-/** Encadeia tudo na ordem certa — a massa magra alimenta o resto. */
+/** Encadeia tudo na ordem certa — a gordura, já corrigida por sexo, puxa o resto. */
 export function calcular(e: EntradaXiaomi): ResultadoXiaomi {
-  const lbm = massaMagra(e);
-  const gorduraPct = gordura(e.pesoKg, lbm);
-  const ossoKg = massaOssea(lbm, e.sexo);
+  const gorduraPct = gordura(e);
+  const massaGordaKg = (e.pesoKg * gorduraPct) / 100;
+  const massaMagraKg = e.pesoKg - massaGordaKg;
+  const ossoKg = massaOssea(coeficienteMassaMagra(e), e.sexo);
   const tmb = gastoBasal(e.pesoKg, e.idade, e.sexo);
 
   const arr = (v: number) => Math.round(v * 10) / 10;
   return {
-    massaMagraKg: arr(lbm),
+    massaMagraKg: arr(massaMagraKg),
     gorduraPct: arr(gorduraPct),
-    massaGordaKg: arr(e.pesoKg - lbm),
+    massaGordaKg: arr(massaGordaKg),
     aguaPct: arr(agua(gorduraPct)),
-    proteinaPct: arr(proteina(e.pesoKg, lbm)),
+    proteinaPct: arr(proteina(e.pesoKg, massaMagraKg)),
     massaOsseaKg: arr(ossoKg),
     massaMuscularKg: arr(massaMuscular(e.pesoKg, gorduraPct, ossoKg)),
     gorduraVisceral: arr(gorduraVisceral(e)),
