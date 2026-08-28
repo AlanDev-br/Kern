@@ -41,7 +41,7 @@ function normalizar(s: string): string {
 // Regras por palavra-chave, em ordem (a primeira que casar vence).
 // A ordem importa: ex. "terra romeno" precisa cair em Posteriores antes de Costas.
 const REGRAS: { grupo: Grupo; chaves: string[] }[] = [
-  { grupo: "Glúteos", chaves: ["gluteo", "pelvica", "hip thrust", "coice", "curtsy", "afundo", "bulgaro"] },
+  { grupo: "Glúteos", chaves: ["gluteo", "pelvica", "hip thrust", "coice", "curtsy", "afundo", "bulgaro", "abdutora", "abducao", "extensao de quadril", "4 apoios", "quatro apoios"] },
   { grupo: "Posteriores", chaves: ["romeno", "stiff", "flexora", "posterior", "femoral", "good morning"] },
   { grupo: "Panturrilha", chaves: ["panturrilha", "gemeos", "calf", "soleo"] },
   { grupo: "Quadríceps", chaves: ["agachamento", "leg press", "extensora", "hack", "passada", "lunge", "avanco"] },
@@ -50,7 +50,7 @@ const REGRAS: { grupo: Grupo; chaves: string[] }[] = [
   { grupo: "Ombros", chaves: ["desenvolvimento", "elevacao lateral", "ombro", "arnold", "militar", "elevacao frontal", "face pull", "encolhimento", "trapezio"] },
   { grupo: "Bíceps", chaves: ["rosca", "biceps", "scott", "martelo"] },
   { grupo: "Tríceps", chaves: ["triceps", "frances", "testa", "mergulho"] },
-  { grupo: "Core", chaves: ["abdominal", "prancha", "core", "pallof", "dead bug", "hollow", "roda abdominal", "rocha oca", "farmer", "fazendeiro", "carry", "oblicuo"] },
+  { grupo: "Core", chaves: ["abdominal", "prancha", "core", "pallof", "dead bug", "hollow", "roda abdominal", "rocha oca", "farmer", "fazendeiro", "carry", "oblicuo", "abdomen", "infra", "supra", "crunch"] },
 ];
 
 export function grupoDoExercicio(nome: string): Grupo {
