@@ -4,13 +4,22 @@ import { Capacitor } from "@capacitor/core";
 import { HealthConnect } from "@devmaxime/capacitor-health-connect";
 import { db } from "./db";
 
-// Tipos lidos. "HeartRate" (intradiário) é usado só para estimar o despertar.
+// Tipos lidos. A série intradiária de frequência cardíaca serve só para estimar o
+// despertar.
+//
+// O nome dela no Health Connect é "HeartRateSeries", não "HeartRate": a chave sai do
+// RECORDS_TYPE_NAME_MAP da androidx, e o "HeartRate" que aparece em `aggregateRecords`
+// é de outro vocabulário, o dos agregados. O plugin descarta em silêncio a chave que
+// não conhece — então pedir "HeartRate" nunca pediu nada, e a permissão ficava
+// eternamente negada.
+export const TIPO_FC_SERIE = "HeartRateSeries";
+
 const LEITURA_REQ = [
   "SleepSession",
   "ActivitySession",
   "Steps",
   "RestingHeartRate",
-  "HeartRate",
+  TIPO_FC_SERIE,
 ];
 
 export function saudeNativa(): boolean {
@@ -36,7 +45,7 @@ async function permissoesConcedidas(): Promise<PermsSaude> {
       treino: read.includes("ActivitySession"),
       passos: read.includes("Steps"),
       fcRepouso: read.includes("RestingHeartRate"),
-      fcIntra: read.includes("HeartRate"),
+      fcIntra: read.includes(TIPO_FC_SERIE),
     };
   } catch {
     return { sono: false, treino: false, passos: false, fcRepouso: false, fcIntra: false };
@@ -63,7 +72,7 @@ export async function statusSaude(): Promise<StatusSaude> {
 export async function pedirPermissoesSaude(): Promise<boolean> {
   if (!saudeNativa()) return false;
   try {
-    // o tipo do plugin não lista "HeartRate", mas o runtime aceita — daí o cast
+    // o tipo do plugin não lista a série de FC, mas o runtime aceita — daí o cast
     await HealthConnect.requestPermissions({
       read: LEITURA_REQ as never,
       write: [],
