@@ -24,6 +24,22 @@ export type Veredito =
   | "estavel"
   | "sem-dados";
 
+/**
+ * De onde saiu o gasto energético diário.
+ *
+ * Importa porque as três não têm o mesmo peso: "medido" é a pulseira somando tudo,
+ * "basal-do-aparelho" e "basal-da-balanca" somam o gasto de repouso ao movimento
+ * relatado. A tela mostra qual foi — um número estimado apresentado como medido é
+ * pior do que número nenhum.
+ */
+export type FonteGasto = "medido" | "basal-do-aparelho" | "basal-da-balanca";
+
+export const TEXTO_FONTE_GASTO: Record<FonteGasto, string> = {
+  medido: "medido pela pulseira",
+  "basal-do-aparelho": "basal do aparelho + ativas",
+  "basal-da-balanca": "basal da balança + ativas",
+};
+
 export interface JanelaCorporal {
   data: string;
   pesoKg: number;
@@ -47,6 +63,7 @@ export interface Recomposicao {
 
   // Lado energético, da pulseira
   gastoMedioKcal?: number;
+  fonteGasto?: FonteGasto;
   diasComGasto?: number;
   balancoKcalDia?: number;
   ingestaoEstimadaKcal?: number;
@@ -237,10 +254,41 @@ export function analisarRecomposicao(
   const inicioChave = janelaInicio.data;
   const fimChave = janelaFim.data;
   const noPeriodo = dias.filter((d) => d.data >= inicioChave && d.data <= fimChave);
-  const comGasto = noPeriodo.filter((d) => typeof d.kcalTotal === "number");
+  // Gasto do dia, em ordem de confiança. A Mi Band 10 publica calorias ATIVAS, não
+  // totais: só o movimento acima do repouso. Somar o basal a isso não é malabarismo,
+  // é reconstituir o total que a pulseira decidiu não mandar — e o basal já existe,
+  // derivado da pesagem com impedância em `composicao.ts`.
+  const tmbDaBalanca = (() => {
+    const ultima = ordenadas[ordenadas.length - 1];
+    const t = derivar(ultima, perfil).tmb;
+    return t > 0 ? t : undefined;
+  })();
+
+  let fonteGasto: FonteGasto | undefined;
+  const gastoDoDia = (d: DiaSaude): number | undefined => {
+    if (typeof d.kcalTotal === "number") {
+      fonteGasto ??= "medido";
+      return d.kcalTotal;
+    }
+    if (typeof d.kcalAtiva !== "number") return undefined;
+    if (typeof d.tmbKcal === "number") {
+      fonteGasto ??= "basal-do-aparelho";
+      return d.tmbKcal + d.kcalAtiva;
+    }
+    if (tmbDaBalanca !== undefined) {
+      fonteGasto ??= "basal-da-balanca";
+      return tmbDaBalanca + d.kcalAtiva;
+    }
+    return undefined;
+  };
+
+  const gastos = noPeriodo
+    .map(gastoDoDia)
+    .filter((v): v is number => typeof v === "number");
+  const comGasto = gastos;
   const gastoMedioKcal =
-    comGasto.length > 0
-      ? Math.round(comGasto.reduce((s, d) => s + (d.kcalTotal ?? 0), 0) / comGasto.length)
+    gastos.length > 0
+      ? Math.round(gastos.reduce((s, v) => s + v, 0) / gastos.length)
       : undefined;
 
   let balancoKcalDia: number | undefined;
@@ -272,6 +320,7 @@ export function analisarRecomposicao(
     deltaMagraKg,
     fracaoGordura,
     gastoMedioKcal,
+    fonteGasto,
     diasComGasto: comGasto.length,
     balancoKcalDia,
     ingestaoEstimadaKcal,

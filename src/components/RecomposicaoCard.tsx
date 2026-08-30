@@ -1,6 +1,10 @@
 "use client";
 
-import { TEXTO_VEREDITO, type Recomposicao } from "@/lib/recomposicao";
+import {
+  TEXTO_FONTE_GASTO,
+  TEXTO_VEREDITO,
+  type Recomposicao,
+} from "@/lib/recomposicao";
 
 /**
  * O cruzamento balança × pulseira.
@@ -134,9 +138,9 @@ export function RecomposicaoCard({ r }: { r: Recomposicao }) {
         )}
         {r.gastoMedioKcal !== undefined && (
           <Linha
-            rotulo="Gasto médio da pulseira"
+            rotulo={r.fonteGasto === "medido" ? "Gasto médio" : "Gasto médio estimado"}
             valor={`${r.gastoMedioKcal} kcal/dia`}
-            nota={`${r.diasComGasto} dias medidos`}
+            nota={r.fonteGasto ? TEXTO_FONTE_GASTO[r.fonteGasto] : undefined}
           />
         )}
         {r.balancoKcalDia !== undefined && (
