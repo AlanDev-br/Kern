@@ -352,6 +352,41 @@ export async function amostrasDoTipo(tipo: TipoSaude, limite = 50): Promise<Amos
   return linhas.sort((a, b) => b.inicio.localeCompare(a.inicio)).slice(0, limite);
 }
 
+/**
+ * Amostras de uma janela de dias, opcionalmente restritas a alguns tipos.
+ *
+ * Restringir importa: a série contínua de FC carrega centenas de amostras por
+ * registro, e um painel que só precisa de calorias não tem por que arrastar isso
+ * para a memória. Com tipos, usa o índice composto [tipo+data]; sem tipos, o índice
+ * de data.
+ */
+export async function amostrasNoPeriodo(
+  inicio: string,
+  fim: string,
+  tipos?: TipoSaude[],
+): Promise<AmostraSaude[]> {
+  if (!tipos || tipos.length === 0) {
+    return db.saudeAmostras.where("data").between(inicio, fim, true, true).toArray();
+  }
+  const partes = await Promise.all(
+    tipos.map((t) =>
+      db.saudeAmostras
+        .where("[tipo+data]")
+        .between([t, inicio], [t, fim], true, true)
+        .toArray(),
+    ),
+  );
+  return partes.flat();
+}
+
+/** Quantas amostras existem por tipo. Contagem por índice, sem carregar linha. */
+export async function contagemPorTipo(): Promise<Record<string, number>> {
+  const pares = await Promise.all(
+    TIPOS_SAUDE.map(async (t) => [t, await db.saudeAmostras.where("tipo").equals(t).count()] as const),
+  );
+  return Object.fromEntries(pares);
+}
+
 /** Quem escreveu o quê. É o que denuncia dupla contagem antes de virar número errado. */
 export async function origensPorTipo(): Promise<Record<string, Record<string, number>>> {
   const mapa: Record<string, Record<string, number>> = {};

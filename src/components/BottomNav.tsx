@@ -8,6 +8,7 @@ const ITENS = [
   { href: "/agenda/", label: "Agenda", icon: "☰" },
   { href: "/treino/", label: "Treino", icon: "💪" },
   { href: "/progresso/", label: "Progresso", icon: "▟" },
+  { href: "/dados/", label: "Dados", icon: "◫" },
   { href: "/conquistas/", label: "Troféus", icon: "✦" },
   { href: "/biblioteca/", label: "Leitura", icon: "📖" },
   { href: "/config/", label: "Perfil", icon: "👤" },
