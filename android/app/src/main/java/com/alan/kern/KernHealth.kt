@@ -21,8 +21,6 @@ import androidx.health.connect.client.records.HeartRateRecord
 import androidx.health.connect.client.records.HeartRateVariabilityRmssdRecord
 import androidx.health.connect.client.records.HeightRecord
 import androidx.health.connect.client.records.HydrationRecord
-import androidx.health.connect.client.records.InstantaneousRecord
-import androidx.health.connect.client.records.IntervalRecord
 import androidx.health.connect.client.records.LeanBodyMassRecord
 import androidx.health.connect.client.records.NutritionRecord
 import androidx.health.connect.client.records.OxygenSaturationRecord
@@ -318,32 +316,34 @@ class KernHealth {
         else -> "desconhecido"
     }
 
-    /** Monta a casca comum e deixa o específico para [detalhar]. */
+    /**
+     * Monta a casca comum e deixa o resto para [detalhar].
+     *
+     * A janela de tempo também é preenchida lá, ramo a ramo, e não aqui num teste
+     * genérico: as interfaces `IntervalRecord` e `InstantaneousRecord` da androidx são
+     * `internal`, ou seja, não dá para perguntar a um `Record` qual das duas ele é.
+     * Como cada ramo já sabe o tipo concreto, ele também sabe se o registro tem
+     * início/fim ou um instante só.
+     */
     private fun converter(tipo: String, r: Record): JSObject {
         val o = JSObject()
         o.put("tipo", tipo)
         o.put("meta", metadadosJson(r.metadata))
-
-        when (r) {
-            is IntervalRecord -> {
-                o.put("inicio", r.startTime.toString())
-                o.put("fim", r.endTime.toString())
-                o.put("fusoInicio", r.startZoneOffset?.toString())
-                o.put("duracaoMin", (r.endTime.epochSecond - r.startTime.epochSecond) / 60.0)
-            }
-            is InstantaneousRecord -> {
-                o.put("inicio", r.time.toString())
-                o.put("fim", r.time.toString())
-                o.put("fusoInicio", r.zoneOffset?.toString())
-            }
-            else -> {
-                // Sessões (sono, exercício) não implementam nenhuma das duas interfaces
-                // na versão atual da androidx; o ramo específico preenche os tempos.
-            }
-        }
-
         detalhar(o, r)
         return o
+    }
+
+    /** Registro com duração: início, fim e os minutos entre eles. */
+    private fun intervalo(o: JSObject, ini: Instant, fim: Instant) {
+        o.put("inicio", ini.toString())
+        o.put("fim", fim.toString())
+        o.put("duracaoMin", (fim.epochSecond - ini.epochSecond) / 60.0)
+    }
+
+    /** Medida pontual: início e fim iguais, para o envelope não ter caso especial. */
+    private fun instante(o: JSObject, t: Instant) {
+        o.put("inicio", t.toString())
+        o.put("fim", t.toString())
     }
 
     private fun escalar(o: JSObject, valor: Double?, unidade: String) {
@@ -355,9 +355,13 @@ class KernHealth {
         val extra = JSObject()
         when (r) {
             // ── movimento ──
-            is StepsRecord -> escalar(o, r.count.toDouble(), "passos")
+            is StepsRecord -> {
+                intervalo(o, r.startTime, r.endTime)
+                escalar(o, r.count.toDouble(), "passos")
+            }
 
             is StepsCadenceRecord -> {
+                intervalo(o, r.startTime, r.endTime)
                 val amostras = JSArray()
                 var soma = 0.0
                 for (a in r.samples) {
@@ -371,12 +375,28 @@ class KernHealth {
                 escalar(o, if (r.samples.isEmpty()) null else soma / r.samples.size, "passos/min")
             }
 
-            is DistanceRecord -> escalar(o, r.distance.inMeters, "m")
-            is ElevationGainedRecord -> escalar(o, r.elevation.inMeters, "m")
-            is FloorsClimbedRecord -> escalar(o, r.floors, "andares")
-            is WheelchairPushesRecord -> escalar(o, r.count.toDouble(), "impulsos")
+            is DistanceRecord -> {
+                intervalo(o, r.startTime, r.endTime)
+                escalar(o, r.distance.inMeters, "m")
+            }
+
+            is ElevationGainedRecord -> {
+                intervalo(o, r.startTime, r.endTime)
+                escalar(o, r.elevation.inMeters, "m")
+            }
+
+            is FloorsClimbedRecord -> {
+                intervalo(o, r.startTime, r.endTime)
+                escalar(o, r.floors, "andares")
+            }
+
+            is WheelchairPushesRecord -> {
+                intervalo(o, r.startTime, r.endTime)
+                escalar(o, r.count.toDouble(), "impulsos")
+            }
 
             is SpeedRecord -> {
+                intervalo(o, r.startTime, r.endTime)
                 val amostras = JSArray()
                 var soma = 0.0
                 for (a in r.samples) {
@@ -391,6 +411,7 @@ class KernHealth {
             }
 
             is PowerRecord -> {
+                intervalo(o, r.startTime, r.endTime)
                 val amostras = JSArray()
                 var soma = 0.0
                 for (a in r.samples) {
@@ -405,6 +426,7 @@ class KernHealth {
             }
 
             is CyclingPedalingCadenceRecord -> {
+                intervalo(o, r.startTime, r.endTime)
                 val amostras = JSArray()
                 var soma = 0.0
                 for (a in r.samples) {
@@ -419,11 +441,8 @@ class KernHealth {
             }
 
             is ExerciseSessionRecord -> {
-                o.put("inicio", r.startTime.toString())
-                o.put("fim", r.endTime.toString())
-                val minutos = (r.endTime.epochSecond - r.startTime.epochSecond) / 60.0
-                o.put("duracaoMin", minutos)
-                escalar(o, minutos, "min")
+                intervalo(o, r.startTime, r.endTime)
+                escalar(o, (r.endTime.epochSecond - r.startTime.epochSecond) / 60.0, "min")
                 extra.put("modalidadeId", r.exerciseType)
                 extra.put("modalidade", modalidade(r.exerciseType))
                 extra.put("titulo", r.title)
@@ -433,13 +452,24 @@ class KernHealth {
             }
 
             // ── energia ──
-            is TotalCaloriesBurnedRecord -> escalar(o, r.energy.inKilocalories, "kcal")
-            is ActiveCaloriesBurnedRecord -> escalar(o, r.energy.inKilocalories, "kcal")
-            is BasalMetabolicRateRecord ->
+            is TotalCaloriesBurnedRecord -> {
+                intervalo(o, r.startTime, r.endTime)
+                escalar(o, r.energy.inKilocalories, "kcal")
+            }
+
+            is ActiveCaloriesBurnedRecord -> {
+                intervalo(o, r.startTime, r.endTime)
+                escalar(o, r.energy.inKilocalories, "kcal")
+            }
+
+            is BasalMetabolicRateRecord -> {
+                instante(o, r.time)
                 escalar(o, r.basalMetabolicRate.inKilocaloriesPerDay, "kcal/dia")
+            }
 
             // ── coração e respiração ──
             is HeartRateRecord -> {
+                intervalo(o, r.startTime, r.endTime)
                 val amostras = JSArray()
                 var soma = 0.0
                 var min = Long.MAX_VALUE
@@ -461,27 +491,42 @@ class KernHealth {
                 escalar(o, if (r.samples.isEmpty()) null else soma / r.samples.size, "bpm")
             }
 
-            is RestingHeartRateRecord -> escalar(o, r.beatsPerMinute.toDouble(), "bpm")
-            is HeartRateVariabilityRmssdRecord ->
+            is RestingHeartRateRecord -> {
+                instante(o, r.time)
+                escalar(o, r.beatsPerMinute.toDouble(), "bpm")
+            }
+
+            is HeartRateVariabilityRmssdRecord -> {
+                instante(o, r.time)
                 escalar(o, r.heartRateVariabilityMillis, "ms")
-            is OxygenSaturationRecord -> escalar(o, r.percentage.value, "%")
-            is RespiratoryRateRecord -> escalar(o, r.rate, "resp/min")
+            }
+
+            is OxygenSaturationRecord -> {
+                instante(o, r.time)
+                escalar(o, r.percentage.value, "%")
+            }
+
+            is RespiratoryRateRecord -> {
+                instante(o, r.time)
+                escalar(o, r.rate, "resp/min")
+            }
+
             is Vo2MaxRecord -> {
+                instante(o, r.time)
                 escalar(o, r.vo2MillilitersPerMinuteKilogram, "ml/kg/min")
                 extra.put("metodoId", r.measurementMethod)
             }
+
             is BloodPressureRecord -> {
+                instante(o, r.time)
                 escalar(o, r.systolic.inMillimetersOfMercury, "mmHg")
                 extra.put("diastolica", r.diastolic.inMillimetersOfMercury)
             }
 
             // ── sono ──
             is SleepSessionRecord -> {
-                o.put("inicio", r.startTime.toString())
-                o.put("fim", r.endTime.toString())
-                val minutos = (r.endTime.epochSecond - r.startTime.epochSecond) / 60.0
-                o.put("duracaoMin", minutos)
-                escalar(o, minutos, "min")
+                intervalo(o, r.startTime, r.endTime)
+                escalar(o, (r.endTime.epochSecond - r.startTime.epochSecond) / 60.0, "min")
                 extra.put("titulo", r.title)
 
                 val estagios = JSArray()
@@ -504,16 +549,48 @@ class KernHealth {
             }
 
             // ── corpo ──
-            is WeightRecord -> escalar(o, r.weight.inKilograms, "kg")
-            is HeightRecord -> escalar(o, r.height.inMeters, "m")
-            is BodyFatRecord -> escalar(o, r.percentage.value, "%")
-            is BodyWaterMassRecord -> escalar(o, r.mass.inKilograms, "kg")
-            is BoneMassRecord -> escalar(o, r.mass.inKilograms, "kg")
-            is LeanBodyMassRecord -> escalar(o, r.mass.inKilograms, "kg")
-            is BodyTemperatureRecord -> escalar(o, r.temperature.inCelsius, "°C")
-            is BasalBodyTemperatureRecord -> escalar(o, r.temperature.inCelsius, "°C")
+            is WeightRecord -> {
+                instante(o, r.time)
+                escalar(o, r.weight.inKilograms, "kg")
+            }
+
+            is HeightRecord -> {
+                instante(o, r.time)
+                escalar(o, r.height.inMeters, "m")
+            }
+
+            is BodyFatRecord -> {
+                instante(o, r.time)
+                escalar(o, r.percentage.value, "%")
+            }
+
+            is BodyWaterMassRecord -> {
+                instante(o, r.time)
+                escalar(o, r.mass.inKilograms, "kg")
+            }
+
+            is BoneMassRecord -> {
+                instante(o, r.time)
+                escalar(o, r.mass.inKilograms, "kg")
+            }
+
+            is LeanBodyMassRecord -> {
+                instante(o, r.time)
+                escalar(o, r.mass.inKilograms, "kg")
+            }
+
+            is BodyTemperatureRecord -> {
+                instante(o, r.time)
+                escalar(o, r.temperature.inCelsius, "°C")
+            }
+
+            is BasalBodyTemperatureRecord -> {
+                instante(o, r.time)
+                escalar(o, r.temperature.inCelsius, "°C")
+            }
 
             is SkinTemperatureRecord -> {
+                intervalo(o, r.startTime, r.endTime)
                 // A pulseira reporta variação em relação a uma linha de base, não
                 // temperatura absoluta — o valor sozinho não significa nada sem ela.
                 escalar(o, r.baseline?.inCelsius, "°C")
@@ -529,15 +606,24 @@ class KernHealth {
             }
 
             // ── ingestão ──
-            is HydrationRecord -> escalar(o, r.volume.inLiters, "L")
+            is HydrationRecord -> {
+                intervalo(o, r.startTime, r.endTime)
+                escalar(o, r.volume.inLiters, "L")
+            }
+
             is NutritionRecord -> {
+                intervalo(o, r.startTime, r.endTime)
                 escalar(o, r.energy?.inKilocalories, "kcal")
                 extra.put("proteinaG", r.protein?.inGrams)
                 extra.put("gorduraG", r.totalFat?.inGrams)
                 extra.put("carboidratoG", r.totalCarbohydrate?.inGrams)
                 extra.put("nome", r.name)
             }
-            is BloodGlucoseRecord -> escalar(o, r.level.inMillimolesPerLiter, "mmol/L")
+
+            is BloodGlucoseRecord -> {
+                instante(o, r.time)
+                escalar(o, r.level.inMillimolesPerLiter, "mmol/L")
+            }
 
             else -> {
                 // Nenhum tipo do catálogo cai aqui. Se cair, o texto cru é melhor do
