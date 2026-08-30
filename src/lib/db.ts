@@ -10,6 +10,9 @@ import type {
 // CartaoLeitura é definido neste módulo (abaixo) e re-exportado para o restante.
 import { hojeChave } from "./dates";
 import type { MedidaCorporal } from "./composicao";
+// Só os tipos: `kern-health` importa este módulo de volta, e um import de valor
+// fecharia o ciclo. `import type` some na compilação.
+import type { AmostraSaude, EstadoSincronia } from "./kern-health";
 
 // Guarda o GLB do avatar (Blob) no próprio IndexedDB → render offline.
 export interface AvatarRegistro {
@@ -170,6 +173,8 @@ export class Reconstrucao90DB extends Dexie {
   conversasCoach!: Table<MensagemCoach, number>;
   meditacoes!: Table<MeditacaoSession, number>;
   medidasCorporais!: Table<MedidaCorporal, string>;
+  saudeAmostras!: Table<AmostraSaude, string>;
+  saudeSync!: Table<EstadoSincronia, string>;
 
   constructor() {
     super("reconstrucao90");
@@ -340,6 +345,40 @@ export class Reconstrucao90DB extends Dexie {
       conversasCoach: "++id, data",
       meditacoes: "++id, data",
       medidasCorporais: "id, data, origem",
+    });
+
+    // v13 — pipeline de saúde da Mi Band 10.
+    //
+    // `saudeAmostras` guarda o registro do Health Connect como ele chegou, no
+    // envelope uniforme do plugin: nada de consolidado aqui. O índice composto
+    // [tipo+data] existe porque toda leitura da tela é "este tipo, neste
+    // intervalo" — sem ele, cada painel varre a tabela inteira.
+    //
+    // `saudeSync` guarda o estado da última leitura de cada tipo. Sem isso, "a
+    // Xiaomi não publica isso" e "eu não consegui ler" aparecem iguais na tela: um
+    // é fato sobre o aparelho, o outro é bug nosso.
+    this.version(13).stores({
+      dias: "data",
+      revisoes: "semana",
+      dividas: "id",
+      conquistas: "id",
+      config: "id",
+      avatar: "id",
+      treinos: "id, inicio",
+      rotinas: "id",
+      exImagens: "nome",
+      leituras: "id, proximaRevisao, origem",
+      rascunhoTreino: "id",
+      cardios: "id, data, origem",
+      tarefas: "id, ordem, category",
+      avaliacoesMente: "++id, data",
+      testesCognitivos: "++id, data, tipo",
+      exercicioConfigs: "nome",
+      conversasCoach: "++id, data",
+      meditacoes: "++id, data",
+      medidasCorporais: "id, data, origem",
+      saudeAmostras: "id, tipo, data, [tipo+data], origem, inicio",
+      saudeSync: "tipo",
     });
   }
 }
