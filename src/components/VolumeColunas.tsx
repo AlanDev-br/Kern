@@ -73,7 +73,7 @@ export function VolumeColunas({ avaliacoes }: { avaliacoes: AvaliacaoGrupo[] }) 
               </div>
               
               {/* Rótulo do grupo muscular */}
-              <span className="text-[9px] font-semibold leading-tight text-muted">
+              <span className="text-xs font-semibold leading-tight text-muted">
                 {ROTULO_CURTO[a.grupo] ?? a.grupo}
               </span>
             </div>

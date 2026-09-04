@@ -101,7 +101,7 @@ export function CardPosTreino({
 
           {/* detalhamento dos exercícios */}
           <div className="border-t border-line/30 px-5 py-4">
-            <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-muted">Exercícios</p>
+            <p className="mb-2 text-xs font-bold uppercase tracking-widest text-muted">Exercícios</p>
             <div className="space-y-1.5">
               {resumo.exercicios.map((ex) => (
                 <div key={ex.nome} className="flex items-center justify-between gap-2 text-sm">
@@ -119,13 +119,13 @@ export function CardPosTreino({
 
           {/* bonecos dos músculos trabalhados */}
           <div className="border-t border-line/30 px-5 py-4">
-            <p className="mb-2 text-center text-[10px] font-bold uppercase tracking-widest text-muted">
+            <p className="mb-2 text-center text-xs font-bold uppercase tracking-widest text-muted">
               Músculos trabalhados
             </p>
             <CorpoHeatmap workedMuscles={resumo.musculos} />
             <div className="mt-3 flex flex-wrap justify-center gap-1.5">
               {[...resumo.musculos].map((m) => (
-                <span key={m} className="rounded-lg bg-accent-soft px-2 py-0.5 text-[10px] font-semibold text-accent">
+                <span key={m} className="rounded-lg bg-accent-soft px-2 py-0.5 text-xs font-semibold text-accent">
                   {m}
                 </span>
               ))}
@@ -135,7 +135,7 @@ export function CardPosTreino({
           {/* recordes */}
           {resumo.recordes.length > 0 && (
             <div className="border-t border-line/30 px-5 py-4">
-              <p className="mb-2 text-center text-[10px] font-bold uppercase tracking-widest text-muted">
+              <p className="mb-2 text-center text-xs font-bold uppercase tracking-widest text-muted">
                 🏆 Recordes batidos
               </p>
               <div className="space-y-1.5">
@@ -178,7 +178,7 @@ function Metrica({ valor, rotulo }: { valor: string; rotulo: string }) {
   return (
     <div>
       <p className="text-lg font-black tabular-nums leading-tight">{valor}</p>
-      <p className="text-[9px] uppercase tracking-wider text-muted">{rotulo}</p>
+      <p className="text-xs uppercase tracking-wider text-muted">{rotulo}</p>
     </div>
   );
 }

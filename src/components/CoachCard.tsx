@@ -43,12 +43,12 @@ export function CoachCard() {
       <div className="flex items-center gap-2">
         <span className="text-2xl">{principal.icone}</span>
         <span
-          className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+          className="rounded-full px-2 py-0.5 text-xs font-bold uppercase tracking-wider"
           style={{ background: cor.chip, color: cor.texto }}
         >
           {ROTULO[principal.severidade]}
         </span>
-        <span className="ml-auto text-[10px] uppercase tracking-widest text-muted">
+        <span className="ml-auto text-xs uppercase tracking-widest text-muted">
           Direcionamento de hoje
         </span>
       </div>
@@ -63,7 +63,7 @@ export function CoachCard() {
         <>
           <button
             onClick={() => setAbrir((v) => !v)}
-            className="mt-3 text-[11px] text-accent underline"
+            className="mt-3 text-xs text-accent underline"
           >
             {abrir ? "ocultar" : `mais ${extras.length} ${extras.length === 1 ? "ponto" : "pontos"} de atenção`}
           </button>

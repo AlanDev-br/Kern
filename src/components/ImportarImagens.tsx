@@ -37,7 +37,7 @@ export function ImportarImagens({ catalogo }: { catalogo: string[] }) {
   return (
     <section className="glass rounded-3xl p-5">
       <h2 className="text-sm font-bold uppercase tracking-wider">Imagens dos exercícios</h2>
-      <p className="mt-1 text-[11px] leading-relaxed text-muted">
+      <p className="mt-1 text-xs leading-relaxed text-muted">
         Baixe o pacote de demonstrações que você preferir e selecione todos os arquivos de uma
         vez — o app casa cada um ao exercício pelo nome do arquivo. Os arquivos ficam só no seu
         aparelho.
@@ -81,7 +81,7 @@ export function ImportarImagens({ catalogo }: { catalogo: string[] }) {
           {resultado.naoCasadas.length > 0 && (
             <>
               <p className="mt-2 text-muted">Sem correspondência (renomeie p/ bater com o exercício):</p>
-              <ul className="mt-1 space-y-0.5 text-[11px] text-muted">
+              <ul className="mt-1 space-y-0.5 text-xs text-muted">
                 {resultado.naoCasadas.slice(0, 12).map((n) => (
                   <li key={n} className="truncate">• {n}</li>
                 ))}

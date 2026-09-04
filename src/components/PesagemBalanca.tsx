@@ -37,9 +37,9 @@ function Metrica({
 }) {
   return (
     <div className={`rounded-xl bg-bg/40 p-3 ${fraca ? "opacity-60" : ""}`}>
-      <p className="text-[10px] uppercase tracking-wider text-muted">{rotulo}</p>
+      <p className="text-xs uppercase tracking-wider text-muted">{rotulo}</p>
       <p className="text-2xl font-extrabold tabular-nums">{valor}</p>
-      {nota && <p className="text-[11px] text-muted">{nota}</p>}
+      {nota && <p className="text-xs text-muted">{nota}</p>}
     </div>
   );
 }
@@ -193,7 +193,7 @@ export function PesagemBalanca() {
       {/* Peso ao vivo enquanto a balança transmite */}
       {(ativo || ultima) && (
         <div className="mt-4 text-center">
-          <p className="text-[11px] uppercase tracking-wider text-muted">
+          <p className="text-xs uppercase tracking-wider text-muted">
             {estadoTexto(leitura, ativo)}
           </p>
           <p className="mt-1 text-5xl font-extrabold tabular-nums">
@@ -201,7 +201,7 @@ export function PesagemBalanca() {
             <span className="ml-1 text-lg font-bold text-muted">kg</span>
           </p>
           {ativo && leitura?.estabilizado && !leitura.impedancia && (
-            <p className="mt-1 text-[11px] text-muted">
+            <p className="mt-1 text-xs text-muted">
               Descalço e com os pés cobrindo as faixas de metal
             </p>
           )}
@@ -254,7 +254,7 @@ export function PesagemBalanca() {
             />
           )}
           {!ultima.impedancia && (
-            <p className="col-span-2 text-[11px] text-amber-400">
+            <p className="col-span-2 text-xs text-amber-400">
               Sem leitura de bioimpedância nesta pesagem — o peso foi registrado, mas a gordura
               acima é só estimativa por IMC. Refaça descalço, com os pés cobrindo as faixas de
               metal.
@@ -268,12 +268,12 @@ export function PesagemBalanca() {
         <div className="mt-4 border-t border-line pt-3">
           <button
             onClick={() => setVerBytes((v) => !v)}
-            className="text-[11px] font-semibold uppercase tracking-wider text-muted"
+            className="text-xs font-semibold uppercase tracking-wider text-muted"
           >
             {verBytes ? "ocultar" : "ver"} dados brutos
           </button>
           {verBytes && (
-            <div className="mt-2 space-y-1 text-[11px] text-muted">
+            <div className="mt-2 space-y-1 text-xs text-muted">
               <p className="break-all font-mono">{leitura.hex}</p>
               <p>
                 unidade {leitura.unidade} · {leitura.estabilizado ? "estável" : "oscilando"} ·

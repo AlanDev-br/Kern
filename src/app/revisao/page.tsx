@@ -35,7 +35,7 @@ export default function RevisaoPage() {
   return (
     <div className="space-y-6">
       <header className="pt-1">
-        <h1 className="text-2xl font-bold tracking-tight">Revisão da semana</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Revisão da semana</h1>
         <p className="text-sm text-muted">
           Meça por evidência, não por sentimento. Semana {r.semana}.
         </p>

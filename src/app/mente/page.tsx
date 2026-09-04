@@ -55,7 +55,7 @@ export default function MentePage() {
       <header className="flex items-center gap-4 pt-1">
         <Link href="/progresso/" className="text-xl font-bold text-muted hover:text-fg">←</Link>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Mente</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Mente</h1>
           <p className="text-sm text-muted">Inteligência em vários âmbitos — não só exatas.</p>
         </div>
       </header>
@@ -76,7 +76,7 @@ export default function MentePage() {
             <ResponsiveContainer width="100%" height="100%">
               <RadarChart cx="50%" cy="50%" outerRadius="75%" data={radar}>
                 <PolarGrid stroke="var(--line)" />
-                <PolarAngleAxis dataKey="nome" tick={{ fill: "var(--muted)", fontSize: 9 }} />
+                <PolarAngleAxis dataKey="nome" tick={{ fill: "var(--muted)", fontSize: 12 }} />
                 <Radar dataKey="valor" stroke="var(--accent)" fill="var(--accent)" fillOpacity={0.3} />
               </RadarChart>
             </ResponsiveContainer>
@@ -86,7 +86,7 @@ export default function MentePage() {
             Faça a auto-avaliação pra montar seu mapa de inteligências.
           </p>
         )}
-        <p className="px-1 text-[11px] text-muted">
+        <p className="px-1 text-xs text-muted">
           Auto-avaliação (Gardner + emocional). Honesto: é um retrato subjetivo — os testes abaixo são objetivos.
         </p>
       </section>
@@ -116,7 +116,7 @@ export default function MentePage() {
             </div>
           );
         })}
-        <p className="px-1 text-[11px] text-muted">
+        <p className="px-1 text-xs text-muted">
           Memória de trabalho, velocidade e atenção são pilares da inteligência fluida. Refaça com o tempo pra ver a
           evolução — eles alimentam o atributo 🧠 Inteligência.
         </p>

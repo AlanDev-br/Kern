@@ -71,7 +71,7 @@ function TabelaDias({ dias }: { dias: DiaSaude[] }) {
       <div className="-mx-1 mt-3 overflow-x-auto">
         <table className="w-full min-w-[19rem] border-collapse">
           <thead>
-            <tr className="border-b border-line text-left text-[11px] uppercase tracking-wider text-muted">
+            <tr className="border-b border-line text-left text-xs uppercase tracking-wider text-muted">
               <th className="py-2 font-medium">Dia</th>
               <th className="py-2 text-right font-medium">Passos</th>
               <th className="py-2 text-right font-medium">Sono</th>
@@ -180,7 +180,7 @@ export default function DadosPage() {
   return (
     <div className="space-y-6">
       <header className="pt-1">
-        <h1 className="text-2xl font-bold tracking-tight">Dados</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Dados</h1>
         <p className="text-sm text-muted">
           O que a pulseira e a balança medem, e o que isso significa junto.
         </p>

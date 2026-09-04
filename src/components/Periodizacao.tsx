@@ -56,13 +56,13 @@ export function Periodizacao({ treinos = [] }: { treinos?: Treino[] }) {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-sm font-bold uppercase tracking-wider">Periodização (natural)</h2>
-          <p className="text-[11px] text-muted">
+          <p className="text-xs text-muted">
             {diag.temDados ? diag.fase : "mesociclo de 5 semanas · baseado em evidência"}
           </p>
         </div>
         {diag.temDados && (
           <span
-            className="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
+            className="rounded-full px-2.5 py-1 text-xs font-bold uppercase tracking-wider"
             style={{
               background: diag.destreinado ? "rgba(251,113,133,0.15)" : "rgba(255,255,255,0.06)",
               color: diag.destreinado ? "#fb7185" : "var(--fg)",
@@ -79,14 +79,14 @@ export function Periodizacao({ treinos = [] }: { treinos?: Treino[] }) {
           {diag.recomendacoes.map((r, i) => (
             <div key={i} className="flex gap-2.5 rounded-xl bg-bg/40 p-3">
               <span
-                className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-[11px] font-bold"
+                className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold"
                 style={{ background: COR_REC[r.tipo], color: "var(--bg)" }}
               >
                 {ICONE_REC[r.tipo]}
               </span>
               <div className="min-w-0">
                 <p className="text-xs font-bold" style={{ color: COR_REC[r.tipo] }}>{r.titulo}</p>
-                <p className="text-[11px] leading-relaxed text-muted">{r.detalhe}</p>
+                <p className="text-xs leading-relaxed text-muted">{r.detalhe}</p>
               </div>
             </div>
           ))}
@@ -131,9 +131,9 @@ export function Periodizacao({ treinos = [] }: { treinos?: Treino[] }) {
                       </span>
                       <div className="min-w-0 flex-1">
                         <p className="text-xs font-semibold">{s.volume}</p>
-                        <p className="text-[11px] text-muted">{s.nota}</p>
+                        <p className="text-xs text-muted">{s.nota}</p>
                       </div>
-                      <span className="shrink-0 text-[10px] uppercase tracking-wider text-muted">RIR {s.rir}</span>
+                      <span className="shrink-0 text-xs uppercase tracking-wider text-muted">RIR {s.rir}</span>
                     </div>
                   );
                 })}
@@ -150,7 +150,7 @@ export function Periodizacao({ treinos = [] }: { treinos?: Treino[] }) {
                 ))}
               </ul>
 
-              <p className="mt-4 text-[10px] leading-relaxed text-muted">
+              <p className="mt-4 text-xs leading-relaxed text-muted">
                 Base: meta-análises de dose-resposta de volume (Pelland et al., 2025; Schoenfeld et al., 2017)
                 e de periodização linear vs. ondulatória (Grgic et al., 2017). MEV–MAV–MRV são heurísticas de
                 referência, não constantes fixas — ajuste pela sua recuperação.

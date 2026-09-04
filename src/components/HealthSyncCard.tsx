@@ -33,9 +33,9 @@ function rotuloOrigem(o: OrigemAcordar): string {
 function Tile({ label, valor, sub }: { label: string; valor: string; sub?: string }) {
   return (
     <div className="rounded-xl border border-line bg-bg/40 p-3">
-      <p className="text-[11px] uppercase tracking-wider text-muted">{label}</p>
+      <p className="text-xs uppercase tracking-wider text-muted">{label}</p>
       <p className="text-lg font-bold">{valor}</p>
-      {sub && <p className="text-[11px] text-muted">{sub}</p>}
+      {sub && <p className="text-xs text-muted">{sub}</p>}
     </div>
   );
 }
@@ -237,7 +237,7 @@ export function HealthSyncCard() {
       )}
 
       {(resumo?.acordouEm || resumo?.acordarEstimado || acordarManual) && (
-        <p className="mt-2 text-[11px] text-accent">✓ inegociável de acordar marcado</p>
+        <p className="mt-2 text-xs text-accent">✓ inegociável de acordar marcado</p>
       )}
 
       {resumo && !todasPermissoes(resumo.perms) && (
@@ -246,11 +246,11 @@ export function HealthSyncCard() {
         </button>
       )}
 
-      <button onClick={() => setDetalhes((d) => !d)} className="mt-3 text-[11px] text-muted underline">
+      <button onClick={() => setDetalhes((d) => !d)} className="mt-3 text-xs text-muted underline">
         {detalhes ? "ocultar diagnóstico" : "ver diagnóstico"}
       </button>
       {detalhes && resumo && (
-        <div className="mt-2 space-y-0.5 rounded-xl border border-line bg-bg/40 p-3 text-[11px] text-muted">
+        <div className="mt-2 space-y-0.5 rounded-xl border border-line bg-bg/40 p-3 text-xs text-muted">
           <p>
             Permissões — sono: {resumo.perms.sono ? "✓" : "✗"} · treino: {resumo.perms.treino ? "✓" : "✗"} · passos:{" "}
             {resumo.perms.passos ? "✓" : "✗"} · FC rep: {resumo.perms.fcRepouso ? "✓" : "✗"} · FC intra:{" "}

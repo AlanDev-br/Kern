@@ -63,7 +63,7 @@ export default function ProgressoPage() {
   return (
     <div className="space-y-6">
       <header className="pt-1">
-        <h1 className="text-2xl font-bold tracking-tight">Progresso</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Progresso</h1>
         <p className="text-sm text-muted">Seus atributos — a evidência virou poder.</p>
       </header>
 
@@ -76,7 +76,7 @@ export default function ProgressoPage() {
         </div>
         <div className="text-right">
           <p className="text-3xl font-black tabular-nums">{mediaAtributos}</p>
-          <p className="text-[10px] uppercase tracking-wider text-muted">média atributos</p>
+          <p className="text-xs uppercase tracking-wider text-muted">média atributos</p>
         </div>
       </section>
 
@@ -86,7 +86,7 @@ export default function ProgressoPage() {
           <ResponsiveContainer width="100%" height="100%">
             <RadarChart cx="50%" cy="50%" outerRadius="78%" data={radar}>
               <PolarGrid stroke="var(--line)" />
-              <PolarAngleAxis dataKey="atributo" tick={{ fill: "var(--muted)", fontSize: 10 }} />
+              <PolarAngleAxis dataKey="atributo" tick={{ fill: "var(--muted)", fontSize: 12 }} />
               <Radar dataKey="valor" stroke="var(--accent)" fill="var(--accent)" fillOpacity={0.3} />
             </RadarChart>
           </ResponsiveContainer>
@@ -107,7 +107,7 @@ export default function ProgressoPage() {
             <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-line">
               <div className="h-full rounded-full" style={{ width: `${a.valor}%`, background: a.cor }} />
             </div>
-            <p className="mt-1.5 text-[10px] leading-tight text-muted">{a.fonte}</p>
+            <p className="mt-1.5 text-xs leading-tight text-muted">{a.fonte}</p>
           </div>
         ))}
       </section>
@@ -121,6 +121,20 @@ export default function ProgressoPage() {
         <div className="min-w-0 flex-1">
           <p className="text-sm font-bold">Avaliar inteligência</p>
           <p className="text-xs text-muted">Radar das múltiplas inteligências + testes cognitivos</p>
+        </div>
+        <span className="shrink-0 text-muted">›</span>
+      </Link>
+
+      {/* Troféus saiu da barra inferior e passou a ser alcançado por aqui.
+          Sem este link a rota ficaria órfã: nenhuma outra tela aponta para ela. */}
+      <Link
+        href="/conquistas/"
+        className="glass flex items-center gap-4 rounded-2xl p-4 transition-transform active:scale-[0.98]"
+      >
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-xl">🏆</span>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-bold">Troféus</p>
+          <p className="text-xs text-muted">Conquistas desbloqueadas ao longo dos 90 dias</p>
         </div>
         <span className="shrink-0 text-muted">›</span>
       </Link>
@@ -163,7 +177,7 @@ function BigStat({ valor, label, sufixo }: { valor: string; label: string; sufix
         {valor}
         {sufixo && <span className="text-base">{sufixo}</span>}
       </p>
-      <p className="mt-1 text-[10px] uppercase tracking-wider text-muted">{label}</p>
+      <p className="mt-1 text-xs uppercase tracking-wider text-muted">{label}</p>
     </div>
   );
 }

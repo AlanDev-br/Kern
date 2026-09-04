@@ -72,7 +72,7 @@ function LinhaCrua({ a }: { a: AmostraSaude }) {
         </span>
       </div>
       <div className="mt-0.5 flex items-center justify-between gap-3">
-        <span className="truncate text-[11px] text-muted">
+        <span className="truncate text-xs text-muted">
           {a.dispositivo ? `${a.dispositivo} · ` : ""}
           {a.origem}
         </span>
@@ -80,14 +80,14 @@ function LinhaCrua({ a }: { a: AmostraSaude }) {
           <button
             type="button"
             onClick={() => setAberto((v) => !v)}
-            className="shrink-0 rounded-md px-1.5 py-0.5 text-[11px] text-muted transition-colors hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            className="shrink-0 rounded-md px-1.5 py-0.5 text-xs text-muted transition-colors hover:text-fg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           >
             {aberto ? "ocultar bruto" : "ver bruto"}
           </button>
         )}
       </div>
       {aberto && (
-        <pre className="mt-2 max-h-56 overflow-auto rounded-lg bg-bg/70 p-2.5 text-[10px] leading-relaxed text-muted">
+        <pre className="mt-2 max-h-56 overflow-auto rounded-lg bg-bg/70 p-2.5 text-xs leading-relaxed text-muted">
           {JSON.stringify(a.extra, null, 2)}
         </pre>
       )}
@@ -128,7 +128,7 @@ function LinhaTipo({
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm">{ROTULO_TIPO[tipo].nome}</span>
           {estado !== "ok" && (
-            <span className="block text-[11px] text-muted">
+            <span className="block text-xs text-muted">
               {sync?.erro ?? TEXTO_ESTADO[estado]}
             </span>
           )}
@@ -157,7 +157,7 @@ function LinhaTipo({
             </ul>
           )}
           {sync?.truncado && (
-            <p className="mt-2 text-[11px] text-muted">
+            <p className="mt-2 text-xs text-muted">
               A leitura bateu no teto de amostras deste tipo — há mais dado no aparelho
               do que o guardado aqui.
             </p>

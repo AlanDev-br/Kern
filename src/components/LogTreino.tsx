@@ -399,7 +399,7 @@ export function LogTreino({
                   >
                     −
                   </button>
-                  <span className="w-10 text-center text-[10px] font-extrabold tabular-nums text-fg/80">
+                  <span className="w-10 text-center text-xs font-extrabold tabular-nums text-fg/80">
                     {mmss(customRest * 1000)}
                   </span>
                   <button
@@ -440,7 +440,7 @@ export function LogTreino({
               )}
 
               <div className="mt-3 space-y-1.5">
-                <div className="flex gap-2 px-1 text-[10px] uppercase tracking-wider text-muted">
+                <div className="flex gap-2 px-1 text-xs uppercase tracking-wider text-muted">
                   <span className="w-7">set</span>
                   <span className="flex-1">kg</span>
                   <span className="flex-1">reps</span>
@@ -504,7 +504,7 @@ export function LogTreino({
                       </div>
 
                       {meta && !s.feito && (
-                        <div className="pl-9 text-[10px] font-bold text-accent/80 flex items-center gap-1 leading-none pb-1">
+                        <div className="pl-9 text-xs font-bold text-accent/80 flex items-center gap-1 leading-none pb-1">
                           <span>🎯 Sugestão: {meta.peso}kg × {meta.reps} reps</span>
                         </div>
                       )}
@@ -632,7 +632,7 @@ function Stat({ valor, rotulo }: { valor: string; rotulo: string }) {
   return (
     <div className="rounded-xl bg-bg/40 py-2 text-center">
       <p className="text-xl font-extrabold tabular-nums leading-none text-fg">{valor}</p>
-      <p className="mt-1 text-[10px] uppercase tracking-wider text-muted">{rotulo}</p>
+      <p className="mt-1 text-xs uppercase tracking-wider text-muted">{rotulo}</p>
     </div>
   );
 }

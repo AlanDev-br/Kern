@@ -97,7 +97,7 @@ function Cabecalho() {
     <div className="flex items-center gap-2">
       <span className="text-xl">🏋️</span>
       <span className="text-sm font-bold uppercase tracking-wider">Coach de treino</span>
-      <span className="ml-auto text-[10px] uppercase tracking-widest text-muted">últimos 7 dias</span>
+      <span className="ml-auto text-xs uppercase tracking-widest text-muted">últimos 7 dias</span>
     </div>
   );
 }

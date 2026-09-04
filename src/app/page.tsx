@@ -37,7 +37,7 @@ export default function HojePage() {
         <p className="text-sm text-muted">
           {saudacao()}, Alan · {nomeDiaSemana()}
         </p>
-        <h1 className="mt-0.5 text-2xl font-bold tracking-tight">
+        <h1 className="mt-0.5 text-3xl font-bold tracking-tight">
           Dia <span className="text-gradient">{diaN > 0 ? diaN : 0}</span> de 90
         </h1>
       </header>
@@ -50,7 +50,7 @@ export default function HojePage() {
         <div className="flex items-center gap-5">
           <ProgressRing progress={progIneg} size={120}>
             <span className="text-3xl font-extrabold">{feitos}/{inegociaveis.length}</span>
-            <span className="text-[10px] uppercase tracking-widest text-muted">
+            <span className="text-xs uppercase tracking-widest text-muted">
               inegociáveis
             </span>
           </ProgressRing>
@@ -67,7 +67,7 @@ export default function HojePage() {
                   transition={{ type: "spring", stiffness: 80, damping: 18 }}
                 />
               </div>
-              <p className="mt-1 text-[11px] text-muted">
+              <p className="mt-1 text-xs text-muted">
                 {nivel.xpNivelAtual}/{nivel.xpProximoNivel} XP
               </p>
             </div>
@@ -131,7 +131,7 @@ function Stat({ valor, label }: { valor: string; label: string }) {
   return (
     <div className="flex-1 rounded-xl border border-line bg-bg/40 px-3 py-2 text-center">
       <p className="text-base font-bold">{valor}</p>
-      <p className="text-[10px] uppercase tracking-wider text-muted">{label}</p>
+      <p className="text-xs uppercase tracking-wider text-muted">{label}</p>
     </div>
   );
 }

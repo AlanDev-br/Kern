@@ -68,7 +68,7 @@ export function ExercicioImagem({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={url} alt={nome} className="h-full w-full object-contain" />
           ) : (
-            <span className="px-1 text-center text-[9px] leading-tight text-muted">
+            <span className="px-1 text-center text-xs leading-tight text-muted">
               {grupoDoExercicio(nome)}
             </span>
           )}
@@ -82,7 +82,7 @@ export function ExercicioImagem({
             // eslint-disable-next-line @next/next/no-img-element
             <img src={url} alt={nome} className="h-full w-full object-contain" />
           ) : (
-            <span className="px-1 text-center text-[9px] leading-tight text-muted">
+            <span className="px-1 text-center text-xs leading-tight text-muted">
               {grupoDoExercicio(nome)}
             </span>
           )}

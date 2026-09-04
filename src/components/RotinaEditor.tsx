@@ -66,7 +66,7 @@ export function RotinaEditor({
             <ExercicioImagem nome={ex.nome} size={48} />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-bold">{ex.nome}</p>
-              <p className="text-[11px] text-muted">{grupoDoExercicio(ex.nome)}</p>
+              <p className="text-xs text-muted">{grupoDoExercicio(ex.nome)}</p>
             </div>
             <div className="flex items-center gap-2">
               <button onClick={() => setSeries(i, -1)} className="h-8 w-8 rounded-lg border border-line text-lg">−</button>

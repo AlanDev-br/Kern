@@ -28,12 +28,14 @@ export const metadata: Metadata = {
   },
 };
 
+// `maximumScale` e `userScalable` foram removidos de propósito: travar a pinça
+// reprova o 1.4.4 da WCAG (texto ampliável até 200%) e, num app onde parte do
+// texto é pequeno, tira a única saída que sobrava para quem não enxerga bem.
+// Não há gesto próprio de pinça no app que precisasse ser protegido.
 export const viewport: Viewport = {
   themeColor: "#08090d",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
   viewportFit: "cover",
 };
 

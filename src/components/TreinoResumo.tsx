@@ -107,7 +107,7 @@ export function TreinoResumo({ treinos }: { treinos: Treino[] }) {
     <section className="glass rounded-3xl p-5 space-y-5">
       <div className="flex items-baseline justify-between">
         <h2 className="text-sm font-bold uppercase tracking-wider">Resumo · 30 dias</h2>
-        <span className="text-[10px] uppercase tracking-wider text-muted">vs. 30 dias antes</span>
+        <span className="text-xs uppercase tracking-wider text-muted">vs. 30 dias antes</span>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -138,14 +138,14 @@ export function TreinoResumo({ treinos }: { treinos: Treino[] }) {
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={dadosSemanas} margin={{ left: -22, right: 6, top: 5, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" opacity={0.2} />
-              <XAxis dataKey="semana" tick={{ fill: "var(--muted)", fontSize: 9 }} axisLine={false} />
-              <YAxis tick={{ fill: "var(--muted)", fontSize: 9 }} axisLine={false} />
+              <XAxis dataKey="semana" tick={{ fill: "var(--muted)", fontSize: 12 }} axisLine={false} />
+              <YAxis tick={{ fill: "var(--muted)", fontSize: 12 }} axisLine={false} />
               <Tooltip
                 contentStyle={{
                   background: "var(--card)",
                   border: "1px solid var(--line)",
                   borderRadius: 12,
-                  fontSize: 11,
+                  fontSize: 12,
                 }}
               />
               {musculos.map((g) => (
@@ -170,7 +170,7 @@ export function TreinoResumo({ treinos }: { treinos: Treino[] }) {
               <button
                 key={g}
                 onClick={() => toggle(g)}
-                className={`flex items-center gap-1.5 rounded-lg border px-2 py-1 text-[10px] transition-all ${
+                className={`flex items-center gap-1.5 rounded-lg border px-2 py-1 text-xs transition-all ${
                   on ? "border-line bg-card font-bold" : "border-transparent bg-bg/20 text-muted/60"
                 }`}
               >
@@ -202,12 +202,12 @@ function Card({
   const pos = delta >= 0;
   return (
     <div className="rounded-2xl border border-line/40 bg-card/60 p-4">
-      <p className="text-[10px] font-bold uppercase tracking-wider text-muted">{label}</p>
+      <p className="text-xs font-bold uppercase tracking-wider text-muted">{label}</p>
       <p className="mt-1.5 text-lg font-black tabular-nums">
         {valor}
         <span className="text-xs font-medium text-muted">{sufixo}</span>
       </p>
-      <p className={`mt-0.5 text-[10px] font-extrabold ${pos ? "text-accent" : "text-rose-400"}`}>
+      <p className={`mt-0.5 text-xs font-extrabold ${pos ? "text-accent" : "text-rose-400"}`}>
         {pos ? "↑" : "↓"} {Math.abs(delta)}%
       </p>
     </div>

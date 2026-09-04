@@ -76,7 +76,7 @@ function Painel({
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-sm font-bold uppercase tracking-wider">Classificação de força</h2>
-          <p className="text-[11px] text-muted">carga + medidas · vs. média do seu peso e idade</p>
+          <p className="text-xs text-muted">carga + medidas · vs. média do seu peso e idade</p>
         </div>
         <button onClick={onEditar} className="rounded-lg border border-line px-2.5 py-1 text-xs font-semibold">
           perfil
@@ -138,7 +138,7 @@ function Painel({
                       {c.rotulo}
                     </span>
                     <span
-                      className="text-muted text-[10px] transition-transform duration-300 inline-block"
+                      className="text-muted text-xs transition-transform duration-300 inline-block"
                       style={{ transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)" }}
                     >
                       ▼
@@ -152,10 +152,10 @@ function Painel({
                       style={{ width: `${Math.round(c.progresso * 100)}%`, background: c.cor }}
                     />
                   </div>
-                  <span className="text-[11px] tabular-nums text-muted">{Math.round(c.e1rm)}kg agora</span>
+                  <span className="text-xs tabular-nums text-muted">{Math.round(c.e1rm)}kg agora</span>
                 </div>
                 {c.alvoProximo != null && !isExpanded && (
-                  <p className="mt-1.5 text-[11px] text-muted">
+                  <p className="mt-1.5 text-xs text-muted">
                     Para <span className="font-semibold" style={{ color: nivelDoIndex(c.nivelIndex + 1).cor }}>
                       {nivelDoIndex(c.nivelIndex + 1).rotulo}
                     </span>: 1RM ≥ <span className="font-bold tabular-nums text-fg">{Math.round(c.alvoProximo)}kg</span>{" "}
@@ -165,7 +165,7 @@ function Painel({
 
                 {isExpanded && (
                   <div className="mt-4 border-t border-line/30 pt-3">
-                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted mb-2">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-muted mb-2">
                       Objetivos de Carga (1RM Estimado)
                     </h4>
                     <div className="grid grid-cols-2 gap-x-3 gap-y-1.5">
@@ -179,7 +179,7 @@ function Painel({
                         return (
                           <div
                             key={idx}
-                            className={`flex items-center justify-between rounded-lg px-2 py-1 text-[11px] transition-all ${
+                            className={`flex items-center justify-between rounded-lg px-2 py-1 text-xs transition-all ${
                               isCurrent
                                 ? "bg-accent/10 border border-accent/30 font-bold"
                                 : isAchieved
@@ -201,11 +201,11 @@ function Painel({
                                 {target}kg
                               </span>
                               {isCurrent ? (
-                                <span className="text-[8px] uppercase tracking-wider bg-accent/20 text-accent px-1 rounded">Você</span>
+                                <span className="text-xs uppercase tracking-wider bg-accent/20 text-accent px-1 rounded">Você</span>
                               ) : isAchieved ? (
-                                <span className="text-accent text-[9px]">✓</span>
+                                <span className="text-accent text-xs">✓</span>
                               ) : (
-                                <span className="text-[9px] text-muted/30 font-normal">
+                                <span className="text-xs text-muted/30 font-normal">
                                   (+{diff}kg)
                                 </span>
                               )}
@@ -226,7 +226,7 @@ function Painel({
         <span className="text-muted">Recordes renderam</span>{" "}
         <span className="font-bold text-accent">+{xpForca} XP</span>
       </p>
-      <p className="mt-1 text-center text-[10px] text-muted">1RM estimado (Epley) · níveis são uma referência aproximada</p>
+      <p className="mt-1 text-center text-xs text-muted">1RM estimado (Epley) · níveis são uma referência aproximada</p>
     </section>
   );
 }
@@ -260,7 +260,7 @@ function PerfilForm({
   return (
     <section className="glass rounded-3xl p-5">
       <h2 className="text-sm font-bold uppercase tracking-wider">Perfil físico</h2>
-      <p className="mt-0.5 text-[11px] text-muted">
+      <p className="mt-0.5 text-xs text-muted">
         Base da classificação. As medidas alimentam o rank de tamanho (braço, panturrilha…).
       </p>
 
@@ -305,7 +305,7 @@ function PerfilForm({
             <button
               type="button"
               onClick={() => setGuiaAbertaId(m.id)}
-              className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-bg/60 text-[9px] text-muted/65 hover:text-accent font-extrabold outline-none"
+              className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-bg/60 text-xs text-muted/65 hover:text-accent font-extrabold outline-none"
               title={`Ver guia para ${m.rotulo}`}
             >
               ?
@@ -350,7 +350,7 @@ function NumCampo({
 }) {
   return (
     <div className="rounded-xl bg-bg/40 p-2">
-      <label className="mb-0.5 block text-[10px] text-muted">{label}</label>
+      <label className="mb-0.5 block text-xs text-muted">{label}</label>
       <input
         type="number"
         inputMode="decimal"

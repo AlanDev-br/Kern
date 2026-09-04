@@ -107,7 +107,7 @@ export function CelebrationOverlay() {
                 “{atual.frase}”
               </p>
             )}
-            <p className="mt-5 text-[11px] uppercase tracking-widest text-muted">
+            <p className="mt-5 text-xs uppercase tracking-widest text-muted">
               toque para continuar
             </p>
           </motion.div>

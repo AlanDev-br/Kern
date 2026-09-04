@@ -99,7 +99,7 @@ export function CorpoHeatmap({ workedMuscles }: CorpoHeatmapProps) {
           <path d="M34,136 C33,147 32,159 32,170 C35,171 38,170 39,167 C40,157 41,146 42,136 Z" fill={NEUTRO_FILL} stroke={NEUTRO_STROKE} strokeWidth="0.5" />
           <path d="M66,136 C67,147 68,159 68,170 C65,171 62,170 61,167 C60,157 59,146 58,136 Z" fill={NEUTRO_FILL} stroke={NEUTRO_STROKE} strokeWidth="0.5" />
         </svg>
-        <span className="mt-1 text-[9px] uppercase tracking-wider text-muted font-semibold">Frente</span>
+        <span className="mt-1 text-xs uppercase tracking-wider text-muted font-semibold">Frente</span>
       </div>
 
       {/* COSTAS */}
@@ -125,7 +125,7 @@ export function CorpoHeatmap({ workedMuscles }: CorpoHeatmapProps) {
           <path d="M34,144 C32,154 31,166 32,174 C35,175 38,174 39,171 C40,166 41,154 42,144 Z" {...propsMsc("Panturrilha")} />
           <path d="M66,144 C68,154 69,166 68,174 C65,175 62,174 61,171 C60,166 59,154 58,144 Z" {...propsMsc("Panturrilha")} />
         </svg>
-        <span className="mt-1 text-[9px] uppercase tracking-wider text-muted font-semibold">Costas</span>
+        <span className="mt-1 text-xs uppercase tracking-wider text-muted font-semibold">Costas</span>
       </div>
     </div>
   );

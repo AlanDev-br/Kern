@@ -132,7 +132,7 @@ export default function AvatarPage() {
   return (
     <div className="space-y-6">
       <header className="pt-1">
-        <h1 className="text-2xl font-bold tracking-tight">Avatar</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Avatar</h1>
         <p className="text-sm text-muted">Seu eu em construção — evolui com a sua prova.</p>
       </header>
 
@@ -148,7 +148,7 @@ export default function AvatarPage() {
               <p className="mt-1 text-xs text-muted">{ctx.streakAtual}🔥 streak · {ctx.xpTotal} XP</p>
             </div>
             {!tem && (
-              <span className="absolute right-4 top-4 rounded-lg border border-line bg-bg/50 px-2 py-1 text-[11px] text-muted backdrop-blur">
+              <span className="absolute right-4 top-4 rounded-lg border border-line bg-bg/50 px-2 py-1 text-xs text-muted backdrop-blur">
                 Avatar base
               </span>
             )}
@@ -174,12 +174,12 @@ export default function AvatarPage() {
               onChange={(e) => setRankTeste(Number(e.target.value))}
               className="mt-3 w-full accent-accent"
             />
-            <div className="mt-1 flex justify-between text-[10px] text-muted">
+            <div className="mt-1 flex justify-between text-xs text-muted">
               {["E", "D", "C", "B", "A", "S", "★"].map((r) => (
                 <span key={r}>{r}</span>
               ))}
             </div>
-            <p className="mt-2 text-[11px] text-muted">
+            <p className="mt-2 text-xs text-muted">
               Só pra calibrar o quanto o corpo muda. {rankTeste !== null && (
                 <button onClick={() => setRankTeste(null)} className="font-semibold text-accent underline">
                   voltar ao meu rank real
@@ -226,7 +226,7 @@ export default function AvatarPage() {
 
             <div className="rounded-xl border border-line bg-bg/40 p-3">
               <p className="text-xs font-semibold uppercase tracking-wider text-muted">Estágios manuais (opcional)</p>
-              <p className="mb-2 mt-1 text-[11px] text-muted">
+              <p className="mb-2 mt-1 text-xs text-muted">
                 Se quiser um corpo feito à mão por faixa, suba um .glb por estágio — ele substitui o motor naquela faixa.
               </p>
               {ROTULO_ESTAGIO.slice(0, NUM_ESTAGIOS).map((rotulo, e) => (

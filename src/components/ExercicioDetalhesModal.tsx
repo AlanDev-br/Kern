@@ -245,7 +245,7 @@ export function ExercicioDetalhesModal({ nome, treinos, onFechar }: ExercicioDet
               ) : (
                 <div className="flex flex-col items-center justify-center text-muted">
                   <span className="text-3xl">💪</span>
-                  <span className="text-[10px] mt-1 uppercase tracking-wider">Sem animação local</span>
+                  <span className="text-xs mt-1 uppercase tracking-wider">Sem animação local</span>
                 </div>
               )}
             </div>
@@ -269,7 +269,7 @@ export function ExercicioDetalhesModal({ nome, treinos, onFechar }: ExercicioDet
                     <button
                       key={m}
                       onClick={() => setMetric(m)}
-                      className={`rounded-md px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider transition-colors ${
+                      className={`rounded-md px-2.5 py-1 text-xs font-bold uppercase tracking-wider transition-colors ${
                         metric === m ? "bg-accent text-bg" : "text-muted hover:text-fg"
                       }`}
                     >
@@ -304,12 +304,12 @@ export function ExercicioDetalhesModal({ nome, treinos, onFechar }: ExercicioDet
                         </defs>
                         <XAxis
                           dataKey="dataStr"
-                          tick={{ fill: "var(--muted)", fontSize: 9 }}
+                          tick={{ fill: "var(--muted)", fontSize: 12 }}
                           axisLine={false}
                           tickLine={false}
                         />
                         <YAxis
-                          tick={{ fill: "var(--muted)", fontSize: 9 }}
+                          tick={{ fill: "var(--muted)", fontSize: 12 }}
                           axisLine={false}
                           tickLine={false}
                           domain={["dataMin - 5", "dataMax + 5"]}
@@ -319,7 +319,7 @@ export function ExercicioDetalhesModal({ nome, treinos, onFechar }: ExercicioDet
                             background: "var(--card)",
                             border: "1px solid var(--line)",
                             borderRadius: 12,
-                            fontSize: 11,
+                            fontSize: 12,
                           }}
                           labelStyle={{ color: "var(--muted)" }}
                         />
@@ -379,7 +379,7 @@ export function ExercicioDetalhesModal({ nome, treinos, onFechar }: ExercicioDet
                 <div key={h.id} className="rounded-2xl border border-line bg-card p-4 space-y-2">
                   <div className="flex justify-between items-baseline">
                     <p className="text-sm font-semibold truncate max-w-[65%]">{h.titulo}</p>
-                    <p className="text-[11px] text-muted font-medium">
+                    <p className="text-xs text-muted font-medium">
                       {h.data.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" })}
                     </p>
                   </div>

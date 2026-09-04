@@ -302,7 +302,7 @@ export default function CoachPage() {
     return (
       <div className="space-y-6">
         <header className="pt-1">
-          <h1 className="text-2xl font-bold tracking-tight">Coach IA</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Coach IA</h1>
           <p className="text-sm text-muted">Um mentor fundamentado, com os seus dados.</p>
         </header>
 
@@ -341,7 +341,7 @@ export default function CoachPage() {
           >
             Salvar e ativar
           </button>
-          <p className="text-[11px] text-muted">
+          <p className="text-xs text-muted">
             Nota: por enquanto a chave roda no app (uso pessoal). Para uma versão pública, isso ia para um servidor.
           </p>
         </section>
@@ -354,7 +354,7 @@ export default function CoachPage() {
     <div className="flex min-h-[70vh] flex-col">
       <header className="flex items-center justify-between pt-1">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Coach IA</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Coach IA</h1>
           <p className="text-sm text-muted">Mentor de corpo, mente e hábitos.</p>
         </div>
         <div className="flex items-center gap-3">
@@ -371,7 +371,7 @@ export default function CoachPage() {
               trocar chave
             </button>
           ) : (
-            <span className="text-[10px] uppercase tracking-wider text-muted">via .env</span>
+            <span className="text-xs uppercase tracking-wider text-muted">via .env</span>
           )}
         </div>
       </header>

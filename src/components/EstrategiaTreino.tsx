@@ -65,7 +65,7 @@ export function EstrategiaTreino() {
       <button onClick={() => setAberto((v) => !v)} className="flex w-full items-center justify-between text-left">
         <div>
           <h2 className="text-sm font-bold uppercase tracking-wider">Estratégia do treino</h2>
-          <p className="text-[11px] text-muted">Plano 4x/semana · ênfase estética · o porquê de cada conduta</p>
+          <p className="text-xs text-muted">Plano 4x/semana · ênfase estética · o porquê de cada conduta</p>
         </div>
         <span className="text-lg text-muted">{aberto ? "−" : "+"}</span>
       </button>
@@ -82,7 +82,7 @@ export function EstrategiaTreino() {
               {/* Split */}
               <div className="rounded-2xl bg-bg/40 p-3">
                 <p className="text-xs font-bold">Divisão (4 dias)</p>
-                <p className="mt-1 text-[11px] leading-relaxed text-muted">
+                <p className="mt-1 text-xs leading-relaxed text-muted">
                   <b className="text-fg">A</b> Peito+Tríceps · <b className="text-fg">B</b> Costas+Bíceps ·{" "}
                   <b className="text-fg">C</b> Pernas (quadríceps) · <b className="text-fg">D</b> Ombros+Braços+Peito.
                   Faça A→B→C→D, descansando quando precisar; peito e braços são atingidos 2x na semana.
@@ -100,9 +100,9 @@ export function EstrategiaTreino() {
                       <div className="flex items-center gap-2">
                         <span className="text-lg">{p.icone}</span>
                         <span className="text-sm font-bold">{p.grupo}</span>
-                        <span className="ml-auto text-[10px] font-semibold text-accent">{p.meta}</span>
+                        <span className="ml-auto text-xs font-semibold text-accent">{p.meta}</span>
                       </div>
-                      <p className="mt-1.5 text-[11px] leading-relaxed text-muted">
+                      <p className="mt-1.5 text-xs leading-relaxed text-muted">
                         <b className="text-fg">Por quê: </b>{p.porque}
                       </p>
                     </div>
@@ -115,7 +115,7 @@ export function EstrategiaTreino() {
                 <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted">Como conduzir cada série</p>
                 <ul className="space-y-2">
                   {PRINCIPIOS.map((p) => (
-                    <li key={p.t} className="flex gap-2 text-[11px] leading-relaxed">
+                    <li key={p.t} className="flex gap-2 text-xs leading-relaxed">
                       <span className="text-accent">•</span>
                       <span><b className="text-fg">{p.t}.</b> <span className="text-muted">{p.d}</span></span>
                     </li>
@@ -126,12 +126,12 @@ export function EstrategiaTreino() {
               {/* Cardio + onde conta */}
               <div className="rounded-2xl bg-bg/40 p-3">
                 <p className="text-xs font-bold">🏃 Cardio — falso magro</p>
-                <p className="mt-1 text-[11px] leading-relaxed text-muted">
+                <p className="mt-1 text-xs leading-relaxed text-muted">
                   <b className="text-fg">Protocolo:</b> 2–3x/semana, 25–35 min em Zona 2 (ritmo que dá pra conversar),
                   depois da musculação ou em dia separado. Recompõe (queima gordura) sem comer seu músculo. HIIT curto
                   opcional 1x, se a recuperação permitir.
                 </p>
-                <p className="mt-2 text-[11px] leading-relaxed text-muted">
+                <p className="mt-2 text-xs leading-relaxed text-muted">
                   <b className="text-fg">Onde conta:</b> você marca o cardio na pulseira → entra pelo Health Connect e
                   fecha o inegociável <b className="text-fg">"Movimento do dia"</b> + conta como condicionamento. Ele{" "}
                   <b className="text-fg">não</b> entra no volume de força (o gráfico de séries é só de musculação) — isso

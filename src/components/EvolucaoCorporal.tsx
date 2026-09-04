@@ -141,10 +141,10 @@ function Tile({
     <div className={`rounded-2xl border border-line bg-bg/40 p-3 ${fraca ? "opacity-55" : ""}`}>
       <div className="flex items-center gap-1.5 text-muted">
         <Icone className="h-4 w-4" />
-        <p className="text-[10px] font-semibold uppercase tracking-wider">{rotulo}</p>
+        <p className="text-xs font-semibold uppercase tracking-wider">{rotulo}</p>
       </div>
       <p className="mt-1 text-xl font-extrabold tabular-nums">{valor}</p>
-      {nota && <p className="text-[10px] leading-tight text-muted">{nota}</p>}
+      {nota && <p className="text-xs leading-tight text-muted">{nota}</p>}
     </div>
   );
 }
@@ -185,7 +185,7 @@ export function EvolucaoCorporal() {
     <section className="glass rounded-3xl p-5">
       <div className="flex items-baseline justify-between">
         <h2 className="text-sm font-bold uppercase tracking-wider">Evolução corporal</h2>
-        <span className="text-[10px] text-muted">{medidas.length} pesagens</span>
+        <span className="text-xs text-muted">{medidas.length} pesagens</span>
       </div>
 
       {/* Seletor: uma métrica por vez, para o gráfico nunca precisar de dois eixos */}
@@ -210,7 +210,7 @@ export function EvolucaoCorporal() {
       {/* Número-herói: a média móvel, não a última pesagem */}
       <div className="mt-4 flex items-end gap-3">
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-muted">
+          <p className="text-xs uppercase tracking-wider text-muted">
             {def.rotulo} — média de 7 dias
           </p>
           <p className="text-4xl font-extrabold tabular-nums leading-none">
@@ -221,7 +221,7 @@ export function EvolucaoCorporal() {
         {serie.length >= 2 && (
           <div className="pb-1">
             <Variacao delta={delta} unidade={def.unidade} bom={def.subirEhBom} />
-            <p className="text-[10px] text-muted">desde a 1ª pesagem</p>
+            <p className="text-xs text-muted">desde a 1ª pesagem</p>
           </div>
         )}
       </div>
@@ -239,12 +239,12 @@ export function EvolucaoCorporal() {
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" opacity={0.2} />
                 <XAxis
                   dataKey="rotuloX"
-                  tick={{ fill: "var(--muted)", fontSize: 9 }}
+                  tick={{ fill: "var(--muted)", fontSize: 12 }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <YAxis
-                  tick={{ fill: "var(--muted)", fontSize: 9 }}
+                  tick={{ fill: "var(--muted)", fontSize: 12 }}
                   axisLine={false}
                   tickLine={false}
                   domain={["dataMin - 1", "dataMax + 1"]}
@@ -254,7 +254,7 @@ export function EvolucaoCorporal() {
                     background: "var(--card)",
                     border: "1px solid var(--line)",
                     borderRadius: 12,
-                    fontSize: 11,
+                    fontSize: 12,
                   }}
                   labelStyle={{ color: "var(--muted)" }}
                   formatter={(v, nome) => [
@@ -269,7 +269,7 @@ export function EvolucaoCorporal() {
                     stroke="#fb7185"
                     strokeDasharray="4 4"
                     strokeOpacity={0.7}
-                    label={{ value: "atenção", fill: "#fb7185", fontSize: 9, position: "right" }}
+                    label={{ value: "atenção", fill: "#fb7185", fontSize: 12, position: "right" }}
                   />
                 )}
                 {/* Pesagens cruas: discretas, porque são ruído */}
@@ -288,7 +288,7 @@ export function EvolucaoCorporal() {
           </div>
 
           {/* Identidade sem depender só de cor */}
-          <div className="mt-1 flex items-center justify-center gap-4 text-[10px] text-muted">
+          <div className="mt-1 flex items-center justify-center gap-4 text-xs text-muted">
             <span className="flex items-center gap-1.5">
               <span className="h-0.5 w-4 rounded" style={{ background: "var(--accent)" }} />
               média de 7 dias
@@ -304,7 +304,7 @@ export function EvolucaoCorporal() {
       {/* Última leitura completa */}
       {derivada && ultima && (
         <>
-          <h3 className="mt-5 text-[11px] font-bold uppercase tracking-wider text-muted">
+          <h3 className="mt-5 text-xs font-bold uppercase tracking-wider text-muted">
             Última medição · {ultima.data.split("-").reverse().join("/")}
           </h3>
           <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
@@ -375,7 +375,7 @@ export function EvolucaoCorporal() {
       {/* Histórico em texto — o gráfico não substitui a tabela */}
       {medidas.length > 1 && (
         <details className="mt-4 border-t border-line pt-3">
-          <summary className="cursor-pointer text-[11px] font-semibold uppercase tracking-wider text-muted">
+          <summary className="cursor-pointer text-xs font-semibold uppercase tracking-wider text-muted">
             Todas as pesagens
           </summary>
           <ul className="mt-2 space-y-1">
@@ -392,7 +392,7 @@ export function EvolucaoCorporal() {
                     <span className="font-bold tabular-nums">{m.pesoKg} kg</span>
                     {dif !== null && (
                       <span
-                        className="tabular-nums text-[10px]"
+                        className="tabular-nums text-xs"
                         style={{ color: dif > 0 ? "#fb7185" : dif < 0 ? "var(--accent)" : "var(--muted)" }}
                       >
                         {dif > 0 ? "+" : ""}
@@ -400,7 +400,7 @@ export function EvolucaoCorporal() {
                       </span>
                     )}
                     {!m.impedancia && (
-                      <span className="text-[9px] text-amber-400">sem bioimpedância</span>
+                      <span className="text-xs text-amber-400">sem bioimpedância</span>
                     )}
                   </span>
                 </li>

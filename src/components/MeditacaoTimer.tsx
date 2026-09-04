@@ -256,7 +256,7 @@ export function MeditacaoTimer() {
         {status === "playing" && (
           <button
             onClick={toggleAudio}
-            className={`rounded-lg border px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest transition-colors ${
+            className={`rounded-lg border px-2.5 py-1 text-xs font-bold uppercase tracking-widest transition-colors ${
               audioAtivo ? "border-accent bg-accent-soft text-fg" : "border-line text-muted"
             }`}
           >
@@ -289,7 +289,7 @@ export function MeditacaoTimer() {
 
           {/* Duração */}
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold uppercase tracking-wider text-muted px-1">Duração</label>
+            <label className="text-xs font-bold uppercase tracking-wider text-muted px-1">Duração</label>
             <div className="flex gap-1.5">
               {[5, 10, 15, 25, 45].map((min) => (
                 <button
@@ -331,14 +331,14 @@ export function MeditacaoTimer() {
               <span className="text-4xl font-extrabold tabular-nums text-fg leading-none">
                 {formatado}
               </span>
-              <span className="mt-2 text-[10px] font-bold uppercase tracking-widest text-muted">
+              <span className="mt-2 text-xs font-bold uppercase tracking-widest text-muted">
                 {modo === "meditacao" ? breathText : "Modo Foco"}
               </span>
             </div>
           </div>
 
           {/* Dicas da frequência tocando no fone */}
-          <p className="text-[10px] text-muted text-center max-w-[85%] leading-normal font-medium">
+          <p className="text-xs text-muted text-center max-w-[85%] leading-normal font-medium">
             {modo === "meditacao" 
               ? "Batimento Theta de 7.83Hz (Ressonância de Schumann) ativo. Respire com o círculo."
               : "Frequência de 40Hz ativa para acelerar o foco de trabalho profundo. Mantenha os fones."}

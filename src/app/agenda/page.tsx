@@ -63,7 +63,7 @@ export default function AgendaPage() {
     <div className="space-y-6">
       <header className="flex items-end justify-between pt-1">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Agenda</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Agenda</h1>
           <p className="text-sm text-muted">
             {feitos}/{inegociaveis.length} inegociáveis · o tick do dia.
           </p>

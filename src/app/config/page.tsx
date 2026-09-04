@@ -389,15 +389,15 @@ export default function ConfigPage() {
           <div className="flex-1 grid grid-cols-3 gap-1 text-center">
             <div>
               <p className="text-base font-extrabold text-fg">{treinos.length}</p>
-              <p className="text-[9px] uppercase tracking-wider text-muted font-medium mt-0.5">Treinos</p>
+              <p className="text-xs uppercase tracking-wider text-muted font-medium mt-0.5">Treinos</p>
             </div>
             <div>
               <p className="text-base font-extrabold text-fg">0</p>
-              <p className="text-[9px] uppercase tracking-wider text-muted font-medium mt-0.5">Seguidores</p>
+              <p className="text-xs uppercase tracking-wider text-muted font-medium mt-0.5">Seguidores</p>
             </div>
             <div>
               <p className="text-base font-extrabold text-fg">0</p>
-              <p className="text-[9px] uppercase tracking-wider text-muted font-medium mt-0.5">Seguindo</p>
+              <p className="text-xs uppercase tracking-wider text-muted font-medium mt-0.5">Seguindo</p>
             </div>
           </div>
         </div>
@@ -413,7 +413,7 @@ export default function ConfigPage() {
         <div className="flex items-baseline justify-between">
           <div>
             <p className="text-base font-extrabold text-accent">{textoTempoSemanal}</p>
-            <p className="text-[10px] text-muted uppercase tracking-wider font-semibold">Tempo de Treino</p>
+            <p className="text-xs text-muted uppercase tracking-wider font-semibold">Tempo de Treino</p>
           </div>
 
           <select
@@ -434,12 +434,12 @@ export default function ConfigPage() {
               <BarChart data={dadosGrafico} margin={{ top: 10, right: 5, left: -25, bottom: 0 }}>
                 <XAxis
                   dataKey="label"
-                  tick={{ fill: "var(--muted)", fontSize: 9 }}
+                  tick={{ fill: "var(--muted)", fontSize: 12 }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <YAxis
-                  tick={{ fill: "var(--muted)", fontSize: 9 }}
+                  tick={{ fill: "var(--muted)", fontSize: 12 }}
                   axisLine={false}
                   tickLine={false}
                 />
@@ -448,7 +448,7 @@ export default function ConfigPage() {
                     background: "var(--card)",
                     border: "1px solid var(--line)",
                     borderRadius: 12,
-                    fontSize: 10,
+                    fontSize: 12,
                   }}
                   cursor={{ fill: "rgba(255,255,255,0.04)" }}
                 />
@@ -485,7 +485,7 @@ export default function ConfigPage() {
             <button
               key={m}
               onClick={() => setGraficoMetrica(m)}
-              className={`flex-1 rounded-lg py-1.5 text-[10px] font-bold uppercase tracking-wider transition-colors ${
+              className={`flex-1 rounded-lg py-1.5 text-xs font-bold uppercase tracking-wider transition-colors ${
                 graficoMetrica === m ? "bg-accent text-bg" : "text-muted hover:text-fg"
               }`}
             >
@@ -570,7 +570,7 @@ export default function ConfigPage() {
                     </div>
                     <div>
                       <p className="text-xs font-bold text-fg leading-tight">alannicholas94</p>
-                      <p className="text-[10px] text-muted mt-0.5">{formatarDataFeed(t.inicio)}</p>
+                      <p className="text-xs text-muted mt-0.5">{formatarDataFeed(t.inicio)}</p>
                     </div>
                   </div>
 
@@ -579,11 +579,11 @@ export default function ConfigPage() {
                     <h3 className="text-sm font-bold text-fg">{t.titulo}</h3>
                     <div className="mt-2 grid grid-cols-2 gap-4 rounded-xl bg-bg/25 border border-line/10 p-2.5 text-center text-xs">
                       <div>
-                        <p className="text-muted text-[10px] uppercase tracking-wider font-semibold">Tempo</p>
+                        <p className="text-muted text-xs uppercase tracking-wider font-semibold">Tempo</p>
                         <p className="font-extrabold text-fg mt-0.5">{tempoStr}</p>
                       </div>
                       <div>
-                        <p className="text-muted text-[10px] uppercase tracking-wider font-semibold">Volume</p>
+                        <p className="text-muted text-xs uppercase tracking-wider font-semibold">Volume</p>
                         <p className="font-extrabold text-accent mt-0.5">{volumeTreino.toLocaleString("pt-BR")} kg</p>
                       </div>
                     </div>
@@ -598,7 +598,7 @@ export default function ConfigPage() {
                         className="w-full flex items-center justify-between text-left hover:text-accent outline-none text-xs transition-colors py-1"
                       >
                         <span className="font-bold text-fg/90">{ex.sets.length} × {ex.nome}</span>
-                        <span className="text-[10px] text-muted">
+                        <span className="text-xs text-muted">
                           {ex.sets.map((s) => `${s.peso}kg×${s.reps}`).slice(0, 3).join(" · ")}
                           {ex.sets.length > 3 ? "..." : ""}
                         </span>
@@ -618,7 +618,7 @@ export default function ConfigPage() {
 
       {/* Gaveta de Exercícios */}
       {gavetaAberta === "exercicios" && (
-        <div className="fixed inset-0 z-30 flex flex-col bg-bg backdrop-blur-xl">
+        <div className="fixed inset-0 z-30 flex flex-col bg-bg">
           <header className="flex items-center justify-between border-b border-line px-3 pb-3 pt-[max(0.85rem,env(safe-area-inset-top))]">
             <button onClick={() => setGavetaAberta(null)} aria-label="Voltar" className="-ml-1 flex h-10 w-10 items-center justify-center rounded-xl text-2xl font-bold text-muted active:bg-card">
               ←
@@ -676,16 +676,16 @@ export default function ConfigPage() {
                   >
                     <div className="min-w-0 flex-1 pr-3">
                       <p className="text-xs font-bold text-fg truncate">{ex.nome}</p>
-                      <p className="text-[10px] text-muted font-medium mt-0.5">{ex.grupo}</p>
+                      <p className="text-xs text-muted font-medium mt-0.5">{ex.grupo}</p>
                     </div>
                     <div className="flex items-center gap-4 shrink-0 text-right">
-                      <div className="text-[10px] text-muted leading-tight">
+                      <div className="text-xs text-muted leading-tight">
                         <p><span className="font-semibold text-fg">PR:</span> {ex.recorde}kg</p>
                         <p className="mt-0.5"><span className="font-semibold text-fg">1RM:</span> {ex.max1rm}kg</p>
                       </div>
-                      <div className="text-[10px] text-muted text-right">
+                      <div className="text-xs text-muted text-right">
                         <p className="font-bold text-accent">{ex.sessoes}</p>
-                        <p className="text-[8px] uppercase tracking-widest text-muted mt-0.5">vezes</p>
+                        <p className="text-xs uppercase tracking-widest text-muted mt-0.5">vezes</p>
                       </div>
                       <span className="text-muted text-sm font-semibold">→</span>
                     </div>
@@ -699,7 +699,7 @@ export default function ConfigPage() {
 
       {/* Gaveta de Medições (Perfil Físico) */}
       {gavetaAberta === "medicoes" && (
-        <div className="fixed inset-0 z-30 flex flex-col bg-bg backdrop-blur-xl">
+        <div className="fixed inset-0 z-30 flex flex-col bg-bg">
           <header className="flex items-center justify-between border-b border-line px-3 pb-3 pt-[max(0.85rem,env(safe-area-inset-top))]">
             <button onClick={() => setGavetaAberta(null)} aria-label="Voltar" className="-ml-1 flex h-10 w-10 items-center justify-center rounded-xl text-2xl font-bold text-muted active:bg-card">
               ←
@@ -724,7 +724,7 @@ export default function ConfigPage() {
 
               <div className="grid grid-cols-2 gap-3.5">
                 <div className="space-y-1">
-                  <label className="text-[10px] text-muted uppercase tracking-wider font-semibold">Sexo</label>
+                  <label className="text-xs text-muted uppercase tracking-wider font-semibold">Sexo</label>
                   <select
                     value={config.perfil?.sexo ?? "M"}
                     onChange={(e) =>
@@ -738,7 +738,7 @@ export default function ConfigPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] text-muted uppercase tracking-wider font-semibold">Idade (anos)</label>
+                  <label className="text-xs text-muted uppercase tracking-wider font-semibold">Idade (anos)</label>
                   <input
                     type="number"
                     value={config.perfil?.idade ?? ""}
@@ -750,7 +750,7 @@ export default function ConfigPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] text-muted uppercase tracking-wider font-semibold">Peso Corporal (kg)</label>
+                  <label className="text-xs text-muted uppercase tracking-wider font-semibold">Peso Corporal (kg)</label>
                   <input
                     type="number"
                     step="0.1"
@@ -763,7 +763,7 @@ export default function ConfigPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-[10px] text-muted uppercase tracking-wider font-semibold">Gordura %</label>
+                  <label className="text-xs text-muted uppercase tracking-wider font-semibold">Gordura %</label>
                   <input
                     type="number"
                     step="0.1"
@@ -797,7 +797,7 @@ export default function ConfigPage() {
                   return (
                     <div key={medida} className="space-y-1 relative">
                       <div className="flex items-center justify-between">
-                        <label className="text-[10px] text-muted uppercase tracking-wider font-semibold">{medida}</label>
+                        <label className="text-xs text-muted uppercase tracking-wider font-semibold">{medida}</label>
                         <button
                           type="button"
                           onClick={() => {
@@ -808,7 +808,7 @@ export default function ConfigPage() {
                             else if (chave === "quadril") mappedId = "quadril";
                             setGuiaAbertaId(mappedId);
                           }}
-                          className="text-[9px] text-muted/50 hover:text-accent font-extrabold outline-none"
+                          className="text-xs text-muted/50 hover:text-accent font-extrabold outline-none"
                           title="Como medir?"
                         >
                           ?
@@ -847,7 +847,7 @@ export default function ConfigPage() {
 
       {/* Gaveta de Calendário */}
       {gavetaAberta === "calendario" && (
-        <div className="fixed inset-0 z-30 flex flex-col bg-bg backdrop-blur-xl">
+        <div className="fixed inset-0 z-30 flex flex-col bg-bg">
           <header className="flex items-center justify-between border-b border-line px-3 pb-3 pt-[max(0.85rem,env(safe-area-inset-top))]">
             <button onClick={() => setGavetaAberta(null)} aria-label="Voltar" className="-ml-1 flex h-10 w-10 items-center justify-center rounded-xl text-2xl font-bold text-muted active:bg-card">
               ←
@@ -873,7 +873,7 @@ export default function ConfigPage() {
             {/* Grid do Calendário */}
             <div className="glass rounded-3xl p-5 space-y-4">
               {/* Dias da semana */}
-              <div className="grid grid-cols-7 gap-1 text-center text-[10px] font-bold uppercase tracking-widest text-muted">
+              <div className="grid grid-cols-7 gap-1 text-center text-xs font-bold uppercase tracking-widest text-muted">
                 {["S", "T", "Q", "Q", "S", "S", "D"].map((s, idx) => (
                   <span key={idx}>{s}</span>
                 ))}
@@ -910,7 +910,7 @@ export default function ConfigPage() {
 
       {/* Gaveta de Configurações (Ajustes ⚙) */}
       {gavetaAberta === "ajustes" && (
-        <div className="fixed inset-0 z-30 flex flex-col bg-bg backdrop-blur-xl">
+        <div className="fixed inset-0 z-30 flex flex-col bg-bg">
           <header className="flex items-center justify-between border-b border-line px-3 pb-3 pt-[max(0.85rem,env(safe-area-inset-top))]">
             <button onClick={() => setGavetaAberta(null)} aria-label="Voltar" className="-ml-1 flex h-10 w-10 items-center justify-center rounded-xl text-2xl font-bold text-muted active:bg-card">
               ←
@@ -936,7 +936,7 @@ export default function ConfigPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-xs font-bold uppercase tracking-wider text-muted">Notificações</h3>
-                  <p className="text-[10px] text-muted mt-0.5">
+                  <p className="text-xs text-muted mt-0.5">
                     {ehNativo() ? "Lembretes no horário definido" : "Disponível no app Android"}
                   </p>
                 </div>
@@ -995,7 +995,7 @@ export default function ConfigPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <h3 className="text-xs font-bold uppercase tracking-wider text-muted">Limites de Aplicativos</h3>
-                    <p className="text-[10px] text-muted mt-0.5">StayFree — Bloqueio de redes sociais</p>
+                    <p className="text-xs text-muted mt-0.5">StayFree — Bloqueio de redes sociais</p>
                   </div>
                   <button
                     onClick={toggleLimiter}
@@ -1038,7 +1038,7 @@ export default function ConfigPage() {
                     )}
 
                     <div className="space-y-3">
-                      <p className="text-[10px] font-bold text-muted uppercase tracking-wider">Limites Diários:</p>
+                      <p className="text-xs font-bold text-muted uppercase tracking-wider">Limites Diários:</p>
                       {APPS_SOCIAIS.map((app) => {
                         const valor = limits[app.pkg] || 0;
                         return (
@@ -1075,7 +1075,7 @@ export default function ConfigPage() {
             {/* Backup */}
             <section className="glass rounded-2xl p-4.5 space-y-3.5">
               <h3 className="text-xs font-bold uppercase tracking-wider text-muted">Backup dos Dados</h3>
-              <p className="text-[11px] text-muted leading-normal">
+              <p className="text-xs text-muted leading-normal">
                 Seus dados ficam locais no aparelho. Exporte regularmente para segurança.
               </p>
               <div className="grid grid-cols-2 gap-2">
@@ -1100,7 +1100,7 @@ export default function ConfigPage() {
                 className="hidden"
               />
               {config.ultimoBackup && (
-                <p className="text-[9px] text-muted italic mt-1.5">Último backup: {config.ultimoBackup}</p>
+                <p className="text-xs text-muted italic mt-1.5">Último backup: {config.ultimoBackup}</p>
               )}
             </section>
           </div>

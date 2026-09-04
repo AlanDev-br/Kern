@@ -73,11 +73,14 @@ export function AvatarHero() {
         <Avatar3D url={objUrl} streak={ctx.streakAtual} cor={rank.cor} rankIndex={rankIndex} />
       </div>
 
-      {/* rank + nível */}
-      <div className="pointer-events-none absolute left-4 top-4">
+      {/* Rank + nível, numa placa opaca. Antes o texto ficava direto sobre o
+          degradê e sobre o avatar em 3D, e o contraste variava com o que
+          estivesse renderizado atrás: medido em 1,1:1 no pior ponto. Fundo
+          conhecido é a única forma de garantir contraste sobre canvas. */}
+      <div className="pointer-events-none absolute left-4 top-4 rounded-xl bg-bg/95 px-3 py-2">
         <span
           className="rounded-lg px-2 py-1 text-sm font-extrabold"
-          style={{ background: `rgba(${rank.glow},0.2)`, color: rank.cor, boxShadow: `0 0 16px rgba(${rank.glow},0.5)` }}
+          style={{ background: `rgba(${rank.glow},0.2)`, color: rank.cor }}
         >
           {rank.nome}
         </span>
@@ -85,16 +88,17 @@ export function AvatarHero() {
         <p className="text-xs text-muted">{ctx.streakAtual}🔥 · {ctx.xpTotal} XP</p>
       </div>
 
+      {/* Alvo de 44px: media 30px, abaixo até do mínimo de 24px do 2.5.8. */}
       <Link
         href="/avatar/"
-        className="absolute right-4 top-4 rounded-lg border border-line bg-bg/40 px-3 py-1.5 text-xs font-semibold backdrop-blur active:scale-95"
+        className="absolute right-4 top-4 inline-flex min-h-11 items-center rounded-lg border border-line bg-bg/95 px-4 text-xs font-semibold active:scale-95"
       >
         Personalizar
       </Link>
 
       {/* lema do rank */}
       <div className="pointer-events-none absolute inset-x-4 bottom-4">
-        <p className="rounded-xl bg-bg/50 p-3 text-center text-sm font-medium italic backdrop-blur">
+        <p className="rounded-xl bg-bg/95 p-3 text-center text-sm font-medium italic">
           “{rank.lema}”
         </p>
       </div>

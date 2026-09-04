@@ -55,13 +55,13 @@ export function ComposicaoCorporal() {
       <div className="mt-3 grid grid-cols-2 gap-2">
         {imcInfo && (
           <div className="rounded-xl bg-bg/40 p-3">
-            <p className="text-[10px] uppercase tracking-wider text-muted">IMC</p>
+            <p className="text-xs uppercase tracking-wider text-muted">IMC</p>
             <p className="text-2xl font-extrabold tabular-nums">{imcInfo.valor.toFixed(1)}</p>
             <p className="text-xs font-semibold" style={{ color: imcInfo.cor }}>{imcInfo.faixa}</p>
           </div>
         )}
         <div className="rounded-xl bg-bg/40 p-3">
-          <p className="text-[10px] uppercase tracking-wider text-muted">Gordura</p>
+          <p className="text-xs uppercase tracking-wider text-muted">Gordura</p>
           {perfil?.gorduraPct ? (
             <>
               <p className="text-2xl font-extrabold tabular-nums">{perfil.gorduraPct}%</p>
@@ -98,7 +98,7 @@ export function ComposicaoCorporal() {
                 )}
               </div>
               {m.mesesEstimados != null && (
-                <p className="mt-1 text-[11px] text-muted">
+                <p className="mt-1 text-xs text-muted">
                   <span className="tabular-nums text-fg">{m.atual.toFixed(0)}</span> →{" "}
                   <span className="font-bold tabular-nums text-fg">{m.alvo.toFixed(0)} cm</span>{" "}
                   (faltam {m.faltaCm.toFixed(1)} cm) · ~<span className="font-bold">{m.mesesEstimados} {m.mesesEstimados === 1 ? "mês" : "meses"}</span> treinando certo
@@ -109,7 +109,7 @@ export function ComposicaoCorporal() {
         </div>
       )}
 
-      <p className="mt-3 text-[10px] leading-relaxed text-muted">
+      <p className="mt-3 text-xs leading-relaxed text-muted">
         IMC não distingue músculo de gordura — leia junto com a % de gordura. O tempo é uma
         estimativa assumindo treino e dieta consistentes; a taxa de ganho cai conforme você avança.
       </p>
@@ -142,7 +142,7 @@ function FormBalanca({
 
   return (
     <div className="mt-3 rounded-2xl border border-line p-3">
-      <p className="mb-2 text-[11px] text-muted">
+      <p className="mb-2 text-xs text-muted">
         Lance os números que sua balança mostrou (qualquer marca):
       </p>
       <div className="grid grid-cols-3 gap-2">
@@ -163,7 +163,7 @@ function FormBalanca({
 function NumCampo({ label, valor, onChange }: { label: string; valor: number; onChange: (v: number) => void }) {
   return (
     <div className="rounded-xl bg-bg/40 p-2">
-      <label className="mb-0.5 block text-[10px] text-muted">{label}</label>
+      <label className="mb-0.5 block text-xs text-muted">{label}</label>
       <input
         type="number"
         inputMode="decimal"

@@ -13,7 +13,7 @@ export default function ConquistasPage() {
   return (
     <div className="space-y-6">
       <header className="pt-1">
-        <h1 className="text-2xl font-bold tracking-tight">Troféus</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Troféus</h1>
         <p className="text-sm text-muted">
           {desbloqueadas} de {total} conquistas desbloqueadas
         </p>
@@ -74,7 +74,7 @@ export default function ConquistasPage() {
                 />
                 <span className="min-w-0">
                   <span className="block text-sm font-semibold">{t.nome}</span>
-                  <span className="block text-[11px] text-muted">
+                  <span className="block text-xs text-muted">
                     {ok ? (ativo ? "ativo" : "tocar p/ ativar") : `${t.xpDesbloqueio} XP`}
                   </span>
                 </span>

@@ -201,7 +201,7 @@ function Figura({ titulo, children }: { titulo: string; children: React.ReactNod
   return (
     <div className="flex flex-1 flex-col items-center">
       {children}
-      <span className="mt-2 text-[10px] uppercase tracking-wider text-muted font-bold">{titulo}</span>
+      <span className="mt-2 text-xs uppercase tracking-wider text-muted font-bold">{titulo}</span>
     </div>
   );
 }

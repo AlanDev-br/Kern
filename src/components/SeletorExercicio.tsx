@@ -70,7 +70,7 @@ export function SeletorExercicio({
               className="flex w-full items-center justify-between rounded-xl border border-line bg-card px-3 py-3 text-left active:scale-[0.99]"
             >
               <span className="min-w-0 truncate text-sm font-medium">{c}</span>
-              <span className="ml-2 shrink-0 text-[10px] uppercase tracking-wider text-muted">
+              <span className="ml-2 shrink-0 text-xs uppercase tracking-wider text-muted">
                 {grupoDoExercicio(c)}
               </span>
             </button>

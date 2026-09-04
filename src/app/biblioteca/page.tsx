@@ -18,7 +18,7 @@ export default function BibliotecaPage() {
   return (
     <div className="space-y-5">
       <header className="pt-1">
-        <h1 className="text-2xl font-bold tracking-tight">Biblioteca</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Biblioteca</h1>
         <p className="text-sm text-muted">
           Conceitos para internalizar — leia, aplique e revise.
         </p>

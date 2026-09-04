@@ -62,18 +62,17 @@ export function RevisaoLeituraCard() {
     <motion.section
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="glass rounded-3xl p-5 border border-line"
-      style={{ borderLeft: `4px solid ${destaque.cor}` }}
+      className="glass rounded-3xl p-5"
     >
       <div className="flex items-center gap-2">
         <span className="text-2xl">📖</span>
         <span
-          className="rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider"
+          className="rounded-full px-2 py-0.5 text-xs font-bold uppercase tracking-wider"
           style={{ background: destaque.bgBadge, color: destaque.cor }}
         >
           {destaque.badge}
         </span>
-        <span className="ml-auto text-[10px] uppercase tracking-widest text-muted">
+        <span className="ml-auto text-xs uppercase tracking-widest text-muted">
           Leitura & Foco
         </span>
       </div>
@@ -95,7 +94,7 @@ export function RevisaoLeituraCard() {
             : "Reflita sobre os conceitos aprendidos"}
         </span>
         <Link
-          href="/biblioteca"
+          href="/biblioteca/"
           className="text-xs font-bold text-accent hover:underline flex items-center gap-0.5"
         >
           {destaque.linkText} →

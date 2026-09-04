@@ -297,7 +297,7 @@ export default function EstatisticasPage() {
           ←
         </Link>
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Estatísticas</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Estatísticas</h1>
           <p className="text-sm text-muted">Histórico de rendimento biométrico.</p>
         </div>
       </header>
@@ -309,7 +309,7 @@ export default function EstatisticasPage() {
       <section className="glass rounded-3xl p-5 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-bold uppercase tracking-wider">Última semana de treinos</h2>
-          <span className="text-[10px] uppercase font-bold text-accent bg-accent/15 px-2 py-0.5 rounded-full">
+          <span className="text-xs uppercase font-bold text-accent bg-accent/15 px-2 py-0.5 rounded-full">
             Selecione o dia
           </span>
         </div>
@@ -334,7 +334,7 @@ export default function EstatisticasPage() {
                     : "bg-card/40 border-line/60 text-muted"
                 }`}
               >
-                <span className="text-[10px] opacity-75 uppercase leading-none mb-1">{diaSemanaStr}</span>
+                <span className="text-xs opacity-75 uppercase leading-none mb-1">{diaSemanaStr}</span>
                 <span className="text-sm font-extrabold tabular-nums leading-none">{diaNum}</span>
                 {worked && !isSelected && (
                   <span className="h-1 w-1 rounded-full bg-accent mt-1" />
@@ -357,7 +357,7 @@ export default function EstatisticasPage() {
                   return (
                     <div key={t.id} className="inline-block glass bg-card p-2 rounded-xl text-left w-full text-xs">
                       <p className="font-bold text-fg truncate">{t.titulo}</p>
-                      <p className="text-[10px] text-muted font-medium mt-0.5">
+                      <p className="text-xs text-muted font-medium mt-0.5">
                         {t.exercicios.length} exercícios · {numSets} séries · {t.fim ? "Concluído" : "Rascunho"}
                       </p>
                     </div>
@@ -390,7 +390,7 @@ export default function EstatisticasPage() {
                 <ResponsiveContainer width="100%" height="100%">
                   <RadarChart cx="50%" cy="50%" outerRadius="80%" data={dadosRadar}>
                     <PolarGrid stroke="var(--line)" />
-                    <PolarAngleAxis dataKey="subject" tick={{ fill: "var(--muted)", fontSize: 10 }} />
+                    <PolarAngleAxis dataKey="subject" tick={{ fill: "var(--muted)", fontSize: 12 }} />
                     <PolarRadiusAxis angle={30} domain={[0, "dataMax + 2"]} tick={false} axisLine={false} />
                     <Radar
                       name="Atual"
@@ -411,7 +411,7 @@ export default function EstatisticasPage() {
                         background: "var(--card)",
                         border: "1px solid var(--line)",
                         borderRadius: 12,
-                        fontSize: 11,
+                        fontSize: 12,
                       }}
                     />
                   </RadarChart>
@@ -419,7 +419,7 @@ export default function EstatisticasPage() {
               </div>
 
               {/* Legenda do radar */}
-              <div className="flex justify-center gap-6 text-[10px] font-bold uppercase tracking-wider">
+              <div className="flex justify-center gap-6 text-xs font-bold uppercase tracking-wider">
                 <div className="flex items-center gap-1.5">
                   <span className="h-2 w-2 rounded-full bg-accent" />
                   <span className="text-fg">Atual (Últimos 30d)</span>
@@ -486,14 +486,14 @@ export default function EstatisticasPage() {
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={dadosLinhasSéries} margin={{ left: -20, right: 5, top: 5, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="var(--line)" opacity={0.2} />
-                    <XAxis dataKey="semana" tick={{ fill: "var(--muted)", fontSize: 9 }} axisLine={false} />
-                    <YAxis tick={{ fill: "var(--muted)", fontSize: 9 }} axisLine={false} />
+                    <XAxis dataKey="semana" tick={{ fill: "var(--muted)", fontSize: 12 }} axisLine={false} />
+                    <YAxis tick={{ fill: "var(--muted)", fontSize: 12 }} axisLine={false} />
                     <Tooltip
                       contentStyle={{
                         background: "var(--card)",
                         border: "1px solid var(--line)",
                         borderRadius: 12,
-                        fontSize: 11,
+                        fontSize: 12,
                       }}
                     />
                     {musculosSelecionados.map((g) => (
@@ -575,7 +575,7 @@ export default function EstatisticasPage() {
                       <span className="text-xs font-bold text-muted w-4">{idx + 1}.</span>
                       <span className="text-xs font-semibold text-fg truncate">{ex.nome}</span>
                     </div>
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-accent bg-accent/15 px-2 py-0.5 rounded-full">
+                    <span className="text-xs font-bold uppercase tracking-wider text-accent bg-accent/15 px-2 py-0.5 rounded-full">
                       {ex.count} treinos
                     </span>
                   </button>
@@ -622,7 +622,7 @@ function StatCard({
 }) {
   return (
     <div className="glass bg-card/60 p-4 rounded-2xl relative border border-line/40">
-      <p className="text-[10px] font-bold uppercase tracking-wider text-muted">{label}</p>
+      <p className="text-xs font-bold uppercase tracking-wider text-muted">{label}</p>
       <p className="text-lg font-black mt-1.5 tabular-nums text-fg">
         {valor}
         <span className="text-xs font-medium text-muted">{sufixo}</span>
@@ -631,7 +631,7 @@ function StatCard({
       {/* Diferença percentual delta */}
       <div className="flex items-center gap-0.5 mt-1">
         <span
-          className={`text-[10px] font-extrabold ${
+          className={`text-xs font-extrabold ${
             delta.positivo ? "text-accent" : "text-rose-400"
           }`}
         >

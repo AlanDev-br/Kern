@@ -78,7 +78,7 @@ export function CardioSemanalCard() {
           <h2 className="text-sm font-bold uppercase tracking-wider flex items-center gap-1.5">
             🏃 Cardio Semanal
           </h2>
-          <p className="text-[11px] text-muted">
+          <p className="text-xs text-muted">
             Meta: {META_CARDIO_SEMANAL} min/semana · Concluído: {minutosTotais} min ({pct}%)
           </p>
         </div>
@@ -111,7 +111,7 @@ export function CardioSemanalCard() {
               <div className="space-y-2">
                 <p className="text-xs font-bold uppercase tracking-wider text-muted">Sessões Desta Semana</p>
                 {cardiosSemana.length === 0 ? (
-                  <p className="text-[11px] text-muted italic">Nenhuma sessão registrada nesta semana.</p>
+                  <p className="text-xs text-muted italic">Nenhuma sessão registrada nesta semana.</p>
                 ) : (
                   <div className="space-y-1.5">
                     {cardiosSemana
@@ -121,7 +121,7 @@ export function CardioSemanalCard() {
                           <div className="flex items-center gap-2">
                             <span>{c.origem === "health_connect" ? "⌚" : "👤"}</span>
                             <span className="font-semibold text-fg">{c.tipo}</span>
-                            <span className="text-[10px] text-muted font-medium bg-line/45 rounded px-1">{formatarData(c.data)}</span>
+                            <span className="text-xs text-muted font-medium bg-line/45 rounded px-1">{formatarData(c.data)}</span>
                           </div>
                           <div className="flex items-center gap-3">
                             <span className="font-bold text-accent">{c.minutos} min</span>
@@ -183,7 +183,7 @@ export function CardioSemanalCard() {
                   {/* Minutos e Data */}
                   <div className="grid grid-cols-2 gap-2">
                     <div className="space-y-1">
-                      <label className="text-[10px] text-muted uppercase tracking-wider font-semibold">Minutos</label>
+                      <label className="text-xs text-muted uppercase tracking-wider font-semibold">Minutos</label>
                       <input
                         type="number"
                         min="1"
@@ -194,7 +194,7 @@ export function CardioSemanalCard() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] text-muted uppercase tracking-wider font-semibold">Data</label>
+                      <label className="text-xs text-muted uppercase tracking-wider font-semibold">Data</label>
                       <input
                         type="date"
                         value={dataInput}

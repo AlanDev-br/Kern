@@ -84,7 +84,7 @@ export function ScreenTimeCard() {
           <li>Na lista, encontre <strong>Kern</strong> e ligue a chave.</li>
           <li>Volte pro app — ele reconhece sozinho.</li>
         </ol>
-        <p className="mt-2 text-[11px] text-muted">
+        <p className="mt-2 text-xs text-muted">
           A chave não liga? Como o app foi instalado fora da Play Store, o Android a
           bloqueia. Vá em <strong>Ajustes → Apps → Kern → ⋮ → “Permitir configurações
           restritas”</strong> e tente de novo.
@@ -103,7 +103,7 @@ export function ScreenTimeCard() {
             Já autorizei
           </button>
         </div>
-        <p className="mt-2 text-[11px] text-muted">
+        <p className="mt-2 text-xs text-muted">
           Diagnóstico: permissão não detectada (modo {modo}).
         </p>
       </div>

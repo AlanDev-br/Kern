@@ -94,7 +94,7 @@ export default function TreinoPage() {
   return (
     <div className="space-y-6">
       <header className="pt-1">
-        <h1 className="text-2xl font-bold tracking-tight">Treino</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Treino</h1>
         <p className="text-sm text-muted">Selecione uma rotina ou inicie um treino vazio.</p>
       </header>
 
@@ -167,7 +167,7 @@ export default function TreinoPage() {
             onClick={() => setVerRotinas((v) => !v)}
             className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted"
           >
-            Minhas rotinas <span className="text-[10px]">({rotinas.length})</span>
+            Minhas rotinas <span className="text-xs">({rotinas.length})</span>
             <span>{verRotinas ? "▲" : "▼"}</span>
           </button>
           <button
@@ -200,7 +200,7 @@ export default function TreinoPage() {
                   <button
                     key={ex.nome}
                     onClick={() => setExercicioDetalhado(ex.nome)}
-                    className="rounded-lg bg-bg/25 px-2 py-0.5 text-[9px] font-medium text-muted hover:text-accent hover:bg-accent/10 border border-line/10 transition-colors outline-none"
+                    className="rounded-lg bg-bg/25 px-2 py-0.5 text-xs font-medium text-muted hover:text-accent hover:bg-accent/10 border border-line/10 transition-colors outline-none"
                   >
                     {ex.nome}
                   </button>
