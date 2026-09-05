@@ -9,7 +9,7 @@
     "lint": "eslint",
     "cap:sync": "next build && cap sync android",
     "android:open": "npm run cap:sync && cap open android",
-    "android:apk": "npm run cap:sync && cd android && .gradlew.bat assembleDebug"
+    "android:apk": "npm run cap:sync && cd android && .\\gradlew.bat assembleDebug"
   },
   "dependencies": {
     "@capacitor-community/bluetooth-le": "^8.3.0",
