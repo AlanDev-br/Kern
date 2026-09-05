@@ -72,24 +72,56 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-/* Títulos com a fonte de display e tracking apertado.
-   Números tabulares por toda a interface (placares, cargas, cronômetros). */
+/* ───────────── Voz tipográfica ─────────────
+   Archivo no display, condensada pelo eixo `wdth`. O tracking negativo pesado
+   que a Space Grotesk pedia não serve aqui: a Archivo já tem abertura fechada e
+   terminal reto, e apertar mais fecha o contraforma. -0.015em, não -0.03em. */
 h1,
 h2,
 h3,
 .font-display {
   font-family: var(--font-display);
-  letter-spacing: -0.02em;
+  font-variation-settings: "wdth" 88;
+  letter-spacing: -0.015em;
 }
 
 h1 {
-  letter-spacing: -0.03em;
+  font-weight: 800;
+  font-variation-settings: "wdth" 84;
+  letter-spacing: -0.02em;
 }
 
+h2,
+h3 {
+  font-weight: 700;
+}
+
+/* Rótulo em caixa-alta: a Archivo tem maiúscula larga, e somada ao
+   `tracking-wider` do Tailwind ela estourava a linha — "XP TOTAL" e
+   "DIRECIONAMENTO DE HOJE" quebravam em duas. Condensa mais e afrouxa menos:
+   caixa-alta precisa de tracking positivo, só que bem menos que o padrão. */
+.text-xs.uppercase,
+.text-sm.uppercase {
+  /* Dois seletores de classe vencem o `tracking-wider` do Tailwind, que é um só. */
+  letter-spacing: 0.02em;
+}
+
+h1.uppercase,
+h2.uppercase,
+h3.uppercase,
+.font-display.uppercase {
+  font-variation-settings: "wdth" 80;
+  letter-spacing: 0.03em;
+}
+
+/* Números: mesma face condensada e tabular. Condensar aqui não é estética — é o
+   que faz "5.562,5 kg" caber na coluna sem cair para um corpo menor, que era
+   exatamente como o dado mais importante do app tinha virado o menos legível. */
 .tabular-nums,
 .num {
-  font-variant-numeric: tabular-nums;
   font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  font-variation-settings: "wdth" 86;
 }
 
 html {

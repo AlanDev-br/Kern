@@ -1,20 +1,28 @@
 import type { Metadata, Viewport } from "next";
-import { Manrope, Space_Grotesk } from "next/font/google";
+import { Archivo, Public_Sans } from "next/font/google";
 import "./globals.css";
 import { AppShell } from "@/components/AppShell";
 
-// Corpo: Manrope (limpo, com mais caráter que a Inter padrão).
-const sans = Manrope({
+// Corpo: Public Sans. Humanista, aberta, desenhada para texto denso de leitura —
+// que é o que o app virou depois que o piso de tipo subiu para 13px.
+const sans = Public_Sans({
   variable: "--font-sans",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
 });
 
-// Títulos e números: Space Grotesk (técnica, marcante — dá identidade).
-const display = Space_Grotesk({
+// Títulos e números: Archivo, com o eixo de largura carregado. É uma grotesca
+// americana de terminal reto — placa de anilha, número de placar —, e não outra
+// geométrica. O par anterior (Manrope + Space Grotesk) era grotesca-geométrica
+// nas duas: arquivo diferente, mesmo eixo, contraste nenhum.
+//
+// `axes: ["wdth"]` traz a largura variável (62,5 a 125), que é o que deixa a
+// carga condensar sem perder peso: "5.562,5 kg" cabe na coluna sem encolher.
+const display = Archivo({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  axes: ["wdth"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
