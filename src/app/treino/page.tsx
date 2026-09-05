@@ -11,6 +11,7 @@ import { ExercicioDetalhesModal } from "@/components/ExercicioDetalhesModal";
 import { CardioSemanalCard } from "@/components/CardioSemanalCard";
 import { TreinoResumo } from "@/components/TreinoResumo";
 import { CoachTreino } from "@/components/CoachTreino";
+import { Icone } from "@/components/Icone";
 
 export default function TreinoPage() {
   const treinos = useLiveQuery(() => db.treinos.orderBy("inicio").reverse().toArray(), []) ?? [];
@@ -147,14 +148,12 @@ export default function TreinoPage() {
         href="/treino/estatisticas/"
         className="glass flex items-center gap-4 rounded-2xl p-4 transition-transform active:scale-[0.98]"
       >
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-xl">
-          📊
-        </span>
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent"><Icone nome="progresso" tamanho={22} /></span>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-bold">Análise completa</p>
           <p className="text-xs text-muted">Heatmap corporal, distribuição muscular, ranking e recordes</p>
         </div>
-        <span className="shrink-0 text-muted">›</span>
+        <Icone nome="chevron" tamanho={18} className="shrink-0 text-muted" />
       </Link>
 
       {/* Meta de Cardio Semanal */}

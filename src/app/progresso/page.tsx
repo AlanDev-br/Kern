@@ -17,6 +17,7 @@ import { nivelDoXp } from "@/lib/xp";
 import { rankDoNivel } from "@/lib/rank";
 import { calcularAtributos, classeGeral } from "@/lib/atributos";
 import { scoreMente } from "@/lib/mente";
+import { Icone, type IconeNome } from "@/components/Icone";
 
 export default function ProgressoPage() {
   const ctx = useApp((s) => s.ctx);
@@ -98,7 +99,7 @@ export default function ProgressoPage() {
         {atributos.map((a) => (
           <div key={a.id} className="glass rounded-2xl p-4">
             <div className="flex items-center justify-between">
-              <span className="text-xl">{a.icone}</span>
+              <Icone nome={a.icone as IconeNome} tamanho={20} className="text-muted" />
               <span className="text-xs font-bold" style={{ color: a.cor }}>
                 Nv {a.nivel}
               </span>
@@ -117,12 +118,12 @@ export default function ProgressoPage() {
         href="/mente/"
         className="glass flex items-center gap-4 rounded-2xl p-4 transition-transform active:scale-[0.98]"
       >
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-xl">🧠</span>
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent"><Icone nome="mente" tamanho={22} /></span>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-bold">Avaliar inteligência</p>
           <p className="text-xs text-muted">Radar das múltiplas inteligências + testes cognitivos</p>
         </div>
-        <span className="shrink-0 text-muted">›</span>
+        <Icone nome="chevron" tamanho={18} className="shrink-0 text-muted" />
       </Link>
 
       {/* Troféus saiu da barra inferior e passou a ser alcançado por aqui.
@@ -131,17 +132,17 @@ export default function ProgressoPage() {
         href="/conquistas/"
         className="glass flex items-center gap-4 rounded-2xl p-4 transition-transform active:scale-[0.98]"
       >
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-xl">🏆</span>
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent"><Icone nome="trofeu" tamanho={22} /></span>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-bold">Troféus</p>
           <p className="text-xs text-muted">Conquistas desbloqueadas ao longo dos 90 dias</p>
         </div>
-        <span className="shrink-0 text-muted">›</span>
+        <Icone nome="chevron" tamanho={18} className="shrink-0 text-muted" />
       </Link>
 
       {/* Streak */}
       <div className="grid grid-cols-3 gap-2.5">
-        <BigStat valor={`${ctx.streakAtual}`} label="streak atual" sufixo="🔥" />
+        <BigStat valor={`${ctx.streakAtual}`} label="streak atual" />
         <BigStat valor={`${ctx.melhorStreak}`} label="melhor streak" />
         <BigStat valor={`${ctx.diasFechados}`} label="dias fechados" />
       </div>

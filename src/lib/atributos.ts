@@ -34,7 +34,7 @@ export function calcularAtributos(e: EntradaAtributos): Atributo[] {
     {
       id: "forca",
       nome: "Força",
-      icone: "💪",
+      icone: "treino",
       cor: "#fb7185",
       pontos: xpForca + treinosCount * 8,
       escala: 500,
@@ -43,7 +43,7 @@ export function calcularAtributos(e: EntradaAtributos): Atributo[] {
     {
       id: "agilidade",
       nome: "Agilidade",
-      icone: "🏃",
+      icone: "corrida",
       cor: "#38bdf8",
       pontos: cardioMin * 1.5,
       escala: 300,
@@ -52,7 +52,7 @@ export function calcularAtributos(e: EntradaAtributos): Atributo[] {
     {
       id: "vitalidade",
       nome: "Vitalidade",
-      icone: "❤️",
+      icone: "coracao",
       cor: "#34d399",
       pontos: ctx.streakAtual * 6 + ctx.diasComCheck * 2,
       escala: 400,
@@ -61,7 +61,7 @@ export function calcularAtributos(e: EntradaAtributos): Atributo[] {
     {
       id: "inteligencia",
       nome: "Inteligência",
-      icone: "🧠",
+      icone: "mente",
       cor: "#a78bfa",
       pontos: ctx.conceitosLidos * 12 + ctx.revisoesTotais * 4 + menteScore * 5,
       escala: 500,
@@ -70,7 +70,7 @@ export function calcularAtributos(e: EntradaAtributos): Atributo[] {
     {
       id: "foco",
       nome: "Foco",
-      icone: "🎯",
+      icone: "alvo",
       cor: "#fbbf24",
       pontos: ctx.diasFechados * 8 + ctx.melhorStreak * 5,
       escala: 400,
@@ -79,7 +79,7 @@ export function calcularAtributos(e: EntradaAtributos): Atributo[] {
     {
       id: "espirito",
       nome: "Espírito",
-      icone: "🧘",
+      icone: "meditacao",
       cor: "#94a3b8",
       pontos: ctx.revisoesTotais * 6 + ctx.conceitosLidos * 3,
       escala: 300,

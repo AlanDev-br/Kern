@@ -2,17 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Icone, type IconeNome } from "./Icone";
 
 // Cinco destinos, não oito. A barra anterior dava 42px de largura por item numa
 // tela de 390px, e encolheu para 32px quando o rótulo subiu para 13px — oito
 // rótulos legíveis não cabem. Nada foi removido do app, só mudou de porta:
 // Agenda e Leitura são alcançadas pela Hoje, Troféus pelo Progresso.
-const ITENS = [
-  { href: "/", label: "Hoje", icon: "◎" },
-  { href: "/treino/", label: "Treino", icon: "💪" },
-  { href: "/progresso/", label: "Progresso", icon: "▟" },
-  { href: "/dados/", label: "Dados", icon: "◫" },
-  { href: "/config/", label: "Perfil", icon: "👤" },
+const ITENS: { href: string; label: string; icone: IconeNome }[] = [
+  { href: "/", label: "Hoje", icone: "hoje" },
+  { href: "/treino/", label: "Treino", icone: "treino" },
+  { href: "/progresso/", label: "Progresso", icone: "progresso" },
+  { href: "/dados/", label: "Dados", icone: "dados" },
+  { href: "/config/", label: "Perfil", icone: "perfil" },
 ];
 
 export function BottomNav() {
@@ -29,14 +30,13 @@ export function BottomNav() {
               href={it.href}
               aria-current={ativo ? "page" : undefined}
               // min-h-12 = 48px. O alvo é a área tocável, não o desenho do ícone.
-              className="relative flex min-h-12 flex-1 flex-col items-center justify-center gap-0.5 rounded-xl px-1 transition-colors"
+              className="relative flex min-h-12 flex-1 flex-col items-center justify-center gap-1 rounded-xl px-1 transition-colors"
             >
-              <span
-                className={`text-lg leading-none ${ativo ? "text-accent" : "text-muted"}`}
-                aria-hidden="true"
-              >
-                {it.icon}
-              </span>
+              <Icone
+                nome={it.icone}
+                tamanho={20}
+                className={ativo ? "text-accent" : "text-muted"}
+              />
               <span className={`text-xs font-medium ${ativo ? "text-fg" : "text-muted"}`}>
                 {it.label}
               </span>

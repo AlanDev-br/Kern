@@ -11,6 +11,7 @@ import { HealthSyncCard } from "@/components/HealthSyncCard";
 import { CoachCard } from "@/components/CoachCard";
 import { AvatarHero } from "@/components/AvatarHero";
 import { RevisaoLeituraCard } from "@/components/RevisaoLeituraCard";
+import { Icone } from "@/components/Icone";
 
 function saudacao() {
   const h = new Date().getHours();
@@ -73,7 +74,7 @@ export default function HojePage() {
             </div>
 
             <div className="flex gap-2">
-              <Stat valor={`${ctx.streakAtual}🔥`} label="streak" />
+              <Stat valor={`${ctx.streakAtual}`} label="streak" />
               <Stat valor={`${ctx.xpTotal}`} label="XP total" />
             </div>
           </div>
@@ -88,12 +89,12 @@ export default function HojePage() {
         href="/coach/"
         className="glass flex items-center gap-4 rounded-2xl p-4 transition-transform active:scale-[0.98]"
       >
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-xl">🧭</span>
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent"><Icone nome="coach" tamanho={22} /></span>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-bold">Falar com o Coach IA</p>
           <p className="text-xs text-muted">Mentor fundamentado que lê seus dados e te orienta</p>
         </div>
-        <span className="shrink-0 text-muted">›</span>
+        <Icone nome="chevron" tamanho={18} className="shrink-0 text-muted" />
       </Link>
 
       {/* Resumo do dia → leva para a Agenda (onde fica o tick das tarefas) */}
@@ -112,7 +113,7 @@ export default function HojePage() {
               : `${totalFeitos} de ${tarefas.length} tarefas feitas hoje`}
           </p>
         </div>
-        <span className="shrink-0 text-muted">›</span>
+        <Icone nome="chevron" tamanho={18} className="shrink-0 text-muted" />
       </Link>
 
       {/* Cartão de Foco / Biblioteca */}
