@@ -141,6 +141,9 @@ export interface ResumoSaude {
   fcRepousoRegistros?: number; // qtos RestingHeartRate vieram (diagnóstico)
   fcIntraHoras?: number; // qtas horas de HeartRate vieram em 24h (diagnóstico)
   fcRepousoReaproveitada?: boolean; // valor veio do cache (dia ainda sem dado)
+  // true quando não veio RestingHeartRate e o número foi derivado dos mínimos
+  // horários da FC contínua. É estimativa, e a tela deve dizer isso.
+  fcRepousoEstimada?: boolean;
 }
 
 export async function lerSaudeHoje(): Promise<ResumoSaude> {
@@ -300,11 +303,15 @@ export async function lerSaudeHoje(): Promise<ResumoSaude> {
         const origin = (r.metadata as Record<string, unknown>)?.dataOrigin as string || "unknown";
         if (t && v !== null) {
           origens.push({ origem: origin, valor: v, data: t.toLocaleString("pt-BR") });
-          if (!maisRecente || t > maisRecente) {
-            maisRecente = t;
+          // O critério é o MENOR valor da janela, não o mais recente. A janela
+          // tem 36h e a pulseira grava mais de um registro: pegando o último,
+          // uma leitura de fim de tarde — depois de café, escada ou estresse —
+          // ganhava da madrugada, que é quando o repouso de fato acontece.
+          if (resumo.fcRepouso === null || v < resumo.fcRepouso) {
             resumo.fcRepouso = v;
             resumo.fcRepousoHora = t;
           }
+          if (!maisRecente || t > maisRecente) maisRecente = t;
         }
       }
       resumo.fcRepousoOrigens = origens;
@@ -324,10 +331,24 @@ export async function lerSaudeHoje(): Promise<ResumoSaude> {
         end: agora.toISOString(),
         groupBy: "hour",
       });
-      const valores = aggregates.map((a) => a.value ?? 0).filter((v) => v > 0);
-      resumo.fcIntraHoras = valores.length;
-      if (resumo.fcRepouso === null && valores.length) {
-        resumo.fcRepouso = Math.round(Math.min(...valores));
+      // `value` é a MÉDIA da hora (BPM_AVG). Tirar o mínimo das médias horárias
+      // dá "a hora mais calma", que é estruturalmente muito acima da FC de
+      // repouso real — foi o que fazia o número sair sempre alto. O agregado
+      // também traz `min` (BPM_MIN), que é o batimento mais baixo de fato, e é
+      // esse que se aproxima do repouso.
+      const medias = aggregates.map((a) => a.value ?? 0).filter((v) => v > 0);
+      resumo.fcIntraHoras = medias.length;
+
+      const minimos = aggregates
+        .map((a) => (a as { min?: number }).min ?? 0)
+        .filter((v) => v > 30); // abaixo de 30 bpm é artefato do sensor, não pessoa
+
+      if (resumo.fcRepouso === null && minimos.length) {
+        // A média dos três mínimos horários mais baixos, em vez do menor de
+        // todos: um único batimento espúrio não deve definir o valor do dia.
+        const maisBaixos = minimos.sort((a, b) => a - b).slice(0, 3);
+        resumo.fcRepouso = Math.round(maisBaixos.reduce((s, v) => s + v, 0) / maisBaixos.length);
+        resumo.fcRepousoEstimada = true;
       }
     } catch (e) {
       addErro(`FC 24h: ${(e as Error)?.message ?? e}`);
@@ -426,15 +447,25 @@ export async function lerSaudeHoje(): Promise<ResumoSaude> {
   // dado do dia não chega — em vez de mostrar "—" e perder a informação.
   try {
     const CHAVE = "kern_fc_repouso";
+    // O valor guardado vale por poucos dias. Sem prazo, uma leitura ruim gravada
+    // uma vez ficava para sempre: como o app só reaproveita quando não veio dado
+    // novo, o número errado se reapresentava indefinidamente e nunca era
+    // corrigido — que é como uma FC alta se torna permanente na tela.
+    const VALIDADE_DIAS = 3;
     if (resumo.fcRepouso !== null && resumo.fcRepouso > 0) {
       localStorage.setItem(CHAVE, JSON.stringify({ valor: resumo.fcRepouso, data: agora.toISOString() }));
     } else {
       const salvo = localStorage.getItem(CHAVE);
       if (salvo) {
-        const { valor } = JSON.parse(salvo) as { valor: number };
-        if (valor > 0) {
+        const { valor, data } = JSON.parse(salvo) as { valor: number; data?: string };
+        const idadeDias = data
+          ? (agora.getTime() - new Date(data).getTime()) / 86400000
+          : Infinity;
+        if (valor > 0 && idadeDias <= VALIDADE_DIAS) {
           resumo.fcRepouso = valor;
           resumo.fcRepousoReaproveitada = true;
+        } else {
+          localStorage.removeItem(CHAVE); // vencido: melhor "—" que número mentiroso
         }
       }
     }

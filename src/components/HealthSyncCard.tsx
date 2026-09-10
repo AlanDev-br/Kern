@@ -193,9 +193,11 @@ export function HealthSyncCard() {
           sub={
             resumo?.fcRepousoReaproveitada
               ? "último valor"
-              : resumo && !resumo.fcRepouso && (resumo.fcRepousoRegistros ?? 0) === 0 && (resumo.fcIntraHoras ?? 0) === 0
-                ? "Health Connect sem FC"
-                : undefined
+              : resumo?.fcRepousoEstimada
+                ? "estimada da FC contínua"
+                : resumo && !resumo.fcRepouso && (resumo.fcRepousoRegistros ?? 0) === 0 && (resumo.fcIntraHoras ?? 0) === 0
+                  ? "Health Connect sem FC"
+                  : undefined
           }
         />
       </div>
