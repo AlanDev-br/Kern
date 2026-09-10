@@ -84,6 +84,10 @@ export interface AppConfig {
   horarios: Record<string, string>; // taskId/evento -> "HH:MM"
   notificacoesAtivas: boolean;
   ultimoBackup?: string;
+  // Como o app chama quem está usando. Vazio é um estado válido: a saudação
+  // simplesmente não usa nome, em vez de chamar todo mundo pelo nome de uma
+  // pessoa só.
+  nome?: string;
   // A partir de quando o dia que passou em branco passa a custar XP. Gravado na
   // primeira vez que o fechamento roda, para a regra nunca cobrar um passado
   // que não a conhecia. Ver `fechamento.ts`.

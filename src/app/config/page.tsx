@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useMemo } from "react";
+import { diaDoPlano } from "@/lib/dates";
 import { Icone, type IconeNome } from "@/components/Icone";
 import Link from "next/link";
 import { useLiveQuery } from "dexie-react-hooks";
@@ -36,7 +37,7 @@ const CAMPOS_SEMANAIS: { chave: string; label: string; icone: IconeNome }[] = [
 ];
 
 export default function ConfigPage() {
-  const { config, atualizarConfig, tarefas } = useApp();
+  const { config, atualizarConfig, tarefas, ctx } = useApp();
   const [msg, setMsg] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -384,26 +385,33 @@ export default function ConfigPage() {
             </div>
           </div>
 
-          {/* Estatísticas Numéricas */}
-          <div className="flex-1 grid grid-cols-3 gap-1 text-center">
+          {/* Números que este app de fato tem. "Seguidores" e "Seguindo"
+              moravam aqui, os dois em zero: um app local-first, sem backend e
+              sem outro usuário, não tem como movê-los. Eram dois móveis
+              emprestados de outro app, ocupando o lugar de dado real. */}
+          <dl className="flex-1 grid grid-cols-3 gap-1 text-center">
             <div>
-              <p className="text-base font-extrabold text-fg">{treinos.length}</p>
-              <p className="text-xs uppercase tracking-wider text-muted font-medium mt-0.5">Treinos</p>
+              <dd className="text-base font-extrabold text-fg tabular-nums">{treinos.length}</dd>
+              <dt className="mt-0.5 text-xs font-medium text-muted">Treinos</dt>
             </div>
             <div>
-              <p className="text-base font-extrabold text-fg">0</p>
-              <p className="text-xs uppercase tracking-wider text-muted font-medium mt-0.5">Seguidores</p>
+              <dd className="text-base font-extrabold text-fg tabular-nums">{ctx.streakAtual}</dd>
+              <dt className="mt-0.5 text-xs font-medium text-muted">Streak</dt>
             </div>
             <div>
-              <p className="text-base font-extrabold text-fg">0</p>
-              <p className="text-xs uppercase tracking-wider text-muted font-medium mt-0.5">Seguindo</p>
+              <dd className="text-base font-extrabold text-fg tabular-nums">{ctx.diasFechados}</dd>
+              <dt className="mt-0.5 text-xs font-medium text-muted">Fechados</dt>
             </div>
-          </div>
+          </dl>
         </div>
 
         <div>
-          <h2 className="text-base font-bold leading-tight">Alan Nicholas</h2>
-          <p className="text-xs text-muted mt-0.5">@alannicholas94</p>
+          <h2 className="text-base font-bold leading-tight">
+            {config?.nome?.trim() || "Seu perfil"}
+          </h2>
+          <p className="mt-0.5 text-xs text-muted">
+            {config?.nome?.trim() ? "Dia " + diaDoPlano(config.dataInicio) + " de 90" : "Defina seu nome nos ajustes"}
+          </p>
         </div>
       </section>
 
@@ -919,6 +927,19 @@ export default function ConfigPage() {
           </header>
 
           <div className="flex-1 overflow-y-auto px-5 py-4 space-y-6 pb-28">
+            {/* Nome */}
+            <section className="glass rounded-2xl p-4.5 space-y-3">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted">Como te chamar</h3>
+              <input
+                type="text"
+                value={config.nome ?? ""}
+                onChange={(e) => atualizarConfig({ nome: e.target.value })}
+                placeholder="Deixe em branco para não usar nome"
+                autoComplete="given-name"
+                className="w-full rounded-xl border border-line bg-bg/50 p-3 text-sm font-semibold outline-none focus:border-accent"
+              />
+            </section>
+
             {/* Data de início */}
             <section className="glass rounded-2xl p-4.5 space-y-3">
               <h3 className="text-xs font-bold uppercase tracking-wider text-muted">Início dos 90 dias</h3>

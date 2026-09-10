@@ -37,7 +37,10 @@ export default function HojePage() {
       {/* Header */}
       <header className="pt-1">
         <p className="text-sm text-muted">
-          {saudacao()}, Alan · {nomeDiaSemana()}
+          {/* Sem nome definido a saudação é só a saudação. Chamar todo mundo
+              pelo nome de uma pessoa é pior que não chamar por nome nenhum. */}
+          {config?.nome?.trim() ? `${saudacao()}, ${config.nome.trim()}` : saudacao()} ·{" "}
+          {nomeDiaSemana()}
         </p>
         <h1 className="mt-0.5 text-3xl font-bold tracking-tight">
           Dia <span className="text-acento">{diaN > 0 ? diaN : 0}</span> de 90
@@ -132,11 +135,14 @@ export default function HojePage() {
   );
 }
 
+// Sem caixa-alta: "XP total" cabe numa linha, "XP TOTAL" com tracking não cabe
+// e quebra em duas dentro de uma placa de 90px. Caixa-alta com espaçamento é
+// decoração que custa largura, e aqui a largura é o que falta.
 function Stat({ valor, label }: { valor: string; label: string }) {
   return (
     <div className="flex-1 rounded-xl border border-line bg-bg/40 px-3 py-2 text-center">
-      <p className="text-base font-bold">{valor}</p>
-      <p className="text-xs uppercase tracking-wider text-muted">{label}</p>
+      <p className="text-base font-bold tabular-nums">{valor}</p>
+      <p className="text-xs text-muted">{label}</p>
     </div>
   );
 }

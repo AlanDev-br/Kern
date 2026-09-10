@@ -43,28 +43,40 @@
    propósito: o que não cabe em 13px não cabe na tela, e a resposta é cortar
    texto, não encolher a fonte.
 
-   Os degraus sobem ~1,25× a partir de `lg`, para a hierarquia ser vista de
-   relance e não decifrada. */
+   Os degraus sobem 1,25× de ponta a ponta, e não só no topo. A medição de
+   09/09 mostrou por que isso importa: `xs`, `sm` e `base` eram 13, 15 e 16 —
+   três tamanhos dentro de três pixels, com degraus de 1,15 e 1,07. Dois
+   tamanhos separados por um pixel não são hierarquia, são ruído, e 93% de todo
+   o texto renderizado vivia justamente nesses degraus indistinguíveis.
+
+   A correção é o `sm` encontrar o `base` em 16px. Não é arredondamento: 16px é
+   o piso de corpo para leitura em celular, e `text-sm` é o que carrega o texto
+   de apoio deste app (238 chamadas contra 45 de `text-base`). O corpo estava
+   um degrau abaixo de onde deveria estar, e a régua da própria varredura já
+   pedia 16.
+
+   Sobram três papéis, e agora eles se distinguem de relance:
+   13 rótulo · 16 corpo · 20+ título. */
 @theme {
   --text-xs: 0.8125rem;      /* 13px — rótulo, unidade, legenda */
   --text-xs--line-height: 1.45;
-  --text-sm: 0.9375rem;      /* 15px — texto de apoio */
-  --text-sm--line-height: 1.5;
+  --text-sm: 1rem;           /* 16px — corpo (encontra o base de propósito) */
+  --text-sm--line-height: 1.55;
   --text-base: 1rem;         /* 16px — corpo */
   --text-base--line-height: 1.55;
-  --text-lg: 1.125rem;       /* 18px */
-  --text-lg--line-height: 1.45;
-  --text-xl: 1.25rem;        /* 20px */
-  --text-xl--line-height: 1.35;
-  --text-2xl: 1.5rem;        /* 24px */
-  --text-2xl--line-height: 1.25;
-  --text-3xl: 1.875rem;      /* 30px */
-  --text-3xl--line-height: 1.2;
-  --text-4xl: 2.375rem;      /* 38px */
-  --text-4xl--line-height: 1.1;
-  --text-5xl: 3rem;          /* 48px */
-  --text-5xl--line-height: 1.05;
-  --text-6xl: 3.75rem;       /* 60px */
+  --text-lg: 1.25rem;        /* 20px */
+  --text-lg--line-height: 1.35;
+  --text-xl: 1.5625rem;      /* 25px */
+  --text-xl--line-height: 1.28;
+  --text-2xl: 1.9375rem;     /* 31px */
+  --text-2xl--line-height: 1.2;
+  --text-3xl: 2.4375rem;     /* 39px */
+  --text-3xl--line-height: 1.12;
+  --text-4xl: 3.0625rem;     /* 49px */
+  --text-4xl--line-height: 1.06;
+  --text-5xl: 3.8125rem;     /* 61px */
+  --text-5xl--line-height: 1.02;
+  --text-6xl: 4.75rem;       /* 76px */
   --text-6xl--line-height: 1;
 }
 
