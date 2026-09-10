@@ -29,6 +29,13 @@ export const metadata: Metadata = {
   title: "Kern",
   description: "90 dias. Valor construído para dentro, prova acumulada de promessa cumprida.",
   manifest: "/manifest.webmanifest",
+  // O iOS ignora ícone SVG ao adicionar à tela de início: sem um PNG declarado
+  // ele guarda uma captura da página como ícone. É o único caminho do app dela,
+  // que vive como atalho no iPhone.
+  icons: {
+    icon: "/icon.svg",
+    apple: "/apple-touch-icon.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
