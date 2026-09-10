@@ -357,28 +357,28 @@ export class Reconstrucao90DB extends Dexie {
     // `saudeSync` guarda o estado da última leitura de cada tipo. Sem isso, "a
     // Xiaomi não publica isso" e "eu não consegui ler" aparecem iguais na tela: um
     // é fato sobre o aparelho, o outro é bug nosso.
-    this.version(13).stores({
-      dias: "data",
-      revisoes: "semana",
-      dividas: "id",
-      conquistas: "id",
-      config: "id",
-      avatar: "id",
-      treinos: "id, inicio",
-      rotinas: "id",
-      exImagens: "nome",
-      leituras: "id, proximaRevisao, origem",
-      rascunhoTreino: "id",
-      cardios: "id, data, origem",
-      tarefas: "id, ordem, category",
-      avaliacoesMente: "++id, data",
-      testesCognitivos: "++id, data, tipo",
-      exercicioConfigs: "nome",
-      conversasCoach: "++id, data",
-      meditacoes: "++id, data",
+    this.version(13).stores({
+      dias: "data",
+      revisoes: "semana",
+      dividas: "id",
+      conquistas: "id",
+      config: "id",
+      avatar: "id",
+      treinos: "id, inicio",
+      rotinas: "id",
+      exImagens: "nome",
+      leituras: "id, proximaRevisao, origem",
+      rascunhoTreino: "id",
+      cardios: "id, data, origem",
+      tarefas: "id, ordem, category",
+      avaliacoesMente: "++id, data",
+      testesCognitivos: "++id, data, tipo",
+      exercicioConfigs: "nome",
+      conversasCoach: "++id, data",
+      meditacoes: "++id, data",
       medidasCorporais: "id, data, origem",
       saudeAmostras: "id, tipo, data, [tipo+data], origem, inicio",
-      saudeSync: "tipo",
+      saudeSync: "tipo",
     });
   }
 }
@@ -390,14 +390,12 @@ export const CONFIG_PADRAO: AppConfig = {
   dataInicio: hojeChave(),
   temaAtivo: "esmeralda",
   notificacoesAtivas: true,
+  // Só as rotinas semanais, que não são tarefas do checklist. O horário de cada
+  // tarefa mora na própria tarefa; semear uma entrada aqui congelaria o horário
+  // de quem semeou, porque a config vence a tarefa na hora de agendar.
   horarios: {
-    "ineg-acordar": "06:30",
-    "ineg-treino": "07:15",
-    "bloco-carreira": "08:30",
-    "ineg-leitura": "21:30",
-    "bloco-telasoff": "22:00",
-    "financas": "10:00", // sábado
-    "revisao": "19:00", // domingo
+    financas: "10:00", // sábado
+    revisao: "19:00", // domingo
   },
 };
 

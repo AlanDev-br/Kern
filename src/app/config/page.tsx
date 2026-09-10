@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useApp } from "@/lib/store";
 import { db, type Treino } from "@/lib/db";
-import { getTask } from "@/lib/plan-data";
 import { pedirPermissaoNotificacoes, reagendarNotificacoes, ehNativo, agendarTeste, contarAgendadas } from "@/lib/notifications";
 import { exportarBackup, importarBackup } from "@/lib/backup";
 import { APPS_SOCIAIS } from "@/lib/social-apps";
@@ -27,14 +26,13 @@ import {
 } from "@/lib/screen-time";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Cell } from "recharts";
 
-const CAMPOS_HORARIO: { chave: string; label: string }[] = [
-  { chave: "ineg-acordar", label: "Acordar" },
-  { chave: "ineg-treino", label: "Treino" },
-  { chave: "bloco-carreira", label: "Carreira" },
-  { chave: "ineg-leitura", label: "Leitura" },
-  { chave: "bloco-telasoff", label: "Telas off" },
-  { chave: "financas", label: "Finanças (sáb)" },
-  { chave: "revisao", label: "Revisão (dom)" },
+// Finanças e revisão são rotinas semanais, não tarefas do checklist — por isso
+// ficam fixas aqui. Os horários das tarefas saem da lista real de tarefas, logo
+// abaixo: uma lista fixa deixava sem horário justamente as tarefas que o usuário
+// criou, que são as que ele mais quer que toquem.
+const CAMPOS_SEMANAIS: { chave: string; label: string; icone: IconeNome }[] = [
+  { chave: "financas", label: "Finanças (sáb)", icone: "dinheiro" },
+  { chave: "revisao", label: "Revisão (dom)", icone: "grafico" },
 ];
 
 export default function ConfigPage() {
@@ -956,16 +954,31 @@ export default function ConfigPage() {
               </div>
 
               <div className="space-y-2.5 border-t border-line/20 pt-3">
-                {CAMPOS_HORARIO.map((c) => (
-                  <div key={c.chave} className="flex items-center justify-between text-xs">
-                    <span>
-                      <Icone nome={(getTask(c.chave)?.icone ?? "sino") as IconeNome} tamanho={16} /> {c.label}
+                {tarefas.map((t) => (
+                  <div key={t.id} className="flex items-center justify-between gap-3 text-xs">
+                    <span className="flex min-w-0 items-center gap-2">
+                      <Icone nome={t.icone as IconeNome} tamanho={16} />
+                      <span className="truncate">{t.titulo}</span>
+                    </span>
+                    <input
+                      type="time"
+                      value={config.horarios[t.id] ?? t.horario ?? ""}
+                      onChange={(e) => setHorario(t.id, e.target.value)}
+                      className="shrink-0 rounded-lg border border-line bg-bg/50 px-2 py-1 text-xs font-semibold outline-none focus:border-accent"
+                    />
+                  </div>
+                ))}
+                {CAMPOS_SEMANAIS.map((c) => (
+                  <div key={c.chave} className="flex items-center justify-between gap-3 text-xs">
+                    <span className="flex min-w-0 items-center gap-2">
+                      <Icone nome={c.icone} tamanho={16} />
+                      <span className="truncate">{c.label}</span>
                     </span>
                     <input
                       type="time"
                       value={config.horarios[c.chave] ?? ""}
                       onChange={(e) => setHorario(c.chave, e.target.value)}
-                      className="rounded-lg border border-line bg-bg/50 px-2 py-1 text-xs outline-none focus:border-accent font-semibold"
+                      className="shrink-0 rounded-lg border border-line bg-bg/50 px-2 py-1 text-xs font-semibold outline-none focus:border-accent"
                     />
                   </div>
                 ))}

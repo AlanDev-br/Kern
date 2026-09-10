@@ -1,36 +1,44 @@
 import type { TaskDef, ConquistaDef, ThemeDef } from "./types";
 
 // ─────────────────────────────────────────────────────────────
-// Tarefas extraídas do Plano de 90 Dias do Alan
+// Semente do checklist diário
 // ─────────────────────────────────────────────────────────────
+// Isto é só o ponto de partida da primeira abertura: as tarefas passam a viver
+// no IndexedDB e são editáveis, renomeáveis, reordenáveis e removíveis, e as
+// notificações leem de lá. Por isso a semente é deliberadamente genérica — o
+// horário é um palpite razoável, não uma prescrição, e o texto descreve o
+// princípio em vez de contar a rotina de alguém.
+//
+// `seedTarefasSeNecessario` só roda com a tabela vazia, então mexer aqui não
+// altera o checklist de quem já usa o app.
 
-// Os 3 inegociáveis — a espinha do plano. XP alto.
+// Os 3 inegociáveis — a espinha do dia. XP alto porque são eles que seguram o
+// streak: falhar num deles é o que o dia registra como falta.
 export const INEGOCIAVEIS: TaskDef[] = [
   {
     id: "ineg-acordar",
-    titulo: "Acordar 06:30 + 45min sem celular",
+    titulo: "Acordar no horário e começar sem tela",
     descricao:
-      "Âncora de tudo. Água, luz natural e despejo mental no papel. Os primeiros 45 min sem tela quebram o vício de validação logo cedo.",
+      "Âncora do resto. Água, luz natural e a cabeça no papel antes do celular — os primeiros minutos sem tela decidem quem manda no seu humor durante o dia.",
     category: "inegociavel",
     xp: 30,
-    horario: "06:30",
+    horario: "07:00",
     icone: "amanhecer",
   },
   {
     id: "ineg-treino",
     titulo: "Movimento do dia (treino ou caminhada)",
     descricao:
-      "Não é treinar todo dia: a meta é treinar 4x/semana. Em dia de descanso, 30 min de caminhada já fecha o inegociável — o que conta é mover o corpo todo dia, sem quebrar o streak.",
+      "Não é treinar todo dia. Em dia de descanso, uma caminhada já fecha o inegociável — o que conta é mover o corpo todo dia, sem quebrar o streak.",
     category: "inegociavel",
     xp: 30,
-    horario: "07:15",
+    horario: "07:30",
     icone: "caminhada",
   },
   {
     id: "ineg-leitura",
-    titulo: "25 min de leitura no lugar do scroll",
-    descricao:
-      "Troca direta: livro pela tela. Leia de propósito — 1 livro por categoria por vez.",
+    titulo: "Leitura no lugar do scroll",
+    descricao: "Troca direta: livro pela tela. Ler de propósito, um livro por categoria por vez.",
     category: "inegociavel",
     xp: 30,
     horario: "21:30",
@@ -38,21 +46,22 @@ export const INEGOCIAVEIS: TaskDef[] = [
   },
 ];
 
-// Blocos da rotina diária — reforço, XP médio.
+// Blocos da rotina — reforço, XP médio. São os candidatos naturais a serem
+// trocados pelos seus: renomeie, mude o horário ou apague o que não for seu.
 export const BLOCOS: TaskDef[] = [
   {
-    id: "bloco-carreira",
-    titulo: "Bloco de pico — Carreira",
-    descricao: "EstoqueZap + candidaturas + estudo de código. Energia máxima na alavanca que muda sua vida financeira.",
+    id: "bloco-trabalho",
+    titulo: "Bloco de trabalho profundo",
+    descricao: "Uma janela sem interrupção na tarefa que mais muda o seu ano. Energia máxima na maior alavanca.",
     category: "bloco",
     xp: 15,
-    horario: "08:30",
+    horario: "09:00",
     icone: "impulso",
   },
   {
-    id: "bloco-faculdade",
-    titulo: "Faculdade (EAD)",
-    descricao: "Bloco fixo, sem competir com o trabalho profundo.",
+    id: "bloco-estudo",
+    titulo: "Bloco de estudo",
+    descricao: "Horário fixo, para não competir com o trabalho profundo nem sobrar para o fim do dia.",
     category: "bloco",
     xp: 10,
     horario: "11:00",
@@ -61,7 +70,7 @@ export const BLOCOS: TaskDef[] = [
   {
     id: "bloco-rede",
     titulo: "Respeitei a janela única de rede",
-    descricao: "30–40 min em horário definido. Nunca a 1ª nem a última coisa do dia.",
+    descricao: "30–40 min em horário definido. Nunca a primeira nem a última coisa do dia.",
     category: "bloco",
     xp: 10,
     horario: "17:00",
@@ -70,15 +79,15 @@ export const BLOCOS: TaskDef[] = [
   {
     id: "bloco-comer",
     titulo: "Comi de propósito (proteína + sem açúcar de impulso)",
-    descricao: "Proteína + fibra + gordura em cada refeição achatam o pico de açúcar. Não pular refeição.",
+    descricao: "Proteína, fibra e gordura em cada refeição achatam o pico de açúcar. Não pular refeição.",
     category: "bloco",
     xp: 10,
     icone: "refeicao",
   },
   {
     id: "bloco-telasoff",
-    titulo: "Telas off às 22:00",
-    descricao: "Sono começa antes de deitar. ~7h30 de sono regula cortisol e humor.",
+    titulo: "Telas off no fim da noite",
+    descricao: "O sono começa antes de deitar. Sete a nove horas regulam cortisol e humor.",
     category: "bloco",
     xp: 10,
     horario: "22:00",
