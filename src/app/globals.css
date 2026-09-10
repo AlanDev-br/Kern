@@ -217,6 +217,57 @@ body {
   min-height: 44px;
 }
 
+/* ───────────── Painel largo (16:9) ─────────────
+   A 1920×1080 o app era uma coluna de 448px usando 23% da tela. Esticar os
+   cards para preencher os 77% restantes obrigaria a redesenhar todos: eles
+   foram desenhados para ~390px, e um cartão de 1400px de largura com um número
+   no canto não é o mesmo componente.
+
+   Então a largura não vai para o cartão, vai para a QUANTIDADE de cartões. As
+   páginas empilham seções numa raiz `space-y`, e aqui essa pilha vira colunas
+   de 22rem. Cada cartão continua no tamanho para o qual nasceu, a medida de
+   linha continua legível porque a coluna é estreita, e a tela é usada de
+   verdade: três colunas em 1920, duas em 1280, uma abaixo de 1024.
+
+   O seletor é a raiz `space-y` de propósito, e não `main > div`: o chat do
+   Coach é `flex flex-col` e ficaria de fora, que é o certo. Conversa não se lê
+   em coluna de jornal.
+
+   A altura fica livre e o preenchimento é o balanceado padrão. A alternativa
+   (`column-fill: auto` com altura travada na viewport) daria colunas na ordem
+   exata de leitura, mas o que passasse da altura viraria ROLAGEM HORIZONTAL —
+   e página que rola de lado é defeito, não layout. */
+@media (min-width: 1024px) {
+  main > .space-y-5,
+  main > .space-y-6 {
+    columns: 22rem auto;
+    column-gap: 1.5rem;
+  }
+
+  /* `space-y` usa margin-top no irmão seguinte, e o primeiro item de cada coluna
+     não tem irmão anterior — o espaçamento sumiria no topo das colunas 2 e 3.
+     O ritmo passa a ser margin-bottom, que sobrevive à quebra. */
+  main > .space-y-5 > * + *,
+  main > .space-y-6 > * + * {
+    margin-top: 0;
+  }
+  main > .space-y-5 > *,
+  main > .space-y-6 > * {
+    break-inside: avoid;
+    margin-bottom: 1.5rem;
+  }
+
+  /* O cabeçalho da página não é um cartão. Sem isto ele cai dentro da primeira
+     coluna e "Dia 1 de 90" fica com a largura de um cartão, competindo com eles
+     em vez de nomear a tela inteira. `column-span: all` o faz atravessar o
+     painel e as colunas recomeçam abaixo. */
+  main > .space-y-5 > header,
+  main > .space-y-6 > header {
+    column-span: all;
+    margin-bottom: 1.75rem;
+  }
+}
+
 /* esconde scrollbar mas mantém scroll */
 .no-scrollbar::-webkit-scrollbar {
   display: none;

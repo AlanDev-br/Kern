@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Icone } from "./Icone";
 import { useApp } from "@/lib/store";
-import { BottomNav } from "./BottomNav";
+import { Navegacao } from "./Navegacao";
 import { CelebrationOverlay } from "./CelebrationOverlay";
 import { AnimatePresence, motion } from "framer-motion";
 import { APPS_SOCIAIS } from "@/lib/social-apps";
@@ -56,12 +56,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     );
   }
 
+  // Até lg, coluna única centrada, como no celular. A partir de lg o padding
+  // esquerdo abre espaço para a navegação lateral fixa (w-60 = 240px) e o
+  // conteúdo perde o teto de 448px: quem passa a limitar a medida de linha é a
+  // largura da COLUNA do painel, não a da página.
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
-      <main className="flex-1 px-5 pb-28 pt-[max(1.25rem,env(safe-area-inset-top))]">
+    <div className="mx-auto flex min-h-dvh w-full max-w-md flex-col lg:max-w-none lg:pl-60">
+      <main className="flex-1 px-5 pb-28 pt-[max(1.25rem,env(safe-area-inset-top))] lg:mx-auto lg:w-full lg:max-w-[1500px] lg:px-8 lg:pb-10 lg:pt-8">
         {children}
       </main>
-      <BottomNav />
+      <Navegacao />
       <CelebrationOverlay />
 
       <AnimatePresence>
