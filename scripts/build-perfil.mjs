@@ -18,10 +18,17 @@ import { existsSync, rmSync, renameSync } from "node:fs";
 import { join } from "node:path";
 
 const PERFIS = {
-  alan: { saida: "out", remover: [] },
+  alan: { saida: "out", remover: [], zerar: [] },
   kelly: {
     saida: "out-kelly",
     remover: ["avatar/base.glb", "treino-seed.json"],
+    // A chave da Groq tem prefixo `NEXT_PUBLIC_`, o que significa que ela entra
+    // como texto no JavaScript entregue ao navegador — não é segredo de
+    // servidor. Num pacote que vai para repositório e URL públicos, embutir a
+    // chave é publicá-la. O coach não deixa de funcionar por isso:
+    // `config.iaApiKey` tem precedência sobre a do ambiente, então a chave é
+    // colada na tela e fica só no IndexedDB do aparelho.
+    zerar: ["NEXT_PUBLIC_GROQ_API_KEY", "NEXT_PUBLIC_GROQ_MODELO"],
   },
 };
 
@@ -41,7 +48,14 @@ if (existsSync("out")) rmSync("out", { recursive: true, force: true });
 const build = spawnSync("npx", ["next", "build"], {
   stdio: "inherit",
   shell: true,
-  env: { ...process.env, NEXT_PUBLIC_KERN_PERFIL: perfil },
+  env: {
+    ...process.env,
+    NEXT_PUBLIC_KERN_PERFIL: perfil,
+    // String vazia em vez de remover: o Next só lê do arquivo de ambiente a
+    // chave que ainda não existe em `process.env`. Definida vazia aqui, ela
+    // ganha da que está no disco.
+    ...Object.fromEntries((cfg.zerar ?? []).map((k) => [k, ""])),
+  },
 });
 if (build.status !== 0) process.exit(build.status ?? 1);
 

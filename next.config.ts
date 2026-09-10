@@ -9,6 +9,12 @@ const nextConfig: NextConfig = {
   },
   // Garante URLs com barra final, melhor compatibilidade no WebView do Capacitor.
   trailingSlash: true,
+  experimental: {
+    // O padrão é um worker por núcleo, e com 15 em paralelo a coleta de páginas
+    // estoura a memória desta máquina e mata o build (0xC0000409). Quatro
+    // workers custam alguns segundos a mais e terminam.
+    cpus: 4,
+  },
 };
 
 export default nextConfig;
