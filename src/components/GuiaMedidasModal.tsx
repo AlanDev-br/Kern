@@ -116,7 +116,7 @@ export function GuiaMedidasModal({
         >
           ←
         </button>
-        <h2 className="text-base font-bold tracking-tight">Guia de Medição Corporal</h2>
+        <h2 className="text-base font-bold tracking-tight">Guia de medição corporal</h2>
         <div className="w-10" />
       </header>
 

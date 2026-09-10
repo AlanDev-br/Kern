@@ -349,21 +349,21 @@ export function ExercicioDetalhesModal({ nome, treinos, onFechar }: ExercicioDet
               </h3>
               <div className="divide-y divide-line/30 text-xs">
                 <div className="flex justify-between py-2.5">
-                  <span className="text-muted">Maior Carga</span>
+                  <span className="text-muted">Maior carga</span>
                   <span className="font-bold text-accent">{recordesPessoais.maiorPeso} kg</span>
                 </div>
                 <div className="flex justify-between py-2.5">
-                  <span className="text-muted">Melhor 1RM Estimado</span>
+                  <span className="text-muted">Melhor 1RM estimado</span>
                   <span className="font-bold text-accent">{recordesPessoais.melhor1rm} kg</span>
                 </div>
                 <div className="flex justify-between py-2.5">
-                  <span className="text-muted">Melhor Volume de Série</span>
+                  <span className="text-muted">Melhor volume de série</span>
                   <span className="font-bold text-accent">
                     {recordesPessoais.melhorVolumeSerie.peso} kg × {recordesPessoais.melhorVolumeSerie.reps} reps
                   </span>
                 </div>
                 <div className="flex justify-between py-2.5">
-                  <span className="text-muted">Melhor Volume de Sessão</span>
+                  <span className="text-muted">Melhor volume de sessão</span>
                   <span className="font-bold text-accent">{recordesPessoais.melhorVolumeSessao} kg</span>
                 </div>
               </div>

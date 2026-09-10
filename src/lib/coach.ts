@@ -51,12 +51,25 @@ export interface CoachInput {
   dias: DiaRegistro[];
   diaHoje: DiaRegistro;
   ctx: ConquistaContexto;
+  /** Os inegociáveis reais do usuário. Sem isto, a ação do coach citava as
+   *  tarefas por extenso e continuava mandando "25 min de leitura" para quem
+   *  já tinha renomeado ou apagado essa tarefa. */
+  inegociaveis?: { titulo: string; horario?: string }[];
+}
+
+/** Lista os inegociáveis em texto corrido, para a ação falar dos reais. */
+function listar(itens: { titulo: string }[] | undefined): string {
+  if (!itens?.length) return "seus inegociáveis";
+  const nomes = itens.map((t) => t.titulo.toLowerCase());
+  if (nomes.length === 1) return nomes[0];
+  return nomes.slice(0, -1).join(", ") + " e " + nomes[nomes.length - 1];
 }
 
 // "dormir tarde" = depois das 23:30 (330 min desde 18:00)
 const LIMITE_TARDE = 330;
 
-export function gerarDirecionamentos({ dias, diaHoje, ctx }: CoachInput): Direcionamento[] {
+export function gerarDirecionamentos(input: CoachInput): Direcionamento[] {
+  const { dias, diaHoje, ctx } = input;
   const hoje = chaveDia(new Date());
   // dias passados (sem hoje), mais recentes primeiro
   const passados = dias
@@ -73,8 +86,8 @@ export function gerarDirecionamentos({ dias, diaHoje, ctx }: CoachInput): Direci
       id: "streak",
       severidade: ctx.melhorStreak >= 3 ? "critico" : "atencao",
       icone: "chama",
-      titulo: ctx.melhorStreak >= 3 ? "Seu streak caiu — recomeça hoje" : "Fecha os 3 hoje",
-      acao: "Garanta só os 3 inegociáveis: acordar + 45min sem celular, treinar, 25min de leitura.",
+      titulo: ctx.melhorStreak >= 3 ? "Seu streak caiu — recomeça hoje" : `Feche os ${input.inegociaveis?.length ?? 3} de hoje`,
+      acao: `Hoje, só os inegociáveis: ${listar(input.inegociaveis)}. O resto pode esperar.`,
       frase: "Cada inegociável que você cumpre num dia ruim tira poder do mundo externo e devolve pra você.",
     });
   } else if (ctx.streakAtual >= 3) {
@@ -83,7 +96,7 @@ export function gerarDirecionamentos({ dias, diaHoje, ctx }: CoachInput): Direci
       severidade: "bom",
       icone: "raio",
       titulo: `${ctx.streakAtual} dias seguidos — segura o ritmo`,
-      acao: "Você está construindo a prova. Repete os 3 inegociáveis hoje.",
+      acao: `Repita hoje o que sustentou os outros dias: ${listar(input.inegociaveis)}.`,
       frase: "Não é técnica, é repetição. É isso que mata carência e ansiedade.",
     });
   }
@@ -107,7 +120,7 @@ export function gerarDirecionamentos({ dias, diaHoje, ctx }: CoachInput): Direci
         tardeSeguidos >= 3
           ? `Dormir tarde virou padrão (${tardeSeguidos} dias)`
           : "Você está dormindo tarde",
-      acao: "Hoje: telas off às 22:00 e na cama até as 23:00. Leitura no lugar do scroll.",
+      acao: "Desligue as telas uma hora antes de deitar e leia no lugar de rolar o feed.",
       frase: "Dormir bem reduz cortisol — sono é parte do plano, não um detalhe.",
     });
   }
@@ -130,27 +143,32 @@ export function gerarDirecionamentos({ dias, diaHoje, ctx }: CoachInput): Direci
   }
 
   // ── 4. Treino abaixo da meta (4x/semana) ──
+  // Estas duas regras dependem dos ids da semente. Com a agenda livre eles podem
+  // nao existir: nesse caso a regra fica de fora, em vez de nunca disparar em
+  // silencio e dar a impressao de que o coach esta cego.
+  const temTreino = input.inegociaveis?.some((t) => /trein|movimento|caminh/i.test(t.titulo)) ?? true;
   const treinos7 = ultimos7.filter((d) => d.concluidas.includes("ineg-treino")).length;
-  if (ultimos7.length >= 4 && treinos7 < 3) {
+  if (temTreino && ultimos7.length >= 4 && treinos7 < 3) {
     out.push({
       id: "treino",
       severidade: "atencao",
       icone: "musculo",
       titulo: `Poucos treinos (${treinos7} nos últimos 7 dias)`,
-      acao: "Treino hoje é inegociável pra bater as 4x da semana. Em dia fraco, caminhe 30 min.",
+      acao: "Treine hoje. Em dia fraco, meia hora de caminhada já conta e mantém o streak.",
       frase: "Maior redutor de ansiedade que existe sem remédio.",
     });
   }
 
   // ── 5. Leitura baixa ──
+  const temLeitura = input.inegociaveis?.some((t) => /leitura|ler|livro/i.test(t.titulo)) ?? true;
   const leitura7 = ultimos7.filter((d) => d.concluidas.includes("ineg-leitura")).length;
-  if (ultimos7.length >= 4 && leitura7 < 3) {
+  if (temLeitura && ultimos7.length >= 4 && leitura7 < 3) {
     out.push({
       id: "leitura",
       severidade: "atencao",
       icone: "leitura",
       titulo: "A leitura está sumindo",
-      acao: "25 min hoje, no lugar do celular. Um livro por vez.",
+      acao: "Leia hoje, no lugar do celular. Um livro por vez.",
       frase: "O desperdício é o scroll, não o livro.",
     });
   }
@@ -162,7 +180,7 @@ export function gerarDirecionamentos({ dias, diaHoje, ctx }: CoachInput): Direci
       severidade: "bom",
       icone: "broto",
       titulo: "Base firme — siga construindo",
-      acao: "Cumpra os 3 inegociáveis e respeite a janela de rede. Consistência > intensidade.",
+      acao: `Feche ${listar(input.inegociaveis)} e respeite a janela de rede. Não precisa de mais que isso hoje.`,
       frase: frase(ctx.diasFechados + new Date().getDate()),
     });
   }

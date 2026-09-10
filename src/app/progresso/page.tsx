@@ -65,7 +65,7 @@ export default function ProgressoPage() {
     <div className="space-y-6">
       <header className="pt-1">
         <h1 className="text-3xl font-bold tracking-tight">Progresso</h1>
-        <p className="text-sm text-muted">Seus atributos — a evidência virou poder.</p>
+        <p className="text-sm text-muted">Seus atributos, calculados do que você registrou.</p>
       </header>
 
       {/* Classe geral — mesmo rank do avatar (nível do XP) */}
@@ -121,7 +121,7 @@ export default function ProgressoPage() {
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent"><Icone nome="mente" tamanho={22} /></span>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-bold">Avaliar inteligência</p>
-          <p className="text-xs text-muted">Radar das múltiplas inteligências + testes cognitivos</p>
+          <p className="text-xs text-muted">Radar das inteligências e os testes cognitivos</p>
         </div>
         <Icone nome="chevron" tamanho={18} className="shrink-0 text-muted" />
       </Link>

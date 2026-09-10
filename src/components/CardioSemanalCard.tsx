@@ -111,7 +111,7 @@ export function CardioSemanalCard() {
             <div className="pt-5 space-y-4">
               {/* Sessões Realizadas */}
               <div className="space-y-2">
-                <p className="text-xs font-bold uppercase tracking-wider text-muted">Sessões Desta Semana</p>
+                <p className="text-xs font-bold uppercase tracking-wider text-muted">Sessões desta semana</p>
                 {cardiosSemana.length === 0 ? (
                   <p className="text-xs text-muted italic">Nenhuma sessão registrada nesta semana.</p>
                 ) : (
@@ -152,7 +152,7 @@ export function CardioSemanalCard() {
                 </button>
               ) : (
                 <div className="rounded-2xl border border-line/65 bg-bg/50 p-4 space-y-3">
-                  <p className="text-xs font-bold uppercase tracking-wider text-muted">Registrar Cardio Manual</p>
+                  <p className="text-xs font-bold uppercase tracking-wider text-muted">Registrar cardio manual</p>
                   
                   {/* Tipo Preset Buttons */}
                   <div className="flex flex-wrap gap-1.5">

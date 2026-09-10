@@ -298,7 +298,7 @@ export default function EstatisticasPage() {
         </Link>
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Estatísticas</h1>
-          <p className="text-sm text-muted">Histórico de rendimento biométrico.</p>
+          <p className="text-sm text-muted">Volume, carga e recordes ao longo do tempo.</p>
         </div>
       </header>
 
@@ -422,11 +422,11 @@ export default function EstatisticasPage() {
               <div className="flex justify-center gap-6 text-xs font-bold uppercase tracking-wider">
                 <div className="flex items-center gap-1.5">
                   <span className="h-2 w-2 rounded-full bg-accent" />
-                  <span className="text-fg">Atual (Últimos 30d)</span>
+                  <span className="text-fg">Atual (últimos 30 dias)</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="h-2 w-2 rounded-full bg-muted" />
-                  <span className="text-muted">Anterior (30d antes)</span>
+                  <span className="text-muted">Anterior (30 dias antes)</span>
                 </div>
               </div>
 

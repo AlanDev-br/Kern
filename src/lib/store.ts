@@ -331,7 +331,12 @@ export const useApp = create<AppState>((set, get) => ({
         await pedirPermissaoNotificacoes();
         await reagendarNotificacoes(config, tarefas);
         // notificação do coach com o direcionamento nº1 do dia
-        const dir = direcionamentoPrincipal({ dias, diaHoje, ctx });
+        const dir = direcionamentoPrincipal({
+          dias,
+          diaHoje,
+          ctx,
+          inegociaveis: tarefas.filter((t) => t.category === "inegociavel"),
+        });
         await agendarCoach(`${dir.titulo} — ${dir.acao}`);
       }
     } catch {

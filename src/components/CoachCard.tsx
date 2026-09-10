@@ -22,11 +22,18 @@ export function CoachCard() {
   const dias = useApp((s) => s.dias);
   const diaHoje = useApp((s) => s.diaHoje);
   const ctx = useApp((s) => s.ctx);
+  const tarefas = useApp((s) => s.tarefas);
   const [abrir, setAbrir] = useState(false);
 
   const direcoes = useMemo(
-    () => gerarDirecionamentos({ dias, diaHoje, ctx }),
-    [dias, diaHoje, ctx],
+    () =>
+      gerarDirecionamentos({
+        dias,
+        diaHoje,
+        ctx,
+        inegociaveis: tarefas.filter((t) => t.category === "inegociavel"),
+      }),
+    [dias, diaHoje, ctx, tarefas],
   );
   const principal = direcoes[0];
   const extras = direcoes.slice(1);

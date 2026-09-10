@@ -96,7 +96,7 @@ export default function HojePage() {
         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-soft text-accent"><Icone nome="coach" tamanho={22} /></span>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-bold">Falar com o Coach IA</p>
-          <p className="text-xs text-muted">Mentor fundamentado que lê seus dados e te orienta</p>
+          <p className="text-xs text-muted">Lê seus dados e responde sobre treino, sono e hábito</p>
         </div>
         <Icone nome="chevron" tamanho={18} className="shrink-0 text-muted" />
       </Link>

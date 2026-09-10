@@ -308,7 +308,7 @@ export default function CoachPage() {
       <div className="space-y-6">
         <header className="pt-1">
           <h1 className="text-3xl font-bold tracking-tight">Coach IA</h1>
-          <p className="text-sm text-muted">Um mentor fundamentado, com os seus dados.</p>
+          <p className="text-sm text-muted">Responde com base nos seus dados, não em conselho genérico.</p>
         </header>
 
         <section className="glass space-y-4 rounded-3xl p-5">
@@ -360,7 +360,7 @@ export default function CoachPage() {
       <header className="flex items-center justify-between pt-1">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Coach IA</h1>
-          <p className="text-sm text-muted">Mentor de corpo, mente e hábitos.</p>
+          <p className="text-sm text-muted">Pergunte sobre treino, sono, leitura ou rotina.</p>
         </div>
         <div className="flex items-center gap-3">
           {mensagens.length > 0 && (

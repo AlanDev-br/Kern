@@ -61,7 +61,7 @@ export default function ConfigPage() {
   const [graficoMetrica, setGraficoMetrica] = useState<"duracao" | "volume" | "repeticoes">("duracao");
   const [timeframe, setTimeframe] = useState<"1m" | "3m" | "tudo">("3m");
 
-  // Estado do Calendário de Treinos
+  // Estado do Calendário de treinos
   const [mesCalendario, setMesCalendario] = useState(() => new Date());
 
   // Histórico de treinos recolhido por padrão (evita poluir o perfil); mostra
@@ -356,7 +356,7 @@ export default function ConfigPage() {
     <div className="space-y-6">
       {/* Header Centralizado com Botão de Configurações */}
       <header className="flex items-center justify-between pt-1">
-        <span className="text-sm font-bold text-muted">Editar Perfil</span>
+        <span className="text-sm font-bold text-muted">Editar perfil</span>
         <h1 className="text-base font-bold tracking-tight">alannicholas94</h1>
         <button
           onClick={() => setGavetaAberta("ajustes")}
@@ -412,7 +412,7 @@ export default function ConfigPage() {
         <div className="flex items-baseline justify-between">
           <div>
             <p className="text-base font-extrabold text-accent">{textoTempoSemanal}</p>
-            <p className="text-xs text-muted uppercase tracking-wider font-semibold">Tempo de Treino</p>
+            <p className="text-xs text-muted uppercase tracking-wider font-semibold">Tempo de treino</p>
           </div>
 
           <select
@@ -421,7 +421,7 @@ export default function ConfigPage() {
             className="rounded-lg border border-line bg-card px-2.5 py-1 text-xs text-fg font-semibold outline-none"
           >
             <option value="1m">Último Mês</option>
-            <option value="3m">Últimos 3 Meses</option>
+            <option value="3m">Últimos 3 meses</option>
             <option value="tudo">Tudo</option>
           </select>
         </div>
@@ -622,7 +622,7 @@ export default function ConfigPage() {
             <button onClick={() => setGavetaAberta(null)} aria-label="Voltar" className="-ml-1 flex h-10 w-10 items-center justify-center rounded-xl text-2xl font-bold text-muted active:bg-card">
               ←
             </button>
-            <h2 className="text-base font-bold tracking-tight">Biblioteca de Exercícios</h2>
+            <h2 className="text-base font-bold tracking-tight">Biblioteca de exercícios</h2>
             <div className="w-6" />
           </header>
 
@@ -696,14 +696,14 @@ export default function ConfigPage() {
         </div>
       )}
 
-      {/* Gaveta de Medições (Perfil Físico) */}
+      {/* Gaveta de Medições (Perfil físico) */}
       {gavetaAberta === "medicoes" && (
         <div className="fixed inset-0 z-30 flex flex-col bg-bg">
           <header className="flex items-center justify-between border-b border-line px-3 pb-3 pt-[max(0.85rem,env(safe-area-inset-top))]">
             <button onClick={() => setGavetaAberta(null)} aria-label="Voltar" className="-ml-1 flex h-10 w-10 items-center justify-center rounded-xl text-2xl font-bold text-muted active:bg-card">
               ←
             </button>
-            <h2 className="text-base font-bold tracking-tight">Medições Corporais</h2>
+            <h2 className="text-base font-bold tracking-tight">Medições corporais</h2>
             <div className="w-6" />
           </header>
 
@@ -719,7 +719,7 @@ export default function ConfigPage() {
 
             {/* Peso e Gordura */}
             <div className="glass rounded-2xl p-4 space-y-3.5">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-accent">Perfil Físico</h3>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-accent">Perfil físico</h3>
 
               <div className="grid grid-cols-2 gap-3.5">
                 <div className="space-y-1">
@@ -749,7 +749,7 @@ export default function ConfigPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="text-xs text-muted uppercase tracking-wider font-semibold">Peso Corporal (kg)</label>
+                  <label className="text-xs text-muted uppercase tracking-wider font-semibold">Peso corporal (kg)</label>
                   <input
                     type="number"
                     step="0.1"
@@ -851,7 +851,7 @@ export default function ConfigPage() {
             <button onClick={() => setGavetaAberta(null)} aria-label="Voltar" className="-ml-1 flex h-10 w-10 items-center justify-center rounded-xl text-2xl font-bold text-muted active:bg-card">
               ←
             </button>
-            <h2 className="text-base font-bold tracking-tight">Calendário de Treinos</h2>
+            <h2 className="text-base font-bold tracking-tight">Calendário de treinos</h2>
             <div className="w-6" />
           </header>
 
@@ -998,7 +998,7 @@ export default function ConfigPage() {
                   }}
                   className="w-full rounded-xl border border-line py-2 text-xs font-bold active:scale-95 transition-all"
                 >
-                  Testar Notificação (8s)
+                  Testar notificação (8s)
                 </button>
               )}
             </section>
@@ -1008,7 +1008,7 @@ export default function ConfigPage() {
               <section className="glass rounded-2xl p-4.5 space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted">Limites de Aplicativos</h3>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted">Limites de aplicativos</h3>
                     <p className="text-xs text-muted mt-0.5">StayFree — Bloqueio de redes sociais</p>
                   </div>
                   <button
@@ -1052,7 +1052,7 @@ export default function ConfigPage() {
                     )}
 
                     <div className="space-y-3">
-                      <p className="text-xs font-bold text-muted uppercase tracking-wider">Limites Diários:</p>
+                      <p className="text-xs font-bold text-muted uppercase tracking-wider">Limites diários</p>
                       {APPS_SOCIAIS.map((app) => {
                         const valor = limits[app.pkg] || 0;
                         return (
@@ -1087,7 +1087,7 @@ export default function ConfigPage() {
 
             {/* Backup */}
             <section className="glass rounded-2xl p-4.5 space-y-3.5">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-muted">Backup dos Dados</h3>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-muted">Backup dos dados</h3>
               <p className="text-xs text-muted leading-normal">
                 Seus dados ficam locais no aparelho. Exporte regularmente para segurança.
               </p>
