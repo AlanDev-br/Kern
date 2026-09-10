@@ -20,9 +20,10 @@
 // `kern://app` hoje, amanha e depois de reinstalar. E dai que vem a promessa de
 // que o dado continua ali.
 
-const { app, BrowserWindow, protocol, net, shell } = require("electron");
+const { app, BrowserWindow, protocol, net, shell, ipcMain } = require("electron");
 const path = require("path");
 const { pathToFileURL } = require("url");
+const { iniciarServidor } = require("./servidor");
 
 // A pasta do export do Next. Empacotado, `out/` vai junto no asar.
 const RAIZ = path.join(__dirname, "..", "out");
@@ -75,6 +76,7 @@ function criarJanela() {
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
+      preload: path.join(__dirname, "preload.js"),
     },
   });
 
@@ -127,6 +129,30 @@ if (!app.requestSingleInstanceLock()) {
     });
 
     criarJanela();
+
+    // Ponto de recepção da sincronia. Sobe junto com a janela e vive enquanto
+    // o app estiver aberto: é isso que faz "abrir o Kern no computador" ser o
+    // gesto que habilita receber do celular, sem serviço em segundo plano nem
+    // nada rodando quando o app está fechado.
+    const rede = iniciarServidor({
+      aoReceber: (instantaneo) => {
+        // O processo principal não fala com o IndexedDB — ele é da página. O
+        // instantâneo atravessa por IPC e quem grava é o app, com o mesmo
+        // código que grava qualquer outra coisa.
+        for (const j of BrowserWindow.getAllWindows()) {
+          j.webContents.send("kern:instantaneo", instantaneo);
+        }
+      },
+      aoLog: (msg) => console.log("[sincronia]", msg),
+    });
+
+    ipcMain.handle("kern:rede", () => ({
+      codigo: rede.codigo,
+      porta: rede.porta,
+      enderecos: rede.enderecos,
+    }));
+
+    app.on("before-quit", () => rede.parar());
 
     app.on("activate", () => {
       if (BrowserWindow.getAllWindows().length === 0) criarJanela();

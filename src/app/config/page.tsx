@@ -17,6 +17,8 @@ import { EvolucaoCorporal } from "@/components/EvolucaoCorporal";
 import { grupoDoExercicio, GRUPOS } from "@/lib/musculacao";
 import { estimar1RM } from "@/lib/forca";
 import { GuiaMedidasModal } from "@/components/GuiaMedidasModal";
+import { EnviarParaDesktop } from "@/components/EnviarParaDesktop";
+import { SincroniaDesktop } from "@/components/SincroniaDesktop";
 import {
   tempoTelaDisponivel,
   obterEstadoLimitador,
@@ -1105,6 +1107,12 @@ export default function ConfigPage() {
                 )}
               </section>
             )}
+
+            {/* Sincronia com o computador. Cada lado mostra só o seu gesto: o
+                celular envia, o desktop recebe, e nenhum dos dois componentes
+                aparece do lado errado. */}
+            <EnviarParaDesktop />
+            <SincroniaDesktop />
 
             {/* Backup */}
             <section className="glass rounded-2xl p-4.5 space-y-3.5">

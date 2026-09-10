@@ -3,35 +3,26 @@
 import { Capacitor } from "@capacitor/core";
 import { Filesystem, Directory, Encoding } from "@capacitor/filesystem";
 import { Share } from "@capacitor/share";
-import { db, getConfig, setConfig } from "./db";
+import { getConfig, setConfig } from "./db";
+import { montarInstantaneo, aplicarInstantaneo } from "./instantaneo";
+import { idAparelho } from "./identidade";
 import { hojeChave } from "./dates";
 
-interface BackupPayload {
-  versao: 1;
-  exportadoEm: string;
-  config: unknown;
-  dias: unknown[];
-  revisoes: unknown[];
-  dividas: unknown[];
-  conquistas: unknown[];
-}
-
-async function montarPayload(): Promise<BackupPayload> {
-  return {
-    versao: 1,
-    exportadoEm: new Date().toISOString(),
-    config: await db.config.get("singleton"),
-    dias: await db.dias.toArray(),
-    revisoes: await db.revisoes.toArray(),
-    dividas: await db.dividas.toArray(),
-    conquistas: await db.conquistas.toArray(),
-  };
-}
+// O backup guardava CINCO tabelas — config, dias, revisoes, dividas e conquistas
+// — de vinte e duas. Foi escrito quando o app tinha cinco e nunca acompanhou o
+// resto: restaurar apagava todo o historico de treino, as medidas corporais, as
+// leituras, as meditacoes, os testes cognitivos e a conversa do coach, sem
+// avisar. Backup que perde dado e pior que nenhum, porque o usuario para de
+// guardar por outros meios.
+//
+// Agora o retrato vem de `instantaneo.ts`, que e a mesma fonte usada pela
+// sincronia com o desktop. Uma definicao so do que "todos os dados" significa,
+// em vez de duas listas que envelhecem em ritmos diferentes.
 
 // Exporta o backup. No Android, escreve arquivo e abre o seletor nativo
 // (Drive, WhatsApp...). Na web, dispara download do .json.
 export async function exportarBackup(): Promise<void> {
-  const payload = await montarPayload();
+  const payload = await montarInstantaneo(idAparelho());
   const json = JSON.stringify(payload, null, 2);
   const nome = `reconstrucao90-backup-${hojeChave()}.json`;
 
@@ -61,25 +52,35 @@ export async function exportarBackup(): Promise<void> {
   await setConfig({ ultimoBackup: hojeChave() });
 }
 
-// Importa de uma string JSON, sobrescrevendo o estado atual.
+// Importa de uma string JSON, substituindo o estado atual.
+//
+// Aceita o formato antigo (versao 1, cinco tabelas) alem do completo: quem tem
+// um backup guardado de meses atras precisa conseguir restaurar, mesmo que ele
+// so traga parte. `aplicarInstantaneo` nao mexe em tabela ausente do arquivo,
+// entao restaurar um backup antigo preenche o que ele tem e deixa o resto.
 export async function importarBackup(json: string): Promise<void> {
-  const payload = JSON.parse(json) as BackupPayload;
-  if (payload.versao !== 1) throw new Error("Versão de backup incompatível");
+  const bruto = JSON.parse(json) as { versao?: number; tabelas?: unknown };
 
-  await db.transaction("rw", db.config, db.dias, db.revisoes, db.dividas, db.conquistas, async () => {
-    await Promise.all([
-      db.dias.clear(),
-      db.revisoes.clear(),
-      db.dividas.clear(),
-      db.conquistas.clear(),
-    ]);
-    if (payload.config) await db.config.put(payload.config as never);
-    if (payload.dias?.length) await db.dias.bulkPut(payload.dias as never[]);
-    if (payload.revisoes?.length) await db.revisoes.bulkPut(payload.revisoes as never[]);
-    if (payload.dividas?.length) await db.dividas.bulkPut(payload.dividas as never[]);
-    if (payload.conquistas?.length) await db.conquistas.bulkPut(payload.conquistas as never[]);
-  });
+  if (bruto.versao === 1) {
+    // O formato antigo tinha as tabelas soltas na raiz; o novo as agrupa.
+    const antigo = bruto as unknown as Record<string, unknown[]>;
+    const tabelas: Record<string, unknown[]> = {};
+    for (const nome of ["dias", "revisoes", "dividas", "conquistas"]) {
+      if (Array.isArray(antigo[nome])) tabelas[nome] = antigo[nome];
+    }
+    const cfg = (bruto as unknown as { config?: unknown }).config;
+    if (cfg) tabelas.config = [cfg];
+    await aplicarInstantaneo({
+      versao: 2,
+      geradoEm: new Date().toISOString(),
+      tabelas: tabelas as never,
+    });
+  } else if (bruto.versao === 2 && bruto.tabelas) {
+    await aplicarInstantaneo(bruto as never);
+  } else {
+    throw new Error("Formato de backup nao reconhecido.");
+  }
 
-  // garante config válida
+  // Garante config valida depois da troca.
   await getConfig();
 }

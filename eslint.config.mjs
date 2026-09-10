@@ -12,6 +12,12 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // A casca de desktop roda no processo principal do Electron, que é
+    // obrigatoriamente CommonJS: `require` ali não é escolha de estilo, é o
+    // formato que o runtime aceita. Aplicar a ela as regras de um app Next
+    // acusaria erro em código correto.
+    "electron/**",
+    "dist-desktop/**",
   ]),
 ]);
 
