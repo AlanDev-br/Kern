@@ -100,13 +100,13 @@ export default function ProgressoPage() {
           <div key={a.id} className="glass rounded-2xl p-4">
             <div className="flex items-center justify-between">
               <Icone nome={a.icone as IconeNome} tamanho={20} className="text-muted" />
-              <span className="text-xs font-bold" style={{ color: a.cor }}>
+              <span className="text-xs font-bold text-accent">
                 Nv {a.nivel}
               </span>
             </div>
             <p className="mt-1.5 text-sm font-bold">{a.nome}</p>
             <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-line">
-              <div className="h-full rounded-full" style={{ width: `${a.valor}%`, background: a.cor }} />
+              <div className="h-full rounded-full bg-accent" style={{ width: `${a.valor}%` }} />
             </div>
             <p className="mt-1.5 text-xs leading-tight text-muted">{a.fonte}</p>
           </div>

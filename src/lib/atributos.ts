@@ -8,7 +8,6 @@ export interface Atributo {
   id: string;
   nome: string;
   icone: string;
-  cor: string;
   valor: number; // 0..100
   nivel: number; // 0..10
   fonte: string; // o que faz subir
@@ -30,12 +29,16 @@ function curva(pontos: number, escala: number): number {
 export function calcularAtributos(e: EntradaAtributos): Atributo[] {
   const { ctx, xpForca, cardioMin, treinosCount, menteScore } = e;
 
-  const defs: { id: string; nome: string; icone: string; cor: string; pontos: number; escala: number; fonte: string }[] = [
+  // Os seis atributos tinham seis cores neon diferentes — rosa, azul, verde,
+  // roxo, laranja, cinza — e nenhuma delas codificava nada: Forca nao e mais
+  // 'vermelha' que Foco. Era arco-iris decorativo num painel onde o dado ja
+  // esta no comprimento da barra e no numero do nivel. A cor saiu; quem
+  // carrega a informacao continua carregando.
+  const defs: { id: string; nome: string; icone: string; pontos: number; escala: number; fonte: string }[] = [
     {
       id: "forca",
       nome: "Força",
       icone: "treino",
-      cor: "#fb7185",
       pontos: xpForca + treinosCount * 8,
       escala: 500,
       fonte: "Musculação: volume, séries e recordes",
@@ -44,7 +47,6 @@ export function calcularAtributos(e: EntradaAtributos): Atributo[] {
       id: "agilidade",
       nome: "Agilidade",
       icone: "corrida",
-      cor: "#38bdf8",
       pontos: cardioMin * 1.5,
       escala: 300,
       fonte: "Cardio e movimento diário",
@@ -53,7 +55,6 @@ export function calcularAtributos(e: EntradaAtributos): Atributo[] {
       id: "vitalidade",
       nome: "Vitalidade",
       icone: "coracao",
-      cor: "#34d399",
       pontos: ctx.streakAtual * 6 + ctx.diasComCheck * 2,
       escala: 400,
       fonte: "Streak e consistência (sono quando disponível)",
@@ -62,7 +63,6 @@ export function calcularAtributos(e: EntradaAtributos): Atributo[] {
       id: "inteligencia",
       nome: "Inteligência",
       icone: "mente",
-      cor: "#a78bfa",
       pontos: ctx.conceitosLidos * 12 + ctx.revisoesTotais * 4 + menteScore * 5,
       escala: 500,
       fonte: "Leitura, estudo e testes da Mente",
@@ -71,7 +71,6 @@ export function calcularAtributos(e: EntradaAtributos): Atributo[] {
       id: "foco",
       nome: "Foco",
       icone: "alvo",
-      cor: "#fbbf24",
       pontos: ctx.diasFechados * 8 + ctx.melhorStreak * 5,
       escala: 400,
       fonte: "Inegociáveis fechados e anti-dopamina",
@@ -80,7 +79,6 @@ export function calcularAtributos(e: EntradaAtributos): Atributo[] {
       id: "espirito",
       nome: "Espírito",
       icone: "meditacao",
-      cor: "#94a3b8",
       pontos: ctx.revisoesTotais * 6 + ctx.conceitosLidos * 3,
       escala: 300,
       fonte: "Diário Estoico e revisões",
@@ -93,7 +91,6 @@ export function calcularAtributos(e: EntradaAtributos): Atributo[] {
       id: d.id,
       nome: d.nome,
       icone: d.icone,
-      cor: d.cor,
       valor,
       nivel: Math.floor(valor / 10),
       fonte: d.fonte,
