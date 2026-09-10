@@ -84,6 +84,10 @@ export interface AppConfig {
   horarios: Record<string, string>; // taskId/evento -> "HH:MM"
   notificacoesAtivas: boolean;
   ultimoBackup?: string;
+  // A partir de quando o dia que passou em branco passa a custar XP. Gravado na
+  // primeira vez que o fechamento roda, para a regra nunca cobrar um passado
+  // que não a conhecia. Ver `fechamento.ts`.
+  penalidadeDesde?: string; // "YYYY-MM-DD"
   // Coach de IA (Groq) — chave fica só no dispositivo (local-first).
   iaApiKey?: string;
   iaModelo?: string;

@@ -32,6 +32,7 @@ import { seedTreinosSeNecessario } from "./treino-seed";
 import { seedBibliotecaSeNecessario } from "./biblioteca-seed";
 import { seedPlano4xSeNecessario } from "./plano-seed";
 import { seedTarefasSeNecessario } from "./tarefas-seed";
+import { fecharDiasPendentes } from "./fechamento";
 import {
   listarTarefas,
   criarTarefa as persistCriarTarefa,
@@ -293,6 +294,10 @@ export const useApp = create<AppState>((set, get) => ({
     await seedBibliotecaSeNecessario(); // semeia os conceitos curados na 1ª vez
     await seedPlano4xSeNecessario(); // instala o plano 4x/semana (idempotente)
     await seedTarefasSeNecessario(); // semeia o checklist editável na 1ª vez
+    // Fecha os dias que passaram sem o app ser aberto, cobrando o inegociável em
+    // branco. Depois da semente, porque precisa das tarefas para saber o que
+    // faltou; antes de ler os dias, porque acabou de criar alguns.
+    await fecharDiasPendentes();
     const config = await getConfig();
     const dias = await getTodosDias();
     const diaHoje = await getDia(hojeChave());

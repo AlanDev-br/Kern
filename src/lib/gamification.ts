@@ -7,9 +7,19 @@ import { xpBiblioteca, contagensBiblioteca } from "./biblioteca";
 // Recalcula o XP de um dia a partir das tarefas concluídas. `tarefas` é a lista
 // editável do usuário; sem ela, cai no plano padrão (compatibilidade). O dia só
 // "fecha" se houver ao menos um inegociável e todos estiverem cumpridos.
+// Um inegociável não cumprido custa metade do que valeria cumprido. Metade, e
+// não o valor cheio, porque a conta precisa continuar premiando o dia parcial:
+// fazer dois de três tem de ser melhor que não fazer nenhum, senão o dia ruim
+// vira dia perdido e o incentivo some justamente quando ele é mais necessário.
+export const PENALIDADE_FRACAO = 0.5;
+
 export function calcularXpDia(
   concluidas: string[],
   tarefas: TaskDef[] = [...INEGOCIAVEIS, ...BLOCOS],
+  // O dia em curso não paga a falta: às 6h da manhã nada foi cumprido ainda, e
+  // abrir o app num saldo negativo puniria o usuário por ter acordado cedo.
+  // A cobrança acontece uma vez, quando o dia fecha.
+  opcoes: { diaFechado?: boolean } = {},
 ): {
   xp: number;
   fechouInegociaveis: boolean;
@@ -23,11 +33,21 @@ export function calcularXpDia(
   const fechouInegociaveis =
     inegociaveis.length > 0 && inegociaveis.every((t) => concluidas.includes(t.id));
   if (fechouInegociaveis) xp += BONUS_INEGOCIAVEIS;
+
+  if (opcoes.diaFechado) {
+    for (const t of inegociaveis) {
+      if (!concluidas.includes(t.id)) xp -= Math.round(t.xp * PENALIDADE_FRACAO);
+    }
+  }
+
   return { xp, fechouInegociaveis };
 }
 
+// O saldo de um dia pode ser negativo; o total, não. Rank, temas e conquistas
+// leem daqui, e um total negativo os colocaria num estado que nenhum deles sabe
+// representar. O prejuízo aparece no dia — é lá que ele significa alguma coisa.
 export function xpTotal(dias: DiaRegistro[]): number {
-  return dias.reduce((s, d) => s + d.xp, 0);
+  return Math.max(0, dias.reduce((s, d) => s + d.xp, 0));
 }
 
 // Streak = dias consecutivos (terminando hoje ou ontem) com os 3 inegociáveis.
