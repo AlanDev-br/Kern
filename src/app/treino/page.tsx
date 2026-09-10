@@ -11,6 +11,7 @@ import { ExercicioDetalhesModal } from "@/components/ExercicioDetalhesModal";
 import { CardioSemanalCard } from "@/components/CardioSemanalCard";
 import { TreinoResumo } from "@/components/TreinoResumo";
 import { CoachTreino } from "@/components/CoachTreino";
+import { DirecaoSemanal } from "@/components/DirecaoSemanal";
 import { Icone } from "@/components/Icone";
 
 export default function TreinoPage() {
@@ -138,6 +139,8 @@ export default function TreinoPage() {
       )}
 
       {/* Coach de treino: aponta músculos em déficit na semana */}
+      <DirecaoSemanal />
+
       <CoachTreino treinos={treinos} />
 
       {/* Resumo com gráficos (30 dias + séries por músculo) */}

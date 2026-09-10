@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { calcularDirecao } from "@/lib/direcao-treino";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useApp } from "@/lib/store";
 import { db } from "@/lib/db";
@@ -237,6 +238,7 @@ export default function CoachPage() {
       inegociaveisHoje,
       atributos,
       volumeMusculo,
+      direcaoTreino: calcularDirecao(treinos, config.perfil, medidas).paraCoach,
       cardioMinSemana: cardioMin,
       conceitosLidos: ctx.conceitosLidos,
       revisoes: ctx.revisoesTotais,

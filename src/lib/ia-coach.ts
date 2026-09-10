@@ -122,6 +122,13 @@ Regras:
 - Dê conselhos ESPECÍFICOS e ACIONÁVEIS para hoje — não treine só corpo: cubra também hábito, mente, sono, foco.
 - Priorize: aponte 1 foco principal e no máximo 2–3 ajustes concretos. Menos é mais.
 - Se faltar dado, peça de forma objetiva. NUNCA invente números ou recordes.
+- Quando houver bloco DIREÇÃO DE TREINO, ele é a fonte sobre volume: a fase, os
+  alvos e as prioridades ali já foram calculados a partir da composição corporal
+  e do volume real. Explique e aprofunde essas prioridades — não proponha outras
+  em paralelo, e não sugira subir volume numa fase de déficit, onde o recurso
+  escasso é recuperação e não estímulo.
+- Volume sem alvo não é orientação. Ao falar de um grupo muscular, diga o número
+  de séries atual, para onde ele deve ir e quantas séries faltam.
 - Diga a incerteza quando ela existe: bioimpedância é estimativa. Não trate 27,6% como se fosse medida exata nem construa um plano inteiro em cima de uma casa decimal.
 - Conecte ação a identidade ("você está virando o tipo de pessoa que...").
 - Seja conciso. Respostas curtas e densas, sem encher linguiça.
@@ -157,6 +164,11 @@ export interface ContextoCoach {
   nivelNome: string;
   historicoTreinos?: string;
   recordesPessoais?: string;
+  // Bloco pronto de `direcao-treino.ts`: fase, volume por grupo com os
+  // landmarks e o alvo, e as prioridades já calculadas. Substitui o rótulo
+  // solto ("Peito 6 séries (baixo)"), que obrigava o modelo a inventar a
+  // direção porque não recebia nem o alvo nem a distância até ele.
+  direcaoTreino?: string;
 }
 
 export function montarContexto(c: ContextoCoach): string {
@@ -183,7 +195,8 @@ ${c.diasSemRecorde != null ? `- Último recorde foi há ${c.diasSemRecorde} dias
 ${c.gruposAbandonados ? `- Sem estímulo há tempo demais: ${c.gruposAbandonados}` : ""}
 ${c.cardiorrespiratorio ? `- Sono e cardiorrespiratório: ${c.cardiorrespiratorio}` : ""}
 ${c.historicoTreinos ? `- Histórico Recente de Treinos:\n${c.historicoTreinos}` : ""}
-${c.recordesPessoais ? `- Recordes Pessoais (Cargas Máximas):\n${c.recordesPessoais}` : ""}`;
+${c.recordesPessoais ? `- Recordes Pessoais (Cargas Máximas):\n${c.recordesPessoais}` : ""}
+${c.direcaoTreino ? `\nDIREÇÃO DE TREINO (calculada pelo app a partir da composição corporal e do volume real):\n${c.direcaoTreino}` : ""}`;
 }
 
 export interface Mensagem {
