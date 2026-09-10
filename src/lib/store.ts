@@ -33,6 +33,7 @@ import { seedBibliotecaSeNecessario } from "./biblioteca-seed";
 import { seedPlano4xSeNecessario } from "./plano-seed";
 import { seedTarefasSeNecessario } from "./tarefas-seed";
 import { fecharDiasPendentes } from "./fechamento";
+import { novoUid } from "./identidade";
 import {
   listarTarefas,
   criarTarefa as persistCriarTarefa,
@@ -575,6 +576,7 @@ export const useApp = create<AppState>((set, get) => ({
     const xpGanho = minutos;
     const hoje = hojeChave();
     const novoRegistro = {
+      uid: novoUid(),
       tipo,
       minutos,
       data: hoje,

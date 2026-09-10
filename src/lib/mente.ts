@@ -1,6 +1,7 @@
 "use client";
 
 import { db, type AvaliacaoMente, type ResultadoCognitivo } from "./db";
+import { novoUid } from "./identidade";
 
 // ─────────────────────────────────────────────────────────────
 // Módulo "Mente": medir inteligência em vários âmbitos.
@@ -43,7 +44,7 @@ export function pontuarAvaliacao(respostas: Record<string, number>): Record<stri
 }
 
 export async function salvarAvaliacao(scores: Record<string, number>): Promise<void> {
-  await db.avaliacoesMente.add({ data: new Date().toISOString(), scores });
+  await db.avaliacoesMente.add({ uid: novoUid(), data: new Date().toISOString(), scores });
 }
 
 export async function ultimaAvaliacao(): Promise<AvaliacaoMente | null> {
@@ -75,7 +76,7 @@ export async function salvarTeste(
   valor: number,
   score: number,
 ): Promise<void> {
-  await db.testesCognitivos.add({ data: new Date().toISOString(), tipo, valor, score });
+  await db.testesCognitivos.add({ uid: novoUid(), data: new Date().toISOString(), tipo, valor, score });
 }
 
 // Melhor score recente de cada tipo (últimos 60 dias) — pra refletir capacidade atual.

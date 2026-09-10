@@ -9,6 +9,7 @@ import type {
 } from "./types";
 // CartaoLeitura é definido neste módulo (abaixo) e re-exportado para o restante.
 import { hojeChave } from "./dates";
+import { uidLegado } from "./identidade";
 import type { MedidaCorporal } from "./composicao";
 // Só os tipos: `kern-health` importa este módulo de volta, e um import de valor
 // fecharia o ciclo. `import type` some na compilação.
@@ -51,6 +52,9 @@ export interface SetRascunho {
 
 export interface MensagemCoach {
   id?: number;
+  /** Identidade global do registro. A fusao entre aparelhos casa por aqui, e
+   *  nao pelo `id` local, que cada aparelho numera do seu jeito. */
+  uid?: string;
   role: "user" | "assistant";
   content: string;
   data: string; // data/hora de envio (ISO)
@@ -58,6 +62,9 @@ export interface MensagemCoach {
 
 export interface MeditacaoSession {
   id?: number;
+  /** Identidade global do registro. A fusao entre aparelhos casa por aqui, e
+   *  nao pelo `id` local, que cada aparelho numera do seu jeito. */
+  uid?: string;
   tipo: "meditacao" | "foco";
   minutos: number;
   data: string; // formato "YYYY-MM-DD"
@@ -98,6 +105,9 @@ export interface ImagemExercicio {
 // snapshot por vez que o usuário refaz, pra ver evolução ao longo do tempo.
 export interface AvaliacaoMente {
   id?: number;
+  /** Identidade global do registro. A fusao entre aparelhos casa por aqui, e
+   *  nao pelo `id` local, que cada aparelho numera do seu jeito. */
+  uid?: string;
   data: string; // ISO
   scores: Record<string, number>; // id da inteligência → 0..100
 }
@@ -107,6 +117,9 @@ export interface AvaliacaoMente {
 // `score` é normalizado 0..100 pra alimentar o atributo Inteligência.
 export interface ResultadoCognitivo {
   id?: number;
+  /** Identidade global do registro. A fusao entre aparelhos casa por aqui, e
+   *  nao pelo `id` local, que cada aparelho numera do seu jeito. */
+  uid?: string;
   data: string; // ISO
   tipo: "reacao" | "digitos" | "stroop";
   valor: number; // ms (reação) | dígitos (span) | acertos/seg (stroop)
@@ -402,6 +415,40 @@ export class Reconstrucao90DB extends Dexie {
       })
       .upgrade(() => {
         /* nada a migrar: a tabela nasce vazia */
+      });
+
+    // Identidade global dos registros, pré-requisito da sincronia entre
+    // aparelhos. Estas quatro tabelas usam `++id`, e cada aparelho conta a
+    // partir do 1 por conta própria: a meditação nº 5 do celular e a nº 5 do
+    // desktop são registros diferentes com a mesma chave.
+    //
+    // A chave primária NÃO muda — mudá-la destruiria o object store. O que
+    // entra é um `uid` indexado ao lado, único entre aparelhos, e é por ele que
+    // a fusão vai casar os registros. O `++id` continua sendo detalhe local.
+    //
+    // `&uid` declara o índice como único: se a fusão algum dia tentar gravar
+    // dois registros com o mesmo uid, o banco recusa em vez de aceitar em
+    // silêncio. É a rede de segurança embaixo da regra de fusão.
+    this.version(15)
+      .stores({
+        avaliacoesMente: "++id, data, &uid",
+        testesCognitivos: "++id, data, tipo, &uid",
+        conversasCoach: "++id, data, &uid",
+        meditacoes: "++id, data, &uid",
+      })
+      .upgrade(async (tx) => {
+        // `uidLegado` é determinístico: rodar a migração duas vezes no mesmo
+        // aparelho produz os mesmos valores, então ela não duplica nada.
+        for (const nome of ["avaliacoesMente", "testesCognitivos", "conversasCoach", "meditacoes"]) {
+          await tx
+            .table(nome)
+            .toCollection()
+            .modify((registro: { id?: number; uid?: string }) => {
+              if (!registro.uid && registro.id != null) {
+                registro.uid = uidLegado(nome, registro.id);
+              }
+            });
+        }
       });
   }
 }

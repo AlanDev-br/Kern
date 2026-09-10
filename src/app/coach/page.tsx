@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { novoUid } from "@/lib/identidade";
 import { Icone } from "@/components/Icone";
 import { calcularDirecao } from "@/lib/direcao-treino";
 import { useLiveQuery } from "dexie-react-hooks";
@@ -279,6 +280,7 @@ export default function CoachPage() {
 
     // Persiste mensagem do Alan
     await db.conversasCoach.put({
+      uid: novoUid(),
       role: "user",
       content: msg,
       data: new Date().toISOString(),
@@ -290,6 +292,7 @@ export default function CoachPage() {
 
       // Persiste resposta do Coach
       await db.conversasCoach.put({
+        uid: novoUid(),
         role: "assistant",
         content: resposta,
         data: new Date().toISOString(),
