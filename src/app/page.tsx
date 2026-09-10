@@ -126,7 +126,7 @@ export default function HojePage() {
       {/* Cartão de Foco / Biblioteca */}
       <RevisaoLeituraCard />
 
-      {/* Sincronização Huawei Band via Health Connect */}
+      {/* Dados do vestível, via Health Connect */}
       <HealthSyncCard />
 
       {/* Tempo de tela (automático no Android) */}

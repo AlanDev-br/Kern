@@ -98,7 +98,7 @@ export function HealthSyncCard() {
   if (!saudeNativa()) {
     return (
       <div className="rounded-2xl border border-line bg-card/50 p-4">
-        <p className="text-sm font-semibold">Huawei Band</p>
+        <p className="text-sm font-semibold">Dados do vestível</p>
         <p className="mt-0.5 text-xs text-muted">
           Importação de sono (dormir/acordar), treino, passos e FC disponível no app Android.
         </p>
@@ -109,7 +109,7 @@ export function HealthSyncCard() {
   if (status === "sem-app") {
     return (
       <div className="glass rounded-2xl p-4">
-        <p className="text-sm font-semibold">Huawei Band</p>
+        <p className="text-sm font-semibold">Dados do vestível</p>
         <p className="mt-0.5 text-xs text-muted">O Health Connect não está disponível neste aparelho.</p>
       </div>
     );
@@ -118,7 +118,7 @@ export function HealthSyncCard() {
   if (status === "sem-permissao") {
     return (
       <div className="glass rounded-2xl p-4">
-        <p className="text-sm font-semibold">Conectar Huawei Band</p>
+        <p className="text-sm font-semibold">Conectar vestível</p>
         <p className="mt-0.5 text-xs text-muted">
           Autorize a leitura no Health Connect pra eu estimar dormir/acordar e acompanhar treino, passos e FC.
         </p>
@@ -162,7 +162,7 @@ export function HealthSyncCard() {
   return (
     <div className="glass overflow-hidden rounded-2xl p-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold">Huawei Band — hoje</p>
+        <p className="text-sm font-semibold">Vestível — hoje</p>
         <button
           onClick={sincronizar}
           className="text-xs text-accent disabled:text-muted"

@@ -8,6 +8,13 @@ import { nivelDoXp } from "@/lib/xp";
 import { rankDoNivel } from "@/lib/rank";
 import { carregarModeloParaRankObjectURL, AVATAR_PADRAO_URL } from "@/lib/avatar";
 
+// Dentro do executavel de desktop, o preload injeta esta marca. Fora dele
+// (celular, navegador) ela nao existe, e o avatar 3D sobe normalmente.
+function dentroDoDesktop(): boolean {
+  if (typeof window === "undefined") return false;
+  return !!(window as unknown as { kernDesktop?: { presente?: boolean } }).kernDesktop?.presente;
+}
+
 const Avatar3D = dynamic(() => import("@/components/Avatar3D").then((m) => m.Avatar3D), {
   ssr: false,
   loading: () => <div className="h-full w-full animate-pulse rounded-3xl bg-card/50" />,
@@ -69,9 +76,20 @@ export function AvatarHero() {
         }}
       />
 
-      <div className="absolute inset-0">
-        <Avatar3D url={objUrl} streak={ctx.streakAtual} cor={rank.cor} rankIndex={rankIndex} />
-      </div>
+      {/* O canvas 3D não sobe dentro do executável de desktop.
+          Medido: o processo de GPU do Chromium morre com violação de acesso
+          assim que o shader do three.js inicializa, e leva o renderizador
+          junto — a janela fecha sozinha, sem erro na tela. Desligar a
+          aceleração por hardware reduziu de nove quedas fatais para uma, mas
+          não zerou.
+          O desktop existe para consultar o histórico, e não para ver o avatar
+          girar. Trocar um app que não abre por um app sem canvas é a troca
+          certa; no celular, onde o avatar é o centro da tela, nada muda. */}
+      {!dentroDoDesktop() && (
+        <div className="absolute inset-0">
+          <Avatar3D url={objUrl} streak={ctx.streakAtual} cor={rank.cor} rankIndex={rankIndex} />
+        </div>
+      )}
 
       {/* Rank + nível, numa placa opaca. Antes o texto ficava direto sobre o
           degradê e sobre o avatar em 3D, e o contraste variava com o que

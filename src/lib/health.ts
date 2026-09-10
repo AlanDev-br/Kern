@@ -115,7 +115,7 @@ function mesmaData(a: Date, b: Date): boolean {
 export type OrigemAcordar = "sono" | "fc+passos" | "fc" | "passos" | null;
 
 export interface ResumoSaude {
-  // sono real (raro vir da Huawei)
+  // sono real (raro a pulseira publicar)
   acordouEm: Date | null;
   sonoMin: number;
   // estimativa por FC + passos
@@ -123,7 +123,7 @@ export interface ResumoSaude {
   acordarOrigem: OrigemAcordar;
   // estimativa do horário de dormir (início do bloco de sono da noite)
   dormiuEstimado: Date | null;
-  // métricas que a Huawei envia
+  // métricas que o vestível costuma enviar
   treinoMin: number;
   treinoSessoes: number;
   passos: number;
@@ -180,7 +180,7 @@ export async function lerSaudeHoje(): Promise<ResumoSaude> {
     resumo.erro = resumo.erro ? `${resumo.erro} | ${msg}` : msg;
   };
 
-  // ── Sono real (se a Huawei mandar) ──
+  // ── Sono real (quando o vestível publica) ──
   if (perms.sono) {
     try {
       const { records } = await HealthConnect.readRecords({
@@ -259,7 +259,7 @@ export async function lerSaudeHoje(): Promise<ResumoSaude> {
       resumo.passosOrigens = Object.entries(passosPorOrigem).map(([origem, passos]) => ({ origem, passos }));
 
       // Total de passos: usa o agregado do Health Connect, que de-duplica os passos
-      // sobrepostos de várias fontes (Huawei, sensor do celular) pela prioridade
+      // sobrepostos de várias fontes (vestível, sensor do celular) pela prioridade
       // definida nos Ajustes do Health Connect. É o que evita a dupla contagem.
       let totalAgg = 0;
       try {
@@ -380,7 +380,7 @@ export async function lerSaudeHoje(): Promise<ResumoSaude> {
           .sort((a, b) => a.t.getTime() - b.t.getTime())[0];
         if (acordou) resumo.fcWake = acordou.t;
 
-        // Fallback da FC de repouso: se a Huawei não enviou o RestingHeartRate ao
+        // Fallback da FC de repouso: se o vestível não enviou o RestingHeartRate ao
         // Health Connect, usa a menor FC da madrugada como aproximação.
         if (resumo.fcRepouso === null) resumo.fcRepouso = Math.round(base);
       }
