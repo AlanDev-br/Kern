@@ -46,3 +46,6 @@ AGENTS.md
 .planning/
 scripts/
 public/treino-seed.json
+
+# Artefatos do build de desktop (Electron)
+/dist-desktop/
