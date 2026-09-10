@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { Icone, type IconeNome } from "./Icone";
 import { AnimatePresence, motion } from "framer-motion";
 import confetti from "canvas-confetti";
 import { Capacitor } from "@capacitor/core";
@@ -57,7 +58,7 @@ function Medalha({ cor }: { cor: string }) {
           className="absolute inset-0 animate-spin rounded-full opacity-50"
           style={{ background: `conic-gradient(from 0deg, transparent, #ffffffaa, transparent 35%)`, animationDuration: "3s" }}
         />
-        <span className="relative text-3xl drop-shadow">★</span>
+        <Icone nome="estrela" tamanho={30} className="relative text-accent" />
       </motion.div>
     </div>
   );
@@ -97,7 +98,7 @@ export function CelebrationOverlay() {
               <Medalha cor={atual.cor ?? "#fbbf24"} />
             ) : (
               <div className="mx-auto mb-4 flex h-20 w-20 animate-float items-center justify-center rounded-3xl bg-accent-soft text-4xl ring-accent-soft">
-                {atual.icone}
+                <Icone nome={atual.icone as IconeNome} tamanho={32} />
               </div>
             )}
             <h2 className="text-xl font-bold text-gradient">{atual.titulo}</h2>

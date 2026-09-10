@@ -59,7 +59,7 @@ export function ScreenTimeCard() {
   if (estado === "web") {
     return (
       <div className="rounded-2xl border border-line bg-card/50 p-4">
-        <p className="text-sm font-semibold">📵 Tempo de tela</p>
+        <p className="text-sm font-semibold">Tempo de tela</p>
         <p className="mt-0.5 text-xs text-muted">
           Monitoramento de Instagram/WhatsApp disponível no app Android.
         </p>
@@ -74,7 +74,7 @@ export function ScreenTimeCard() {
   if (estado === "sem-permissao") {
     return (
       <div className="glass rounded-2xl p-4">
-        <p className="text-sm font-semibold">📵 Tempo de tela</p>
+        <p className="text-sm font-semibold">Tempo de tela</p>
         <p className="mt-1 text-xs text-muted">
           Pra eu acompanhar sua janela de rede, ative o <strong>Kern</strong> em
           “Acesso ao uso”:
@@ -116,7 +116,7 @@ export function ScreenTimeCard() {
   return (
     <div className="glass rounded-2xl p-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold">📵 Rede social hoje</p>
+        <p className="text-sm font-semibold">Rede social hoje</p>
         <button onClick={atualizar} className="text-xs text-accent">
           atualizar
         </button>
@@ -131,7 +131,7 @@ export function ScreenTimeCard() {
         </span>
         <span className="mb-1 text-sm text-muted">/ {LIMITE_REDE_MIN} min</span>
         <span className="mb-1 ml-auto text-xs font-semibold">
-          {dentro ? "dentro da janela ✓" : "passou do limite"}
+          {dentro ? "dentro da janela" : "passou do limite"}
         </span>
       </div>
 
@@ -149,7 +149,6 @@ export function ScreenTimeCard() {
         <ul className="mt-3 space-y-1.5">
           {uso.apps.map((a) => (
             <li key={a.pkg} className="flex items-center gap-2 text-sm">
-              <span>{a.icone}</span>
               <span className="flex-1">{a.nome}</span>
               <span className="text-muted">{a.minutos} min</span>
             </li>

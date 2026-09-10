@@ -21,7 +21,7 @@ export function TarefaForm({
   const [category, setCategory] = useState<TaskCategory>(inicial?.category ?? "bloco");
   const [xp, setXp] = useState(String(inicial?.xp ?? 10));
   const [horario, setHorario] = useState(inicial?.horario ?? "");
-  const [icone, setIcone] = useState(inicial?.icone ?? "✅");
+  const [icone, setIcone] = useState(inicial?.icone ?? "check");
 
   const valido = titulo.trim().length > 0;
 
@@ -33,7 +33,7 @@ export function TarefaForm({
       category,
       xp: Math.max(0, Math.round(Number(xp) || 0)),
       horario: horario || undefined,
-      icone: icone.trim() || "✅",
+      icone: icone.trim() || "check",
     });
   }
 

@@ -1,5 +1,7 @@
 "use client";
 
+import { Icone } from "./Icone";
+
 import { useMemo } from "react";
 import type { Treino } from "@/lib/db";
 import { grupoDoExercicio, type Grupo } from "@/lib/musculacao";
@@ -95,7 +97,7 @@ export function CoachTreino({ treinos }: { treinos: Treino[] }) {
 function Cabecalho() {
   return (
     <div className="flex items-center gap-2">
-      <span className="text-xl">🏋️</span>
+      <Icone nome="treino" tamanho={20} className="text-accent" />
       <span className="text-sm font-bold uppercase tracking-wider">Coach de treino</span>
       <span className="ml-auto text-xs uppercase tracking-widest text-muted">últimos 7 dias</span>
     </div>

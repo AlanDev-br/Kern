@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Icone } from "./Icone";
 import { useApp } from "@/lib/store";
 
 // Gerenciamento de áudio binaural local (Web Audio API)
@@ -251,7 +252,7 @@ export function MeditacaoTimer() {
 
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-bold uppercase tracking-wider flex items-center gap-1.5">
-          🧘 Meditação & Foco
+          Meditação e foco
         </h2>
         {status === "playing" && (
           <button
@@ -260,7 +261,7 @@ export function MeditacaoTimer() {
               audioAtivo ? "border-accent bg-accent-soft text-fg" : "border-line text-muted"
             }`}
           >
-            {audioAtivo ? "🔊 Som On" : "🔇 Mudo"}
+            {audioAtivo ? "Som ligado" : "Mudo"}
           </button>
         )}
       </div>
@@ -364,7 +365,7 @@ export function MeditacaoTimer() {
 
       {status === "finished" && (
         <div className="flex flex-col items-center py-6 text-center space-y-4">
-          <span className="text-5xl">🏆</span>
+          <Icone nome="trofeu" tamanho={44} className="text-accent" />
           <div>
             <h3 className="text-base font-bold">Sessão Concluída!</h3>
             <p className="mt-1 text-xs text-muted">

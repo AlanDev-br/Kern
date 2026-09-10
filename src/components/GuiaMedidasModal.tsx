@@ -191,7 +191,7 @@ export function GuiaMedidasModal({
           {/* Instrução da medida */}
           <div className="glass bg-card/50 border border-line/40 rounded-3xl p-5 shadow-lg relative min-h-[130px]">
             <h3 className="text-sm font-extrabold text-accent flex items-center gap-1.5">
-              <span>📍 Medição:</span> {active.nome}
+              <span>Medição:</span> {active.nome}
             </h3>
             <p className="mt-2 text-xs leading-relaxed text-fg/80 font-medium">
               {active.instrucao}

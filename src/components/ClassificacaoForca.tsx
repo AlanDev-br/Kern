@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { Icone } from "./Icone";
 import { useApp } from "@/lib/store";
 import type { Treino } from "@/lib/db";
 import type { Grupo } from "@/lib/musculacao";
@@ -203,7 +204,7 @@ function Painel({
                               {isCurrent ? (
                                 <span className="text-xs uppercase tracking-wider bg-accent/20 text-accent px-1 rounded">Você</span>
                               ) : isAchieved ? (
-                                <span className="text-accent text-xs">✓</span>
+                                <Icone nome="check" tamanho={13} className="text-accent" />
                               ) : (
                                 <span className="text-xs text-muted/30 font-normal">
                                   (+{diff}kg)

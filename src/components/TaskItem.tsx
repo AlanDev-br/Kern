@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { Icone, type IconeNome } from "./Icone";
 import type { TaskDef } from "@/lib/types";
 
 export function TaskItem({
@@ -29,7 +30,7 @@ export function TaskItem({
           done ? "scale-105" : ""
         } ${destaque && !done ? "bg-bg" : "bg-bg/60"}`}
       >
-        {task.icone}
+        <Icone nome={task.icone as IconeNome} tamanho={18} />
       </span>
 
       <span className="min-w-0 flex-1">

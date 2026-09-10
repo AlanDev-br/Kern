@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Icone } from "./Icone";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
   ResponsiveContainer,

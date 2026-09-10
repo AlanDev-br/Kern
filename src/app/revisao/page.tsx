@@ -86,7 +86,7 @@ export default function RevisaoPage() {
           onClick={salvar}
           className="w-full rounded-2xl bg-accent py-3.5 font-bold text-bg transition-transform active:scale-95"
         >
-          {salvo ? "Salvo ✓" : "Salvar revisão"}
+          {salvo ? "Salvo" : "Salvar revisão"}
         </button>
       </div>
     </div>

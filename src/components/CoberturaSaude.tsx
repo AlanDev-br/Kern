@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Icone } from "./Icone";
 import {
   ROTULO_GRUPO,
   ROTULO_TIPO,

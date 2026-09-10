@@ -85,7 +85,7 @@ export function AvatarHero() {
           {rank.nome}
         </span>
         <p className="mt-2 text-xs text-muted">Nível {nivel.nivel} · {nivel.nome}</p>
-        <p className="text-xs text-muted">{ctx.streakAtual}🔥 · {ctx.xpTotal} XP</p>
+        <p className="text-xs text-muted">{ctx.streakAtual} de streak · {ctx.xpTotal} XP</p>
       </div>
 
       {/* Alvo de 44px: media 30px, abaixo até do mínimo de 24px do 2.5.8. */}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Icone, type IconeNome } from "./Icone";
 import { AnimatePresence, motion } from "framer-motion";
 import type { Treino } from "@/lib/db";
 import { diagnosticoPeriodizacao, type RecomendacaoPeriod } from "@/lib/periodizacao";
@@ -10,10 +11,10 @@ const COR_REC: Record<RecomendacaoPeriod["tipo"], string> = {
   alerta: "#fbbf24",
   ok: "var(--accent)",
 };
-const ICONE_REC: Record<RecomendacaoPeriod["tipo"], string> = {
-  erro: "✕",
-  alerta: "!",
-  ok: "✓",
+const ICONE_REC: Record<RecomendacaoPeriod["tipo"], IconeNome> = {
+  erro: "x",
+  alerta: "alvo",
+  ok: "check",
 };
 
 // Orientação de periodização para natural, fundamentada na literatura (não nos
@@ -82,7 +83,7 @@ export function Periodizacao({ treinos = [] }: { treinos?: Treino[] }) {
                 className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold"
                 style={{ background: COR_REC[r.tipo], color: "var(--bg)" }}
               >
-                {ICONE_REC[r.tipo]}
+                <Icone nome={ICONE_REC[r.tipo]} tamanho={14} />
               </span>
               <div className="min-w-0">
                 <p className="text-xs font-bold" style={{ color: COR_REC[r.tipo] }}>{r.titulo}</p>

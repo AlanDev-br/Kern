@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useMemo } from "react";
+import { Icone, type IconeNome } from "@/components/Icone";
 import Link from "next/link";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useApp } from "@/lib/store";
@@ -364,14 +365,14 @@ export default function ConfigPage() {
           className="text-xl text-muted hover:text-fg p-1 outline-none transition-colors"
           aria-label="Configurações do aplicativo"
         >
-          ⚙
+          <Icone nome="config" tamanho={18} />
         </button>
       </header>
 
       {msg && (
         <div className="rounded-xl border border-accent/40 bg-accent-soft p-3.5 text-xs font-semibold text-accent flex justify-between items-center animate-pulse">
           <span>{msg}</span>
-          <button onClick={() => setMsg("")} className="text-muted text-sm ml-2">✕</button>
+          <button onClick={() => setMsg("")} className="ml-2 text-muted"><Icone nome="x" tamanho={14} /></button>
         </div>
       )}
 
@@ -501,7 +502,7 @@ export default function ConfigPage() {
           href="/treino/estatisticas/"
           className="glass flex flex-col items-center justify-center gap-2 p-4 text-center rounded-2xl active:scale-95 transition-transform"
         >
-          <span className="text-xl">📈</span>
+          <Icone nome="tendencia" tamanho={20} className="text-accent" />
           <span className="text-xs font-bold text-fg uppercase tracking-wider">Estatísticas</span>
         </Link>
 
@@ -509,7 +510,7 @@ export default function ConfigPage() {
           onClick={() => setGavetaAberta("exercicios")}
           className="glass flex flex-col items-center justify-center gap-2 p-4 text-center rounded-2xl active:scale-95 transition-transform"
         >
-          <span className="text-xl">💪</span>
+          <Icone nome="musculo" tamanho={20} className="text-accent" />
           <span className="text-xs font-bold text-fg uppercase tracking-wider">Exercícios</span>
         </button>
 
@@ -517,7 +518,7 @@ export default function ConfigPage() {
           onClick={() => setGavetaAberta("medicoes")}
           className="glass flex flex-col items-center justify-center gap-2 p-4 text-center rounded-2xl active:scale-95 transition-transform"
         >
-          <span className="text-xl">🧍</span>
+          <Icone nome="postura" tamanho={20} className="text-accent" />
           <span className="text-xs font-bold text-fg uppercase tracking-wider">Medições</span>
         </button>
 
@@ -525,7 +526,7 @@ export default function ConfigPage() {
           onClick={() => setGavetaAberta("calendario")}
           className="glass flex flex-col items-center justify-center gap-2 p-4 text-center rounded-2xl active:scale-95 transition-transform"
         >
-          <span className="text-xl">📅</span>
+          <Icone nome="agenda" tamanho={20} className="text-accent" />
           <span className="text-xs font-bold text-fg uppercase tracking-wider">Calendário</span>
         </button>
       </section>
@@ -958,7 +959,7 @@ export default function ConfigPage() {
                 {CAMPOS_HORARIO.map((c) => (
                   <div key={c.chave} className="flex items-center justify-between text-xs">
                     <span>
-                      {getTask(c.chave)?.icone ?? "⏰"} {c.label}
+                      <Icone nome={(getTask(c.chave)?.icone ?? "sino") as IconeNome} tamanho={16} /> {c.label}
                     </span>
                     <input
                       type="time"
@@ -1015,7 +1016,7 @@ export default function ConfigPage() {
                   <div className="space-y-4 pt-3 border-t border-line/20">
                     {(!hasUsageStats || !hasOverlay) && (
                       <div className="rounded-xl bg-accent-soft border border-accent/20 p-3 space-y-2 text-xs">
-                        <p className="font-bold text-accent">⚠️ Permissões Necessárias:</p>
+                        <p className="font-bold text-accent">Permissões necessárias</p>
                         
                         {!hasUsageStats && (
                           <div className="flex items-center justify-between text-muted">
@@ -1044,7 +1045,6 @@ export default function ConfigPage() {
                         return (
                           <div key={app.pkg} className="flex items-center justify-between gap-3 text-xs">
                             <div className="flex items-center gap-2 font-medium">
-                              <span>{app.icone}</span>
                               <span>{app.nome}</span>
                             </div>
                             

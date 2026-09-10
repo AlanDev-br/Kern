@@ -89,7 +89,7 @@ export function TesteReacao({
           {fase === "aguardando" && "Espere o verde…"}
           {fase === "pronto" && "TOQUE!"}
           {fase === "cedo" && "Cedo demais! Toque para tentar de novo"}
-          {fase === "fim" && "Concluído ✓"}
+          {fase === "fim" && "Concluído"}
         </button>
         {tempos.length > 0 && fase !== "fim" && (
           <p className="text-sm text-muted">{tempos.length}/{TENTATIVAS} · último {tempos[tempos.length - 1]}ms</p>
@@ -271,7 +271,7 @@ export function TesteStroop({
           <>
             <div className="flex items-center justify-between text-xs text-muted">
               <span>⏱ {restante}s</span>
-              <span>✓ {acertos} · ✕ {erros}</span>
+              <span>{acertos} certas · {erros} erradas</span>
             </div>
             <div className="flex h-40 items-center justify-center">
               <span className="text-5xl font-black" style={{ color: CORES[tintaIdx].hex }}>

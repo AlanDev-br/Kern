@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Icone } from "./Icone";
 import { db, type Rotina } from "@/lib/db";
 import { grupoDoExercicio } from "@/lib/musculacao";
 import { ExercicioImagem } from "@/components/ExercicioImagem";
@@ -76,7 +77,7 @@ export function RotinaEditor({
               </span>
               <button onClick={() => setSeries(i, 1)} className="h-8 w-8 rounded-lg border border-line text-lg">+</button>
             </div>
-            <button onClick={() => removeEx(i)} className="px-1 text-muted">✕</button>
+            <button onClick={() => removeEx(i)} className="px-1 text-muted"><Icone nome="x" tamanho={16} /></button>
           </div>
         ))}
 

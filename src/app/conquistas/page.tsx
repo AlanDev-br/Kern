@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { Icone, type IconeNome } from "@/components/Icone";
 import { useApp } from "@/lib/store";
 import { CONQUISTAS, TEMAS } from "@/lib/plan-data";
 
@@ -40,7 +41,7 @@ export default function ConquistasPage() {
                 }`}
                 style={ok ? undefined : { opacity: 0.4 }}
               >
-                {ok ? c.icone : "🔒"}
+                <Icone nome={(ok ? c.icone : "cadeado") as IconeNome} tamanho={22} />
               </div>
               <p className={`text-sm font-bold ${ok ? "" : "text-muted"}`}>{c.titulo}</p>
               <p className="mt-0.5 text-xs leading-snug text-muted">{c.descricao}</p>

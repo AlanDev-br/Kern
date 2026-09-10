@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import { Icone } from "./Icone";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useApp } from "@/lib/store";
@@ -47,7 +48,7 @@ export function RevisaoLeituraCard() {
           texto: item.titulo,
           autor: item.autor,
           linkText: "Acessar Biblioteca",
-          badge: "Em dia ✓",
+          badge: "Em dia",
           cor: "#34d399", // esmeralda
           bgBadge: "rgba(52, 211, 153, 0.15)",
         };
@@ -65,7 +66,7 @@ export function RevisaoLeituraCard() {
       className="glass rounded-3xl p-5"
     >
       <div className="flex items-center gap-2">
-        <span className="text-2xl">📖</span>
+        <Icone nome="leitura" tamanho={22} className="text-accent" />
         <span
           className="rounded-full px-2 py-0.5 text-xs font-bold uppercase tracking-wider"
           style={{ background: destaque.bgBadge, color: destaque.cor }}

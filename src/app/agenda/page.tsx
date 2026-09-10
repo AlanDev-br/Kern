@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Icone, type IconeNome } from "@/components/Icone";
 import Link from "next/link";
 import { useApp } from "@/lib/store";
 import { TaskItem } from "@/components/TaskItem";
@@ -81,12 +82,12 @@ export default function AgendaPage() {
       {/* Atalhos semanais */}
       <div className="grid grid-cols-2 gap-3">
         <Link href="/revisao/" className="glass rounded-2xl p-4 transition-transform active:scale-95">
-          <p className="text-2xl">📊</p>
+          <Icone nome="grafico" tamanho={24} className="text-muted" />
           <p className="mt-1 text-sm font-bold">Revisão semanal</p>
           <p className="text-xs text-muted">Domingo, 15 min</p>
         </Link>
         <Link href="/financas/" className="glass rounded-2xl p-4 transition-transform active:scale-95">
-          <p className="text-2xl">💸</p>
+          <Icone nome="dinheiro" tamanho={24} className="text-muted" />
           <p className="mt-1 text-sm font-bold">Finanças</p>
           <p className="text-xs text-muted">Sábado, 30 min</p>
         </Link>
@@ -98,7 +99,7 @@ export default function AgendaPage() {
           {tarefas.map((t, i) => (
             <div key={t.id} className="flex items-center gap-2 rounded-2xl border border-line bg-card p-3">
               <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-bg/60 text-lg">
-                {t.icone}
+                <Icone nome={t.icone as IconeNome} tamanho={18} />
               </span>
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-semibold">{t.titulo}</p>
@@ -108,10 +109,10 @@ export default function AgendaPage() {
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-1">
-                <IconBtn label="Subir" disabled={i === 0} onClick={() => mover(t.id, -1)}>↑</IconBtn>
-                <IconBtn label="Descer" disabled={i === tarefas.length - 1} onClick={() => mover(t.id, 1)}>↓</IconBtn>
-                <IconBtn label="Editar" onClick={() => setForm({ aberto: true, alvo: t })}>✎</IconBtn>
-                <IconBtn label="Excluir" perigo onClick={() => removerTarefa(t.id)}>✕</IconBtn>
+                <IconBtn label="Subir" disabled={i === 0} onClick={() => mover(t.id, -1)}><Icone nome="seta-cima" tamanho={16} /></IconBtn>
+                <IconBtn label="Descer" disabled={i === tarefas.length - 1} onClick={() => mover(t.id, 1)}><Icone nome="seta-baixo" tamanho={16} /></IconBtn>
+                <IconBtn label="Editar" onClick={() => setForm({ aberto: true, alvo: t })}><Icone nome="editar" tamanho={16} /></IconBtn>
+                <IconBtn label="Excluir" perigo onClick={() => removerTarefa(t.id)}><Icone nome="x" tamanho={16} /></IconBtn>
               </div>
             </div>
           ))}

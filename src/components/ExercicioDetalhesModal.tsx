@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
+import { Icone } from "./Icone";
 import {
   ResponsiveContainer,
   AreaChart,
@@ -244,7 +245,7 @@ export function ExercicioDetalhesModal({ nome, treinos, onFechar }: ExercicioDet
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center text-muted">
-                  <span className="text-3xl">💪</span>
+                  <Icone nome="musculo" tamanho={30} className="text-muted" />
                   <span className="text-xs mt-1 uppercase tracking-wider">Sem animação local</span>
                 </div>
               )}
@@ -344,7 +345,7 @@ export function ExercicioDetalhesModal({ nome, treinos, onFechar }: ExercicioDet
             {/* Recordes Pessoais (PRs) */}
             <section className="glass rounded-3xl p-5 space-y-3.5">
               <h3 className="text-xs font-bold uppercase tracking-wider text-muted flex items-center gap-1.5">
-                🏆 Recordes Pessoais
+                Recordes pessoais
               </h3>
               <div className="divide-y divide-line/30 text-xs">
                 <div className="flex justify-between py-2.5">

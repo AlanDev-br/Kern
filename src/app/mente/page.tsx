@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Icone, type IconeNome } from "@/components/Icone";
 import Link from "next/link";
 import { useLiveQuery } from "dexie-react-hooks";
 import {
@@ -23,9 +24,9 @@ import { MeditacaoTimer } from "@/components/MeditacaoTimer";
 type Modal = null | "quiz" | "reacao" | "digitos" | "stroop";
 
 const TESTES: { tipo: ResultadoCognitivo["tipo"]; nome: string; icone: string; unidade: (v: number) => string }[] = [
-  { tipo: "reacao", nome: "Velocidade (reação)", icone: "⚡", unidade: (v) => `${v}ms` },
-  { tipo: "digitos", nome: "Memória de trabalho", icone: "🔢", unidade: (v) => `${v} dígitos` },
-  { tipo: "stroop", nome: "Atenção / inibição", icone: "🎨", unidade: (v) => `${v}/s` },
+  { tipo: "reacao", nome: "Velocidade (reação)", icone: "raio", unidade: (v) => `${v}ms` },
+  { tipo: "digitos", nome: "Memória de trabalho", icone: "numeros", unidade: (v) => `${v} dígitos` },
+  { tipo: "stroop", nome: "Atenção / inibição", icone: "paleta", unidade: (v) => `${v}/s` },
 ];
 
 export default function MentePage() {
@@ -99,7 +100,7 @@ export default function MentePage() {
           return (
             <div key={t.tipo} className="glass flex items-center gap-3 rounded-2xl p-4">
               <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-bg/60 text-xl">
-                {t.icone}
+                <Icone nome={t.icone as IconeNome} tamanho={20} />
               </span>
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-bold">{t.nome}</p>
@@ -118,7 +119,7 @@ export default function MentePage() {
         })}
         <p className="px-1 text-xs text-muted">
           Memória de trabalho, velocidade e atenção são pilares da inteligência fluida. Refaça com o tempo pra ver a
-          evolução — eles alimentam o atributo 🧠 Inteligência.
+          evolução — eles alimentam o atributo Inteligência.
         </p>
       </section>
 
@@ -159,7 +160,7 @@ function Questionario({ onFechar }: { onFechar: () => void }) {
           {INTELIGENCIAS.map((i) => (
             <div key={i.id}>
               <p className="text-sm font-semibold">
-                {i.icone} {i.nome}
+                <Icone nome={i.icone as IconeNome} tamanho={18} /> {i.nome}
               </p>
               <p className="mb-2 text-xs text-muted">{i.afirmacao}</p>
               <div className="flex gap-2">

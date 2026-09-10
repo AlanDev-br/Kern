@@ -118,7 +118,7 @@ export function ExercicioImagem({
               onClick={() => fileRef.current?.click()}
               className="mt-3 w-full rounded-xl bg-accent py-2.5 text-sm font-bold text-bg active:scale-95"
             >
-              ⬆ Enviar imagem/GIF do meu dispositivo
+              Enviar imagem ou GIF do meu dispositivo
             </button>
 
             {url && (

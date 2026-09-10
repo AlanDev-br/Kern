@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { Icone } from "./Icone";
 import { useApp } from "@/lib/store";
 import { BottomNav } from "./BottomNav";
 import { CelebrationOverlay } from "./CelebrationOverlay";
@@ -11,7 +12,7 @@ import { tempoTelaDisponivel, obterEstadoLimitador, limparAppBloqueado } from "@
 export function AppShell({ children }: { children: React.ReactNode }) {
   const carregado = useApp((s) => s.carregado);
   const carregar = useApp((s) => s.carregar);
-  const [blockedApp, setBlockedApp] = useState<{ pkg: string; nome: string; icone: string } | null>(null);
+  const [blockedApp, setBlockedApp] = useState<{ pkg: string; nome: string } | null>(null);
 
   const checkBlocked = useCallback(async () => {
     if (tempoTelaDisponivel()) {
@@ -20,7 +21,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         const app = APPS_SOCIAIS.find((a) => a.pkg === state.lastBlockedApp) || {
           pkg: state.lastBlockedApp,
           nome: "Rede Social",
-          icone: "📵",
         };
         setBlockedApp(app);
       }
@@ -76,21 +76,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="glass max-w-sm rounded-3xl p-6 shadow-2xl border border-line flex flex-col items-center gap-4"
+              className="glass flex max-w-sm flex-col items-center gap-4 rounded-2xl border border-line p-6 shadow-2xl"
             >
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-soft text-3xl animate-bounce">
-                {blockedApp.icone}
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-accent-soft text-accent">
+                <Icone nome="semCelular" tamanho={28} />
               </div>
-              
-              <h2 className="text-xl font-bold tracking-tight">Limite Atingido!</h2>
-              
+
+              <h2 className="text-xl font-bold tracking-tight">Limite do dia alcançado</h2>
+
               <p className="text-sm text-muted">
                 Você definiu um limite diário para o <strong>{blockedApp.nome}</strong> e ele foi alcançado.
               </p>
-              
-              <div className="w-full rounded-xl bg-bg/40 border border-line p-3 text-xs text-muted leading-relaxed">
-                "Não acumule arrependimento. Acumule provas de promessas cumpridas."
-              </div>
+
+              <blockquote className="w-full rounded-xl border border-line bg-bg/40 p-3 text-xs leading-relaxed text-muted">
+                Não acumule arrependimento. Acumule provas de promessas cumpridas.
+              </blockquote>
 
               <button
                 onClick={desativarBloqueio}

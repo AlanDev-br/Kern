@@ -51,7 +51,6 @@ export async function pedirPermissaoTempoTela(): Promise<void> {
 export interface UsoApp {
   pkg: string;
   nome: string;
-  icone: string;
   minutos: number;
 }
 
@@ -67,7 +66,6 @@ export async function usoSocialHoje(): Promise<UsoSocial> {
   const lista: UsoApp[] = APPS_SOCIAIS.map((a) => ({
     pkg: a.pkg,
     nome: a.nome,
-    icone: a.icone,
     minutos: Math.round((porPkg.get(a.pkg) ?? 0) / 60000),
   }))
     .filter((a) => a.minutos > 0)

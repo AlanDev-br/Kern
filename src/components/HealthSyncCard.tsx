@@ -98,7 +98,7 @@ export function HealthSyncCard() {
   if (!saudeNativa()) {
     return (
       <div className="rounded-2xl border border-line bg-card/50 p-4">
-        <p className="text-sm font-semibold">⌚ Huawei Band</p>
+        <p className="text-sm font-semibold">Huawei Band</p>
         <p className="mt-0.5 text-xs text-muted">
           Importação de sono (dormir/acordar), treino, passos e FC disponível no app Android.
         </p>
@@ -109,7 +109,7 @@ export function HealthSyncCard() {
   if (status === "sem-app") {
     return (
       <div className="glass rounded-2xl p-4">
-        <p className="text-sm font-semibold">⌚ Huawei Band</p>
+        <p className="text-sm font-semibold">Huawei Band</p>
         <p className="mt-0.5 text-xs text-muted">O Health Connect não está disponível neste aparelho.</p>
       </div>
     );
@@ -118,7 +118,7 @@ export function HealthSyncCard() {
   if (status === "sem-permissao") {
     return (
       <div className="glass rounded-2xl p-4">
-        <p className="text-sm font-semibold">⌚ Conectar Huawei Band</p>
+        <p className="text-sm font-semibold">Conectar Huawei Band</p>
         <p className="mt-0.5 text-xs text-muted">
           Autorize a leitura no Health Connect pra eu estimar dormir/acordar e acompanhar treino, passos e FC.
         </p>
@@ -162,7 +162,7 @@ export function HealthSyncCard() {
   return (
     <div className="glass overflow-hidden rounded-2xl p-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm font-semibold">⌚ Huawei Band — hoje</p>
+        <p className="text-sm font-semibold">Huawei Band — hoje</p>
         <button
           onClick={sincronizar}
           className="text-xs text-accent disabled:text-muted"
@@ -237,7 +237,7 @@ export function HealthSyncCard() {
       )}
 
       {(resumo?.acordouEm || resumo?.acordarEstimado || acordarManual) && (
-        <p className="mt-2 text-xs text-accent">✓ inegociável de acordar marcado</p>
+        <p className="mt-2 text-xs text-accent">Inegociável de acordar marcado</p>
       )}
 
       {resumo && !todasPermissoes(resumo.perms) && (
@@ -252,9 +252,9 @@ export function HealthSyncCard() {
       {detalhes && resumo && (
         <div className="mt-2 space-y-0.5 rounded-xl border border-line bg-bg/40 p-3 text-xs text-muted">
           <p>
-            Permissões — sono: {resumo.perms.sono ? "✓" : "✗"} · treino: {resumo.perms.treino ? "✓" : "✗"} · passos:{" "}
-            {resumo.perms.passos ? "✓" : "✗"} · FC rep: {resumo.perms.fcRepouso ? "✓" : "✗"} · FC intra:{" "}
-            {resumo.perms.fcIntra ? "✓" : "✗"}
+            Permissões — sono: {resumo.perms.sono ? "sim" : "não"} · treino: {resumo.perms.treino ? "sim" : "não"} · passos:{" "}
+            {resumo.perms.passos ? "sim" : "não"} · FC rep: {resumo.perms.fcRepouso ? "sim" : "não"} · FC intra:{" "}
+            {resumo.perms.fcIntra ? "sim" : "não"}
           </p>
           <p>Dormiu (FC): {resumo.dormiuEstimado ? hhmm(resumo.dormiuEstimado) : "—"}</p>
           <p>Despertar por FC: {resumo.fcWake ? hhmm(resumo.fcWake) : "—"} · por passos: {resumo.stepsWake ? hhmm(resumo.stepsWake) : "—"}</p>

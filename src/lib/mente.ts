@@ -20,15 +20,15 @@ export interface Inteligencia {
 
 // Gardner (8) + Emocional (Goleman). 1 afirmação por dimensão (v1).
 export const INTELIGENCIAS: Inteligencia[] = [
-  { id: "linguistica", nome: "Linguística", icone: "📝", afirmacao: "Me expresso bem com palavras — escrevendo ou falando — e aprendo lendo." },
-  { id: "logica", nome: "Lógico-matemática", icone: "🔢", afirmacao: "Gosto de raciocinar, achar padrões e resolver problemas passo a passo." },
-  { id: "espacial", nome: "Espacial", icone: "🧭", afirmacao: "Visualizo objetos e espaços de cabeça e me oriento bem no mundo." },
-  { id: "corporal", nome: "Corporal-cinestésica", icone: "🤸", afirmacao: "Aprendo fazendo e tenho boa coordenação e consciência do corpo." },
-  { id: "musical", nome: "Musical", icone: "🎵", afirmacao: "Percebo ritmo, melodia e tom com facilidade; música me move." },
-  { id: "interpessoal", nome: "Interpessoal", icone: "🤝", afirmacao: "Leio bem as pessoas e me relaciono/colaboro com facilidade." },
-  { id: "intrapessoal", nome: "Intrapessoal", icone: "🪞", afirmacao: "Conheço minhas emoções e motivações e reflito sobre mim com honestidade." },
-  { id: "naturalista", nome: "Naturalista", icone: "🌿", afirmacao: "Observo e classifico padrões da natureza e do ambiente ao redor." },
-  { id: "emocional", nome: "Emocional", icone: "❤️", afirmacao: "Regulo minhas emoções e lido bem com as emoções dos outros sob pressão." },
+  { id: "linguistica", nome: "Linguística", icone: "escrita", afirmacao: "Me expresso bem com palavras — escrevendo ou falando — e aprendo lendo." },
+  { id: "logica", nome: "Lógico-matemática", icone: "numeros", afirmacao: "Gosto de raciocinar, achar padrões e resolver problemas passo a passo." },
+  { id: "espacial", nome: "Espacial", icone: "bussola", afirmacao: "Visualizo objetos e espaços de cabeça e me oriento bem no mundo." },
+  { id: "corporal", nome: "Corporal-cinestésica", icone: "corpoLivre", afirmacao: "Aprendo fazendo e tenho boa coordenação e consciência do corpo." },
+  { id: "musical", nome: "Musical", icone: "musica", afirmacao: "Percebo ritmo, melodia e tom com facilidade; música me move." },
+  { id: "interpessoal", nome: "Interpessoal", icone: "pessoas", afirmacao: "Leio bem as pessoas e me relaciono/colaboro com facilidade." },
+  { id: "intrapessoal", nome: "Intrapessoal", icone: "espelho", afirmacao: "Conheço minhas emoções e motivações e reflito sobre mim com honestidade." },
+  { id: "naturalista", nome: "Naturalista", icone: "folha", afirmacao: "Observo e classifico padrões da natureza e do ambiente ao redor." },
+  { id: "emocional", nome: "Emocional", icone: "coracao", afirmacao: "Regulo minhas emoções e lido bem com as emoções dos outros sob pressão." },
 ];
 
 // ── Auto-avaliação ──────────────────────────────────────────

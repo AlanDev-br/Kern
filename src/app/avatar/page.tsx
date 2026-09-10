@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Icone } from "@/components/Icone";
 import dynamic from "next/dynamic";
 import { useApp } from "@/lib/store";
 import { nivelDoXp } from "@/lib/xp";
@@ -145,7 +146,7 @@ export default function AvatarPage() {
             <div className="pointer-events-none absolute left-4 top-4">
               <p className="text-xs text-muted">Nível {nivel.nivel}</p>
               <p className="text-lg font-bold text-gradient">{nivel.nome}</p>
-              <p className="mt-1 text-xs text-muted">{ctx.streakAtual}🔥 streak · {ctx.xpTotal} XP</p>
+              <p className="mt-1 text-xs text-muted">{ctx.streakAtual} de streak · {ctx.xpTotal} XP</p>
             </div>
             {!tem && (
               <span className="absolute right-4 top-4 rounded-lg border border-line bg-bg/50 px-2 py-1 text-xs text-muted backdrop-blur">
@@ -175,7 +176,7 @@ export default function AvatarPage() {
               className="mt-3 w-full accent-accent"
             />
             <div className="mt-1 flex justify-between text-xs text-muted">
-              {["E", "D", "C", "B", "A", "S", "★"].map((r) => (
+              {["E", "D", "C", "B", "A", "S", "M"].map((r) => (
                 <span key={r}>{r}</span>
               ))}
             </div>
@@ -233,7 +234,7 @@ export default function AvatarPage() {
                 <div key={e} className="mt-2 flex items-center gap-3">
                   <span className="flex-1 text-sm font-medium">
                     {rotulo}
-                    {estagios[e] && <span className="ml-2 text-xs text-accent">✓ salvo</span>}
+                    {estagios[e] && <span className="ml-2 inline-flex items-center gap-1 text-xs text-accent"><Icone nome="check" tamanho={13} /> salvo</span>}
                   </span>
                   {estagios[e] && (
                     <button

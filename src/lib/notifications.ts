@@ -63,7 +63,7 @@ export async function reagendarNotificacoes(
   if (config.horarios["financas"]) {
     notifs.push({
       id: id++,
-      title: "💸 Finanças — 30 min",
+      title: "Finanças — 30 min",
       body: "Mapeie e revise as dívidas. Fora desse horário, ela não ocupa sua cabeça.",
       schedule: { on: { weekday: 7, ...hm(config.horarios["financas"]) }, repeats: true, allowWhileIdle: true },
     });
@@ -73,7 +73,7 @@ export async function reagendarNotificacoes(
   if (config.horarios["revisao"]) {
     notifs.push({
       id: id++,
-      title: "📊 Revisão da semana",
+      title: "Revisão da semana",
       body: "15 min: meça por evidência, não por sentimento.",
       schedule: { on: { weekday: 1, ...hm(config.horarios["revisao"]) }, repeats: true, allowWhileIdle: true },
     });
@@ -91,7 +91,7 @@ export async function agendarCoach(corpo: string, horario = "06:45"): Promise<vo
     notifications: [
       {
         id: 5000,
-        title: "🎯 Direcionamento de hoje",
+        title: "Direcionamento de hoje",
         body: corpo,
         schedule: { on: hm(horario), repeats: true, allowWhileIdle: true },
       },
@@ -107,7 +107,7 @@ export async function agendarTeste(): Promise<boolean> {
     notifications: [
       {
         id: 9999,
-        title: "🔔 Teste do Kern",
+        title: "Teste do Kern",
         body: "Se você está vendo isto, as notificações estão funcionando!",
         schedule: { at: new Date(Date.now() + 8000), allowWhileIdle: true },
       },

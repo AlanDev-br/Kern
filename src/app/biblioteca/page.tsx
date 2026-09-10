@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Icone } from "@/components/Icone";
 import { AnimatePresence, motion } from "framer-motion";
 import { useApp } from "@/lib/store";
 import type { NovoCartao } from "@/lib/store";
@@ -75,7 +76,7 @@ function Revisar({ pendentes }: { pendentes: CartaoLeitura[] }) {
   if (!atual) {
     return (
       <div className="glass rounded-2xl p-6 text-center">
-        <p className="text-3xl">✓</p>
+        <Icone nome="check" tamanho={30} className="text-accent" />
         <p className="mt-2 font-semibold">Revisão em dia</p>
         <p className="mt-1 text-sm text-muted">
           Nenhum conceito para revisar agora. Leia novos conceitos na aba
@@ -230,7 +231,7 @@ function ConceitoItem({ cartao }: { cartao: CartaoLeitura }) {
           <p className="truncate text-xs text-muted">{cartao.tema}</p>
         </div>
         <span className="shrink-0 text-xs text-muted">
-          {cartao.lido ? "✓ lido" : "novo"}
+          {cartao.lido ? "lido" : "novo"}
         </span>
       </button>
 

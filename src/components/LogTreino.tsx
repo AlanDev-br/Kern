@@ -1,5 +1,7 @@
 "use client";
 
+import { Icone } from "./Icone";
+
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { db, type Rotina, type Treino, type TreinoRascunho } from "@/lib/db";
@@ -335,7 +337,7 @@ export function LogTreino({
             aria-label="Descartar treino"
             className="shrink-0 px-1 text-base text-muted"
           >
-            🗑
+            <Icone nome="lixeira" tamanho={16} />
           </button>
           <button onClick={concluir} className="shrink-0 rounded-lg bg-accent px-3 py-1.5 text-sm font-bold text-bg">
             Concluir
@@ -416,9 +418,9 @@ export function LogTreino({
                   aria-label="Substituir exercício"
                   className="px-1 text-base text-muted active:text-accent ml-1"
                 >
-                  ⇄
+                  <Icone nome="trocar" tamanho={16} />
                 </button>
-                <button onClick={() => removerExercicio(i)} className="px-1 text-lg text-muted">✕</button>
+                <button onClick={() => removerExercicio(i)} className="px-1 text-muted"><Icone nome="x" tamanho={16} /></button>
               </div>
 
               {/* Campo para Observações do Exercício na Sessão */}
@@ -497,15 +499,15 @@ export function LogTreino({
                             s.feito ? "border-accent bg-accent text-bg" : "border-muted/50 text-muted/40"
                           }`}
                         >
-                          ✓
+                          <Icone nome="check" tamanho={16} />
                         </button>
-                        <span className="w-4 text-xs">{pr ? "🏆" : ""}</span>
+                        <span className="w-4 text-xs">{pr ? <Icone nome="trofeu" tamanho={12} className="text-accent" /> : null}</span>
                         <button onClick={() => removerSet(i, k)} className="w-5 text-lg text-muted">−</button>
                       </div>
 
                       {meta && !s.feito && (
                         <div className="pl-9 text-xs font-bold text-accent/80 flex items-center gap-1 leading-none pb-1">
-                          <span>🎯 Sugestão: {meta.peso}kg × {meta.reps} reps</span>
+                          <span>Sugestão: {meta.peso}kg × {meta.reps} reps</span>
                         </div>
                       )}
                     </div>

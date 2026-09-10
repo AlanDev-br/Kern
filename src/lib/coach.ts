@@ -72,7 +72,7 @@ export function gerarDirecionamentos({ dias, diaHoje, ctx }: CoachInput): Direci
     out.push({
       id: "streak",
       severidade: ctx.melhorStreak >= 3 ? "critico" : "atencao",
-      icone: "🔥",
+      icone: "chama",
       titulo: ctx.melhorStreak >= 3 ? "Seu streak caiu — recomeça hoje" : "Fecha os 3 hoje",
       acao: "Garanta só os 3 inegociáveis: acordar + 45min sem celular, treinar, 25min de leitura.",
       frase: "Cada inegociável que você cumpre num dia ruim tira poder do mundo externo e devolve pra você.",
@@ -81,7 +81,7 @@ export function gerarDirecionamentos({ dias, diaHoje, ctx }: CoachInput): Direci
     out.push({
       id: "streak-bom",
       severidade: "bom",
-      icone: "⚡",
+      icone: "raio",
       titulo: `${ctx.streakAtual} dias seguidos — segura o ritmo`,
       acao: "Você está construindo a prova. Repete os 3 inegociáveis hoje.",
       frase: "Não é técnica, é repetição. É isso que mata carência e ansiedade.",
@@ -102,7 +102,7 @@ export function gerarDirecionamentos({ dias, diaHoje, ctx }: CoachInput): Direci
     out.push({
       id: "dormir-tarde",
       severidade: tardeSeguidos >= 3 ? "critico" : "atencao",
-      icone: "🌙",
+      icone: "lua",
       titulo:
         tardeSeguidos >= 3
           ? `Dormir tarde virou padrão (${tardeSeguidos} dias)`
@@ -122,7 +122,7 @@ export function gerarDirecionamentos({ dias, diaHoje, ctx }: CoachInput): Direci
     out.push({
       id: "irregular",
       severidade: "atencao",
-      icone: "🎯",
+      icone: "alvo",
       titulo: "Seu horário de sono está bagunçado",
       acao: "Fixe um horário de dormir e de acordar e repita todo dia — inclusive fim de semana.",
       frase: "Horário fixo regula sono, humor e ansiedade. É a âncora de tudo.",
@@ -135,7 +135,7 @@ export function gerarDirecionamentos({ dias, diaHoje, ctx }: CoachInput): Direci
     out.push({
       id: "treino",
       severidade: "atencao",
-      icone: "💪",
+      icone: "musculo",
       titulo: `Poucos treinos (${treinos7} nos últimos 7 dias)`,
       acao: "Treino hoje é inegociável pra bater as 4x da semana. Em dia fraco, caminhe 30 min.",
       frase: "Maior redutor de ansiedade que existe sem remédio.",
@@ -148,7 +148,7 @@ export function gerarDirecionamentos({ dias, diaHoje, ctx }: CoachInput): Direci
     out.push({
       id: "leitura",
       severidade: "atencao",
-      icone: "📖",
+      icone: "leitura",
       titulo: "A leitura está sumindo",
       acao: "25 min hoje, no lugar do celular. Um livro por vez.",
       frase: "O desperdício é o scroll, não o livro.",
@@ -160,7 +160,7 @@ export function gerarDirecionamentos({ dias, diaHoje, ctx }: CoachInput): Direci
     out.push({
       id: "base",
       severidade: "bom",
-      icone: "🌱",
+      icone: "broto",
       titulo: "Base firme — siga construindo",
       acao: "Cumpra os 3 inegociáveis e respeite a janela de rede. Consistência > intensidade.",
       frase: frase(ctx.diasFechados + new Date().getDate()),

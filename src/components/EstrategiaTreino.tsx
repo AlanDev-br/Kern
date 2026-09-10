@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Icone, type IconeNome } from "./Icone";
 import { AnimatePresence, motion } from "framer-motion";
 
 // Estratégia do treino: deixa claro o plano 4x/semana, as PRIORIDADES atuais em
@@ -17,21 +18,21 @@ interface Prioridade {
 const PRIORIDADES: Prioridade[] = [
   {
     grupo: "Peito",
-    icone: "🫁",
+    icone: "pulmao",
     meta: "~13 séries/semana, em 2 dias (A e D)",
     porque:
       "Volume é o principal motor da hipertrofia. Para um grupo em ênfase, levamos as séries para perto do teto produtivo (MAV) e dividimos em 2 sessões na semana — frequência 2x distribui melhor o estímulo e a recuperação do que tudo num dia só.",
   },
   {
     grupo: "Braços (bíceps + tríceps)",
-    icone: "💪",
+    icone: "musculo",
     meta: "~12 séries/semana cada, diretas + indiretas",
     porque:
       "Braço responde a volume direto. Além do que ele já recebe em costas (bíceps) e peito/ombro (tríceps), adicionamos séries isoladas em 2 dias. É o trabalho direto extra que puxa o grupo para a faixa de ênfase sem estourar a recuperação.",
   },
   {
     grupo: "Quadríceps",
-    icone: "🦵",
+    icone: "perna",
     meta: "~11 séries/semana, composto + isolador",
     porque:
       "Combinamos um composto pesado (agachamento/leg press) para carga e um isolador (cadeira extensora) para tensão direta no quadríceps. O composto traz sobrecarga; o isolador garante volume específico no músculo-alvo.",
@@ -92,13 +93,13 @@ export function EstrategiaTreino() {
               {/* Prioridades em destaque */}
               <div>
                 <p className="mb-2 text-xs font-bold uppercase tracking-wider" style={{ color: "var(--accent)" }}>
-                  ★ Prioridades agora (estética)
+                  Prioridades agora (estética)
                 </p>
                 <div className="space-y-2">
                   {PRIORIDADES.map((p) => (
                     <div key={p.grupo} className="rounded-2xl border border-line p-3" style={{ borderColor: "var(--accent)" }}>
                       <div className="flex items-center gap-2">
-                        <span className="text-lg">{p.icone}</span>
+                        <Icone nome={p.icone as IconeNome} tamanho={20} className="text-accent" />
                         <span className="text-sm font-bold">{p.grupo}</span>
                         <span className="ml-auto text-xs font-semibold text-accent">{p.meta}</span>
                       </div>
@@ -125,7 +126,7 @@ export function EstrategiaTreino() {
 
               {/* Cardio + onde conta */}
               <div className="rounded-2xl bg-bg/40 p-3">
-                <p className="text-xs font-bold">🏃 Cardio — falso magro</p>
+                <p className="text-xs font-bold">Cardio — falso magro</p>
                 <p className="mt-1 text-xs leading-relaxed text-muted">
                   <b className="text-fg">Protocolo:</b> 2–3x/semana, 25–35 min em Zona 2 (ritmo que dá pra conversar),
                   depois da musculação ou em dia separado. Recompõe (queima gordura) sem comer seu músculo. HIIT curto

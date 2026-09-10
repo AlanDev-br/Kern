@@ -1,5 +1,7 @@
 "use client";
 
+import { Icone } from "./Icone";
+
 import { useState } from "react";
 import { useLiveQuery } from "dexie-react-hooks";
 import { AnimatePresence, motion } from "framer-motion";
@@ -76,14 +78,14 @@ export function CardioSemanalCard() {
       <button onClick={() => setAberto((v) => !v)} className="flex w-full items-center justify-between text-left outline-none">
         <div>
           <h2 className="text-sm font-bold uppercase tracking-wider flex items-center gap-1.5">
-            🏃 Cardio Semanal
+            Cardio semanal
           </h2>
           <p className="text-xs text-muted">
             Meta: {META_CARDIO_SEMANAL} min/semana · Concluído: {minutosTotais} min ({pct}%)
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {pct >= 100 && <span className="text-xs">🏆</span>}
+          {pct >= 100 && <Icone nome="trofeu" tamanho={14} className="text-accent" />}
           <span className="text-lg text-muted">{aberto ? "−" : "+"}</span>
         </div>
       </button>
@@ -119,7 +121,7 @@ export function CardioSemanalCard() {
                       .map((c) => (
                         <div key={c.id} className="flex items-center justify-between rounded-xl bg-bg/40 border border-line/50 p-2.5 text-xs">
                           <div className="flex items-center gap-2">
-                            <span>{c.origem === "health_connect" ? "⌚" : "👤"}</span>
+                            <Icone nome={c.origem === "health_connect" ? "relogioPulso" : "perfil"} tamanho={14} className="text-muted" />
                             <span className="font-semibold text-fg">{c.tipo}</span>
                             <span className="text-xs text-muted font-medium bg-line/45 rounded px-1">{formatarData(c.data)}</span>
                           </div>
@@ -130,7 +132,7 @@ export function CardioSemanalCard() {
                                 onClick={() => removerCardio(c.id)}
                                 className="text-muted hover:text-fg text-sm px-1"
                               >
-                                ✕
+                                <Icone nome="x" tamanho={14} />
                               </button>
                             )}
                           </div>

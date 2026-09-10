@@ -164,7 +164,7 @@ async function detectarDesbloqueios(
         tipo: "tema",
         titulo: `Tema ${t.nome} desbloqueado`,
         subtitulo: "Ative na tela de Troféus",
-        icone: "🎨",
+        icone: "paleta",
       });
     }
   }
@@ -218,7 +218,7 @@ function detectarRankUps(treinos: Treino[], perfil?: PerfilFisico | null): Celeb
         tipo: "rank",
         titulo: `${ROTULO_LIFT[lift]} — ${nivel.tier}!`,
         subtitulo: "Você subiu de tier. Medalha conquistada.",
-        icone: "🏅",
+        icone: "medalha",
         cor: nivel.cor,
       });
     }
@@ -257,7 +257,7 @@ async function aplicarConcluidas(
       tipo: "inegociaveis",
       titulo: "Dia fechado!",
       subtitulo: `Streak de ${ctx.streakAtual} ${ctx.streakAtual === 1 ? "dia" : "dias"}`,
-      icone: "🔥",
+      icone: "chama",
       frase: fraseDoMarco(ctx.streakAtual),
     });
   }

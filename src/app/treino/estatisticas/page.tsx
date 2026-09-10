@@ -379,7 +379,7 @@ export default function EstatisticasPage() {
             onClick={() => setExpandedSection(expandedSection === "radar" ? null : "radar")}
             className="flex w-full items-center justify-between font-bold text-xs uppercase tracking-wider text-fg"
           >
-            <span>📊 Distribuição muscular (% do volume ótimo)</span>
+            <span>Distribuição muscular (% do volume ótimo)</span>
             <span>{expandedSection === "radar" ? "▲" : "▼"}</span>
           </button>
 
@@ -475,7 +475,7 @@ export default function EstatisticasPage() {
             onClick={() => setExpandedSection(expandedSection === "series" ? null : "series")}
             className="flex w-full items-center justify-between font-bold text-xs uppercase tracking-wider text-fg"
           >
-            <span>📈 Contagem de Séries por Músculo</span>
+            <span>Contagem de séries por músculo</span>
             <span>{expandedSection === "series" ? "▲" : "▼"}</span>
           </button>
 
@@ -556,7 +556,7 @@ export default function EstatisticasPage() {
             onClick={() => setExpandedSection(expandedSection === "exercicios" ? null : "exercicios")}
             className="flex w-full items-center justify-between font-bold text-xs uppercase tracking-wider text-fg"
           >
-            <span>🏋️ Exercícios Principais (Ranking)</span>
+            <span>Exercícios principais</span>
             <span>{expandedSection === "exercicios" ? "▲" : "▼"}</span>
           </button>
 
@@ -587,12 +587,12 @@ export default function EstatisticasPage() {
       </div>
 
       {/* Volume semanal por músculo (recolhível) */}
-      <Recolhivel titulo="📊 Volume semanal por músculo">
+      <Recolhivel titulo="Volume semanal por músculo">
         <VolumeColunas avaliacoes={avaliarVolume(volumeSemanal(treinos))} />
       </Recolhivel>
 
       {/* Periodização para treino natural (recolhível) */}
-      <Recolhivel titulo="🗓 Periodização (treino natural)">
+      <Recolhivel titulo="Periodização (treino natural)">
         <Periodizacao treinos={treinos} />
       </Recolhivel>
 

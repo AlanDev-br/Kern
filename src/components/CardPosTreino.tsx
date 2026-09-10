@@ -1,5 +1,7 @@
 "use client";
 
+import { Icone } from "./Icone";
+
 import { useMemo, useRef, useState } from "react";
 import type { Treino } from "@/lib/db";
 import { grupoDoExercicio, type Grupo } from "@/lib/musculacao";
@@ -69,7 +71,7 @@ export function CardPosTreino({
   return (
     <div className="fixed inset-0 z-[70] flex flex-col bg-bg">
       <header className="flex items-center justify-between border-b border-line px-5 py-4 pt-[max(1rem,env(safe-area-inset-top))]">
-        <span className="text-sm font-bold">Treino concluído 💪</span>
+        <span className="text-sm font-bold">Treino concluído</span>
         <button onClick={onFechar} className="text-sm font-medium text-muted">fechar</button>
       </header>
 
@@ -106,7 +108,7 @@ export function CardPosTreino({
               {resumo.exercicios.map((ex) => (
                 <div key={ex.nome} className="flex items-center justify-between gap-2 text-sm">
                   <span className="min-w-0 truncate">
-                    {ex.pr && <span className="mr-1">🏆</span>}
+                    {ex.pr && <Icone nome="trofeu" tamanho={13} className="mr-1 inline text-accent" />}
                     <span className="font-medium">{ex.nome}</span>
                   </span>
                   <span className="shrink-0 text-xs text-muted">
@@ -136,7 +138,7 @@ export function CardPosTreino({
           {resumo.recordes.length > 0 && (
             <div className="border-t border-line/30 px-5 py-4">
               <p className="mb-2 text-center text-xs font-bold uppercase tracking-widest text-muted">
-                🏆 Recordes batidos
+                Recordes batidos
               </p>
               <div className="space-y-1.5">
                 {resumo.recordes.map((r) => (

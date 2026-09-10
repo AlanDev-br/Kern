@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Icone } from "@/components/Icone";
 import { db } from "@/lib/db";
 import type { Divida } from "@/lib/types";
 
@@ -112,7 +113,7 @@ export default function FinancasPage() {
               R$ {d.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
             </p>
             <button onClick={() => remover(d.id)} className="text-muted">
-              ✕
+              <Icone nome="x" tamanho={16} />
             </button>
           </div>
         ))}

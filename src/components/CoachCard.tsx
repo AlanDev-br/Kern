@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Icone, type IconeNome } from "./Icone";
 import { motion } from "framer-motion";
 import { useApp } from "@/lib/store";
 import { gerarDirecionamentos, type Severidade } from "@/lib/coach";
@@ -41,7 +42,7 @@ export function CoachCard() {
       style={{ boxShadow: `inset 0 0 0 1px ${cor.borda}` }}
     >
       <div className="flex items-center gap-2">
-        <span className="text-2xl">{principal.icone}</span>
+        <Icone nome={principal.icone as IconeNome} tamanho={24} className="text-accent" />
         <span
           className="rounded-full px-2 py-0.5 text-xs font-bold uppercase tracking-wider"
           style={{ background: cor.chip, color: cor.texto }}
@@ -71,7 +72,7 @@ export function CoachCard() {
             <ul className="mt-2 space-y-2">
               {extras.map((d) => (
                 <li key={d.id} className="flex gap-2 text-xs">
-                  <span>{d.icone}</span>
+                  <Icone nome={d.icone as IconeNome} tamanho={16} />
                   <span>
                     <span className="font-semibold">{d.titulo}.</span>{" "}
                     <span className="text-muted">{d.acao}</span>

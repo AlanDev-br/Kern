@@ -92,7 +92,7 @@ export function ComposicaoCorporal() {
               <div className="flex items-center justify-between">
                 <span className="text-sm font-semibold">{m.rotulo}</span>
                 {m.mesesEstimados == null ? (
-                  <span className="text-xs font-bold" style={{ color: m.nivelAlvo.cor }}>no topo ★</span>
+                  <span className="text-xs font-bold" style={{ color: m.nivelAlvo.cor }}>no topo</span>
                 ) : (
                   <span className="text-xs font-bold" style={{ color: m.nivelAlvo.cor }}>→ {m.nivelAlvo.rotulo}</span>
                 )}
