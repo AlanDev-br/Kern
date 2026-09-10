@@ -62,7 +62,8 @@
     "files": [
       "electron/**/*",
       "out/**/*",
-      "package.json"
+      "package.json",
+      "!node_modules/**"
     ],
     "directories": {
       "output": "dist-desktop"
