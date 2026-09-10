@@ -167,14 +167,14 @@ export default function TreinoPage() {
         <div className="flex items-center justify-between px-1">
           <button
             onClick={() => setVerRotinas((v) => !v)}
-            className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted"
+            className="alvo-estendido flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-muted"
           >
             Minhas rotinas <span className="text-xs">({rotinas.length})</span>
             <span>{verRotinas ? "▲" : "▼"}</span>
           </button>
           <button
             onClick={() => setEditor({ aberta: true, rotina: null })}
-            className="text-xs text-accent underline outline-none"
+            className="alvo-estendido text-xs text-accent underline outline-none"
           >
             + nova
           </button>

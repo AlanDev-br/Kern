@@ -71,7 +71,7 @@ export default function AgendaPage() {
         </div>
         <button
           onClick={() => setEditando((v) => !v)}
-          className={`rounded-xl border px-3 py-1.5 text-xs font-semibold transition-colors ${
+          className={`alvo rounded-xl border px-3 py-1.5 text-xs font-semibold transition-colors ${
             editando ? "border-accent bg-accent-soft text-fg" : "border-line text-muted"
           }`}
         >
@@ -168,7 +168,7 @@ export default function AgendaPage() {
       <section className="glass rounded-3xl p-5">
         <button
           onClick={() => setVerTemplate((v) => !v)}
-          className="flex w-full items-center justify-between"
+          className="alvo flex w-full items-center justify-between"
         >
           <h2 className="text-sm font-bold uppercase tracking-wider">Template do dia</h2>
           <span className="text-muted">{verTemplate ? "−" : "+"}</span>

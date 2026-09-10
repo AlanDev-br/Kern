@@ -272,7 +272,7 @@ export function MeditacaoTimer() {
           <div className="grid grid-cols-2 gap-2 rounded-xl bg-bg/40 p-1 border border-line">
             <button
               onClick={() => setModo("meditacao")}
-              className={`rounded-lg py-2.5 text-xs font-bold transition-all ${
+              className={`alvo rounded-lg py-2.5 text-xs font-bold transition-all ${
                 modo === "meditacao" ? "bg-accent text-bg" : "text-muted"
               }`}
             >
@@ -280,7 +280,7 @@ export function MeditacaoTimer() {
             </button>
             <button
               onClick={() => setModo("foco")}
-              className={`rounded-lg py-2.5 text-xs font-bold transition-all ${
+              className={`alvo rounded-lg py-2.5 text-xs font-bold transition-all ${
                 modo === "foco" ? "bg-accent text-bg" : "text-muted"
               }`}
             >
@@ -296,7 +296,7 @@ export function MeditacaoTimer() {
                 <button
                   key={min}
                   onClick={() => setDuracao(min)}
-                  className={`flex-1 rounded-xl border py-2.5 text-xs font-extrabold tabular-nums transition-colors ${
+                  className={`alvo flex-1 rounded-xl border py-2.5 text-xs font-extrabold tabular-nums transition-colors ${
                     duracao === min ? "border-accent bg-accent-soft text-fg" : "border-line text-muted"
                   }`}
                 >

@@ -57,7 +57,7 @@ function AbaBtn({
   return (
     <button
       onClick={onClick}
-      className={`flex-1 rounded-xl py-2 text-sm font-semibold transition-colors ${
+      className={`alvo flex-1 rounded-xl py-2 text-sm font-semibold transition-colors ${
         ativa ? "bg-accent text-bg" : "text-muted"
       }`}
     >

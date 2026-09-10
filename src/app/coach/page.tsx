@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Icone } from "@/components/Icone";
 import { calcularDirecao } from "@/lib/direcao-treino";
 import { useLiveQuery } from "dexie-react-hooks";
 import { useApp } from "@/lib/store";
@@ -429,9 +430,10 @@ export default function CoachPage() {
         <button
           onClick={() => enviar(input)}
           disabled={carregando || !input.trim()}
-          className="rounded-xl bg-accent px-4 py-3 text-sm font-bold text-bg active:scale-95 disabled:opacity-40"
+          className="alvo flex items-center justify-center rounded-xl bg-accent px-4 text-bg active:scale-95 disabled:opacity-40"
+          aria-label="Enviar pergunta"
         >
-          ↑
+          <Icone nome="seta-cima" tamanho={18} />
         </button>
       </div>
     </div>

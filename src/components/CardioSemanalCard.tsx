@@ -75,7 +75,7 @@ export function CardioSemanalCard() {
   return (
     <section className="glass rounded-3xl p-5" style={{ boxShadow: "inset 0 0 0 1px var(--accent)" }}>
       {/* Header */}
-      <button onClick={() => setAberto((v) => !v)} className="flex w-full items-center justify-between text-left outline-none">
+      <button onClick={() => setAberto((v) => !v)} className="alvo flex w-full items-center justify-between text-left outline-none">
         <div>
           <h2 className="text-sm font-bold uppercase tracking-wider flex items-center gap-1.5">
             Cardio semanal

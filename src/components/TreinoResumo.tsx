@@ -170,7 +170,7 @@ export function TreinoResumo({ treinos }: { treinos: Treino[] }) {
               <button
                 key={g}
                 onClick={() => toggle(g)}
-                className={`flex items-center gap-1.5 rounded-lg border px-2 py-1 text-xs transition-all ${
+                className={`alvo flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs transition-all ${
                   on ? "border-line bg-card font-bold" : "border-transparent bg-bg/20 text-muted/60"
                 }`}
               >

@@ -360,7 +360,7 @@ export default function ConfigPage() {
         <h1 className="text-base font-bold tracking-tight">alannicholas94</h1>
         <button
           onClick={() => setGavetaAberta("ajustes")}
-          className="text-xl text-muted hover:text-fg p-1 outline-none transition-colors"
+          className="alvo text-muted hover:text-fg outline-none transition-colors"
           aria-label="Configurações do aplicativo"
         >
           <Icone nome="config" tamanho={18} />
@@ -418,7 +418,7 @@ export default function ConfigPage() {
           <select
             value={timeframe}
             onChange={(e) => setTimeframe(e.target.value as any)}
-            className="rounded-lg border border-line bg-card px-2.5 py-1 text-xs text-fg font-semibold outline-none"
+            className="alvo rounded-lg border border-line bg-card px-2.5 py-1 text-xs text-fg font-semibold outline-none"
           >
             <option value="1m">Último Mês</option>
             <option value="3m">Últimos 3 meses</option>
@@ -484,7 +484,7 @@ export default function ConfigPage() {
             <button
               key={m}
               onClick={() => setGraficoMetrica(m)}
-              className={`flex-1 rounded-lg py-1.5 text-xs font-bold uppercase tracking-wider transition-colors ${
+              className={`alvo flex-1 rounded-lg py-1.5 text-xs font-bold uppercase tracking-wider transition-colors ${
                 graficoMetrica === m ? "bg-accent text-bg" : "text-muted hover:text-fg"
               }`}
             >
@@ -536,7 +536,7 @@ export default function ConfigPage() {
           {treinos.length > HISTORICO_PREVIEW && (
             <button
               onClick={() => setVerHistorico((v) => !v)}
-              className="text-xs font-semibold text-accent"
+              className="alvo-estendido text-xs font-semibold text-accent"
             >
               {verHistorico ? "Recolher" : `Ver tudo (${treinos.length})`}
             </button>
@@ -594,7 +594,7 @@ export default function ConfigPage() {
                       <button
                         key={ex.nome}
                         onClick={() => setExercicioDetalhado(ex.nome)}
-                        className="w-full flex items-center justify-between text-left hover:text-accent outline-none text-xs transition-colors py-1"
+                        className="alvo w-full flex items-center justify-between text-left hover:text-accent outline-none text-xs transition-colors py-1"
                       >
                         <span className="font-bold text-fg/90">{ex.sets.length} × {ex.nome}</span>
                         <span className="text-xs text-muted">

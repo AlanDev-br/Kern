@@ -96,7 +96,7 @@ export function RevisaoLeituraCard() {
         </span>
         <Link
           href="/biblioteca/"
-          className="text-xs font-bold text-accent hover:underline flex items-center gap-0.5"
+          className="alvo-estendido flex items-center gap-0.5 text-xs font-bold text-accent hover:underline"
         >
           {destaque.linkText} →
         </Link>

@@ -182,6 +182,41 @@ body {
   box-shadow: inset 0 0 0 1px rgba(var(--glow), 0.35);
 }
 
+/* ───────────── Alvos de toque ─────────────
+   O alvo é a área que responde ao dedo, não o desenho. A WCAG 2.2 exige 24×24
+   no 2.5.8 (AA), mas a régua prática num app usado em pé, na academia, com o
+   celular numa mão, é 44px. A Fase 4 corrigiu a barra inferior e parou ali;
+   dentro das telas ainda havia chip de 29px e botão de texto de 19px.
+
+   Duas ferramentas, porque o problema tem duas formas.
+
+   `.alvo` cresce de verdade. Serve para o que tem espaço: chip, aba, botão de
+   ação. Só a altura mínima, deliberadamente: `button` já centra o conteúdo
+   sozinho, e declarar `display` aqui brigaria com o `flex` de quem já é flex. */
+.alvo {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* `.alvo-estendido` mantém o tamanho desenhado e estende só a área sensível,
+   por pseudo-elemento. Serve para o botão de texto pequeno dentro de um
+   cabeçalho, onde crescer 25px empurraria o layout inteiro para pagar por um
+   toque. O pseudo-elemento não ocupa espaço no fluxo e não é pintado. */
+.alvo-estendido {
+  position: relative;
+}
+.alvo-estendido::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  min-width: 44px;
+  min-height: 44px;
+}
+
 /* esconde scrollbar mas mantém scroll */
 .no-scrollbar::-webkit-scrollbar {
   display: none;

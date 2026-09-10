@@ -54,7 +54,7 @@ export default function MentePage() {
   return (
     <div className="space-y-6">
       <header className="flex items-center gap-4 pt-1">
-        <Link href="/progresso/" className="text-xl font-bold text-muted hover:text-fg">←</Link>
+        <Link href="/progresso/" className="alvo -ml-2 px-2 text-muted hover:text-fg">←</Link>
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Mente</h1>
           <p className="text-sm text-muted">Inteligência em vários âmbitos — não só exatas.</p>
@@ -68,7 +68,7 @@ export default function MentePage() {
       <section className="glass rounded-3xl p-4">
         <div className="mb-1 flex items-center justify-between px-1">
           <h2 className="text-sm font-bold uppercase tracking-wider">Múltiplas inteligências</h2>
-          <button onClick={() => setModal("quiz")} className="text-xs font-semibold text-accent">
+          <button onClick={() => setModal("quiz")} className="alvo-estendido text-xs font-semibold text-accent">
             {ultima ? "Refazer" : "Avaliar"}
           </button>
         </div>
@@ -110,7 +110,7 @@ export default function MentePage() {
               </div>
               <button
                 onClick={() => setModal(t.tipo)}
-                className="shrink-0 rounded-xl bg-accent px-4 py-2 text-sm font-bold text-bg active:scale-95"
+                className="alvo shrink-0 rounded-xl bg-accent px-4 py-2 text-sm font-bold text-bg active:scale-95"
               >
                 Testar
               </button>
