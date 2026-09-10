@@ -10,6 +10,7 @@ import type {
 // CartaoLeitura é definido neste módulo (abaixo) e re-exportado para o restante.
 import { hojeChave } from "./dates";
 import { uidLegado } from "./identidade";
+import { PERFIL } from "./perfil";
 import type { MedidaCorporal } from "./composicao";
 // Só os tipos: `kern-health` importa este módulo de volta, e um import de valor
 // fecharia o ciclo. `import type` some na compilação.
@@ -84,7 +85,10 @@ export interface TreinoRascunho {
 export interface Rotina {
   id: string;
   nome: string;
-  exercicios: { nome: string; series: number }[];
+  // `reps` é a repetição-alvo da prescrição, usada só para pré-preencher a
+  // primeira sessão. Opcional porque rotina antiga e rotina criada na mão não
+  // têm alvo — nesse caso o campo nasce zerado, como sempre nasceu.
+  exercicios: { nome: string; series: number; reps?: number }[];
 }
 
 // Configuração individualizada por exercício (descanso padrão, observações gerais).
@@ -458,7 +462,7 @@ export const db = new Reconstrucao90DB();
 export const CONFIG_PADRAO: AppConfig = {
   id: "singleton",
   dataInicio: hojeChave(),
-  temaAtivo: "esmeralda",
+  temaAtivo: PERFIL.temaPadrao,
   notificacoesAtivas: true,
   // Só as rotinas semanais, que não são tarefas do checklist. O horário de cada
   // tarefa mora na própria tarefa; semear uma entrada aqui congelaria o horário

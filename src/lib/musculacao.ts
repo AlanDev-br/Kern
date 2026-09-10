@@ -41,11 +41,15 @@ function normalizar(s: string): string {
 // Regras por palavra-chave, em ordem (a primeira que casar vence).
 // A ordem importa: ex. "terra romeno" precisa cair em Posteriores antes de Costas.
 const REGRAS: { grupo: Grupo; chaves: string[] }[] = [
-  { grupo: "Glúteos", chaves: ["gluteo", "pelvica", "hip thrust", "coice", "curtsy", "afundo", "bulgaro", "abdutora", "abducao", "extensao de quadril", "4 apoios", "quatro apoios"] },
-  { grupo: "Posteriores", chaves: ["romeno", "stiff", "flexora", "posterior", "femoral", "good morning"] },
+  // "adutora" cai em Glúteos por falta de grupo próprio: os adutores são
+  // musculatura de quadril, e é ao lado da abdutora que o volume deles se lê.
+  { grupo: "Glúteos", chaves: ["gluteo", "pelvica", "hip thrust", "coice", "curtsy", "afundo", "bulgaro", "abdutora", "abducao", "adutora", "extensao de quadril", "4 apoios", "quatro apoios"] },
+  // "deadlift" antes de Costas de propósito: o terra em inglês aparece nas fichas
+  // como sumô ou convencional, e nos dois a cadeia posterior é quem trabalha.
+  { grupo: "Posteriores", chaves: ["romeno", "stiff", "flexora", "posterior", "femoral", "good morning", "deadlift"] },
   { grupo: "Panturrilha", chaves: ["panturrilha", "gemeos", "calf", "soleo"] },
-  { grupo: "Quadríceps", chaves: ["agachamento", "leg press", "extensora", "hack", "passada", "lunge", "avanco"] },
-  { grupo: "Peito", chaves: ["supino", "crucifixo", "voador", "peito", "paralela", "crossover", "fly"] },
+  { grupo: "Quadríceps", chaves: ["agachamento", "leg press", "leg horizontal", "extensora", "hack", "passada", "lunge", "avanco"] },
+  { grupo: "Peito", chaves: ["supino", "crucifixo", "voador", "peito", "paralela", "crossover", "fly", "flexao de braco"] },
   { grupo: "Costas", chaves: ["puxada", "remada", "remadas", "pulldown", "costas", "barra fixa", "pull up", "terra", "serrote"] },
   { grupo: "Ombros", chaves: ["desenvolvimento", "elevacao lateral", "ombro", "arnold", "militar", "elevacao frontal", "face pull", "encolhimento", "trapezio"] },
   { grupo: "Bíceps", chaves: ["rosca", "biceps", "scott", "martelo"] },

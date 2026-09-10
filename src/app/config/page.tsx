@@ -19,6 +19,7 @@ import { estimar1RM } from "@/lib/forca";
 import { GuiaMedidasModal } from "@/components/GuiaMedidasModal";
 import { EnviarParaDesktop } from "@/components/EnviarParaDesktop";
 import { SincroniaDesktop } from "@/components/SincroniaDesktop";
+import { PERFIL } from "@/lib/perfil";
 import {
   tempoTelaDisponivel,
   obterEstadoLimitador,
@@ -360,7 +361,7 @@ export default function ConfigPage() {
       {/* Header Centralizado com Botão de Configurações */}
       <header className="flex items-center justify-between pt-1">
         <span className="text-sm font-bold text-muted">Editar perfil</span>
-        <h1 className="text-base font-bold tracking-tight">alannicholas94</h1>
+        <h1 className="text-base font-bold tracking-tight">{PERFIL.usuario}</h1>
         <button
           onClick={() => setGavetaAberta("ajustes")}
           className="alvo text-muted hover:text-fg outline-none transition-colors"
@@ -575,10 +576,10 @@ export default function ConfigPage() {
                   {/* Cabeçalho do Treino */}
                   <div className="flex items-center gap-3">
                     <div className="h-9 w-9 rounded-full bg-gradient-to-tr from-accent/20 to-accent/30 flex items-center justify-center text-sm font-extrabold text-accent">
-                      AN
+                      {PERFIL.iniciais}
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-fg leading-tight">alannicholas94</p>
+                      <p className="text-xs font-bold text-fg leading-tight">{PERFIL.usuario}</p>
                       <p className="text-xs text-muted mt-0.5">{formatarDataFeed(t.inicio)}</p>
                     </div>
                   </div>
@@ -1110,9 +1111,14 @@ export default function ConfigPage() {
 
             {/* Sincronia com o computador. Cada lado mostra só o seu gesto: o
                 celular envia, o desktop recebe, e nenhum dos dois componentes
-                aparece do lado errado. */}
-            <EnviarParaDesktop />
-            <SincroniaDesktop />
+                aparece do lado errado. Num perfil sem Kern de desktop do outro
+                lado, a seção inteira sai: seria um pareamento sem par. */}
+            {PERFIL.sincroniaDesktop && (
+              <>
+                <EnviarParaDesktop />
+                <SincroniaDesktop />
+              </>
+            )}
 
             {/* Backup */}
             <section className="glass rounded-2xl p-4.5 space-y-3.5">

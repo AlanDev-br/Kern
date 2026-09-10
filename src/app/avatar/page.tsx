@@ -126,8 +126,8 @@ export default function AvatarPage() {
 
   async function trocar() {
     await removerAvatar();
-    await recarregar(); // volta para o avatar base embutido
-    setMsg("Voltou para o avatar base.");
+    await recarregar(); // volta para o avatar base embutido, quando existe um
+    setMsg(AVATAR_PADRAO_URL ? "Voltou para o avatar base." : "Avatar removido.");
   }
 
   return (
@@ -137,10 +137,30 @@ export default function AvatarPage() {
         <p className="text-sm text-muted">Seu eu em construção — evolui com a sua prova.</p>
       </header>
 
-      {!objUrl ? (
+      {tem === null ? (
         <div className="h-[60vh] animate-pulse rounded-3xl bg-card/50" />
       ) : (
         <>
+          {!objUrl && (
+            // Sem modelo embutido no build e sem modelo enviado. O esqueleto
+            // pulsando ficaria carregando para sempre; o que falta aqui não é
+            // tempo, é o avatar dela.
+            <section className="glass flex flex-col items-center rounded-3xl px-6 py-10 text-center">
+              <span className="flex h-14 w-14 items-center justify-center rounded-2xl border border-line bg-bg/40 text-muted">
+                <Icone nome="espelho" tamanho={26} />
+              </span>
+              <h2 className="mt-5 text-xl font-bold tracking-tight">Seu avatar ainda não existe</h2>
+              <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted">
+                É a sua figura dentro do app: o corpo engrossa e a aura acende conforme você sobe de rank. Ninguém escolhe esse rosto por você.
+              </p>
+              <ol className="mt-6 w-full max-w-sm space-y-2 text-left text-sm text-muted">
+                <li>1. Monte o seu no Avaturn, no botão abaixo.</li>
+                <li>2. Exporte em <strong className="font-semibold text-fg">.glb</strong> e salve no aparelho.</li>
+                <li>3. Volte aqui e toque em “Usar meu avatar”.</li>
+              </ol>
+            </section>
+          )}
+          {objUrl && (
           <div className="glass relative h-[60vh] overflow-hidden rounded-3xl">
             <Avatar3D url={objUrl} streak={ctx.streakAtual} rankIndex={rankEfetivo} cor={rankInfo.cor} />
             <div className="pointer-events-none absolute left-4 top-4">
@@ -154,8 +174,11 @@ export default function AvatarPage() {
               </span>
             )}
           </div>
+          )}
 
-          {/* Calibração — arraste pra ver a evolução por rank (teste, não muda o XP) */}
+          {/* Calibração — arraste pra ver a evolução por rank (teste, não muda o XP).
+              Sem modelo na tela não há o que calibrar. */}
+          {objUrl && (
           <section className="glass rounded-3xl p-4">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-bold uppercase tracking-wider">Teste de evolução</h2>
@@ -188,6 +211,7 @@ export default function AvatarPage() {
               )}
             </p>
           </section>
+          )}
 
           <div className="grid grid-cols-2 gap-2">
             <button
@@ -201,7 +225,7 @@ export default function AvatarPage() {
                 onClick={trocar}
                 className="rounded-xl border border-line py-3 text-sm font-bold active:scale-95"
               >
-                Voltar ao base
+                {AVATAR_PADRAO_URL ? "Voltar ao base" : "Remover avatar"}
               </button>
             ) : (
               <a

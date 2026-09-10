@@ -32,6 +32,7 @@ import { seedTreinosSeNecessario } from "./treino-seed";
 import { seedBibliotecaSeNecessario } from "./biblioteca-seed";
 import { seedPlano4xSeNecessario } from "./plano-seed";
 import { seedTarefasSeNecessario } from "./tarefas-seed";
+import { PERFIL } from "./perfil";
 import { fecharDiasPendentes } from "./fechamento";
 import { novoUid } from "./identidade";
 import {
@@ -161,7 +162,9 @@ async function detectarDesbloqueios(
 
   const agoraTemas = temasDesbloqueados(ctx.xpTotal);
   for (const t of agoraTemas) {
-    if (!temasAntesIds.includes(t.id) && t.xpDesbloqueio > 0) {
+    // O tema padrão do perfil já vem aplicado desde a primeira abertura: anunciá-lo
+    // como recém-desbloqueado seria comemorar algo que a pessoa nunca conquistou.
+    if (!temasAntesIds.includes(t.id) && t.xpDesbloqueio > 0 && t.id !== PERFIL.temaPadrao) {
       fila.push({
         tipo: "tema",
         titulo: `Tema ${t.nome} desbloqueado`,

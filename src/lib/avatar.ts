@@ -2,12 +2,18 @@
 
 import { db } from "./db";
 import { hojeChave } from "./dates";
+import { PERFIL } from "./perfil";
 
 const ID = "glb";
 
-// Avatar base embutido no app (public/). Serve de padrão quando o usuário ainda
+// Avatar base embutido no app (public/). Serve de padrão enquanto a pessoa ainda
 // não subiu o seu — o motor de evolução gera as variações a partir dele.
-export const AVATAR_PADRAO_URL = "/avatar/base.glb";
+//
+// `null` num perfil significa que não há modelo embutido, e é o caso quando o
+// único GLB disponível seria o de outra pessoa: um avatar padrão não é um
+// enfeite, é a figura que representa quem está usando o app. Sem modelo, a tela
+// convida a criar o próprio em vez de emprestar um rosto alheio.
+export const AVATAR_PADRAO_URL: string | null = PERFIL.avatarPadraoUrl;
 
 // ── Estágios do avatar (corpo evolui com o rank) ────────────────
 // 4 estágios cobrem os 7 ranks: 0=magro (E,D) · 1=médio (C,B) ·

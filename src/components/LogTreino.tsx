@@ -115,7 +115,10 @@ export function LogTreino({
     if (rotina)
       return rotina.exercicios.map((e) => ({
         nome: e.nome,
-        sets: Array.from({ length: Math.max(1, e.series) }, () => ({ peso: 0, reps: 0, tipo: "normal" })),
+        // A repetição-alvo da rotina entra pré-preenchida para a primeira sessão
+        // não começar em branco. Da segunda em diante o app herda o que ela de
+        // fato fez, que vale mais que a prescrição.
+        sets: Array.from({ length: Math.max(1, e.series) }, () => ({ peso: 0, reps: e.reps ?? 0, tipo: "normal" })),
         observacoes: "",
       }));
     return [];

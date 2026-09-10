@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:kelly": "node scripts/build-perfil.mjs kelly",
     "start": "next start",
     "lint": "eslint",
     "cap:sync": "next build && cap sync android",
