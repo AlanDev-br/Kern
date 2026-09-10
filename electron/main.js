@@ -29,6 +29,23 @@ const { iniciarServidor } = require("./servidor");
 const RAIZ = path.join(__dirname, "..", "out");
 const ORIGEM = "kern://app";
 
+// ── Renderização por software ──
+//
+// O app monta um avatar 3D em WebGL (three.js). Nesta máquina o processo de
+// GPU do Chromium morre com violação de acesso assim que o shader sobe, nove
+// vezes seguidas, até o Chromium desistir: "GPU process isn't usable. Goodbye."
+// O renderizador cai junto e a janela fecha sozinha — que é como o defeito
+// aparece para quem só clicou no atalho.
+//
+// A troca aceita aqui: WebGL por software é mais lento, e o avatar gira menos
+// fluido. Mas um avatar lento é melhor que um app que não abre, e desligar a
+// aceleração é a única correção que não depende do driver de vídeo do usuário.
+//
+// `enable-unsafe-swiftshader` é o que permite o WebGL cair para software em vez
+// de simplesmente não existir — sem ele o avatar ficaria preto num app que abre.
+app.disableHardwareAcceleration();
+app.commandLine.appendSwitch("enable-unsafe-swiftshader");
+
 // `standard` faz o esquema ter origem e caminho de verdade (sem isso o
 // IndexedDB e o localStorage nao existem). `secure` o coloca em contexto
 // seguro, que e requisito de boa parte das APIs modernas.
