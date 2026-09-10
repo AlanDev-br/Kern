@@ -152,6 +152,16 @@ export interface CartaoLeitura {
   criadoEm: string;
 }
 
+// Leitura que a IA faz do dia anterior, gerada uma vez por dia na primeira
+// abertura. `data` é o dia a que a leitura se refere ao ser exibida (hoje),
+// e o conteúdo fala do dia que passou.
+export interface ParecerDiario {
+  data: string; // "YYYY-MM-DD" — o dia em que o parecer foi mostrado
+  texto: string;
+  modelo: string; // qual modelo escreveu, para o texto não virar órfão de origem
+  criadoEm: string; // ISO
+}
+
 // Banco local-first. Tudo vive no IndexedDB do dispositivo.
 export class Reconstrucao90DB extends Dexie {
   dias!: Table<DiaRegistro, string>;
@@ -175,6 +185,7 @@ export class Reconstrucao90DB extends Dexie {
   medidasCorporais!: Table<MedidaCorporal, string>;
   saudeAmostras!: Table<AmostraSaude, string>;
   saudeSync!: Table<EstadoSincronia, string>;
+  pareceres!: Table<ParecerDiario, string>;
 
   constructor() {
     super("reconstrucao90");
@@ -380,6 +391,18 @@ export class Reconstrucao90DB extends Dexie {
       saudeAmostras: "id, tipo, data, [tipo+data], origem, inicio",
       saudeSync: "tipo",
     });
+
+    // `pareceres` guarda a leitura que a IA faz do dia anterior, uma por dia.
+    // Guardada, e não recalculada, porque cada uma custa uma chamada à Groq:
+    // reabrir o app cinco vezes no mesmo dia tem de custar uma, não cinco.
+    // Aditiva — nenhuma tabela existente muda, então não há migração de dados.
+    this.version(14)
+      .stores({
+        pareceres: "data",
+      })
+      .upgrade(() => {
+        /* nada a migrar: a tabela nasce vazia */
+      });
   }
 }
 

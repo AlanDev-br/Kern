@@ -164,7 +164,7 @@ export function montarContexto(c: ContextoCoach): string {
   const vol = c.volumeMusculo.length
     ? c.volumeMusculo.map((v) => `${v.grupo} ${v.series} séries (${v.status})`).join("; ")
     : "sem treinos de força na semana";
-  return `DADOS ATUAIS DO ALAN (dia ${c.diaPlano} de 90):
+  return `DADOS ATUAIS DO USUARIO (dia ${c.diaPlano} de 90):
 - Nível de Desenvolvimento: Nível ${c.nivel} (${c.nivelNome}) com ${c.xpTotal} XP total
 - Streak: ${c.streakAtual} dias (melhor ${c.melhorStreak}; ${c.diasFechados} dias fechados no total)
 - Inegociáveis de hoje: ${c.inegociaveisHoje}

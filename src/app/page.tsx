@@ -9,6 +9,7 @@ import { ProgressRing } from "@/components/ProgressRing";
 import { ScreenTimeCard } from "@/components/ScreenTimeCard";
 import { HealthSyncCard } from "@/components/HealthSyncCard";
 import { CoachCard } from "@/components/CoachCard";
+import { ParecerCard } from "@/components/ParecerCard";
 import { AvatarHero } from "@/components/AvatarHero";
 import { RevisaoLeituraCard } from "@/components/RevisaoLeituraCard";
 import { Icone } from "@/components/Icone";
@@ -42,6 +43,9 @@ export default function HojePage() {
           Dia <span className="text-gradient">{diaN > 0 ? diaN : 0}</span> de 90
         </h1>
       </header>
+
+      {/* A leitura da IA sobre ontem. Some sozinha quando não há o que dizer. */}
+      <ParecerCard />
 
       {/* Avatar (Solo Leveling) — centro da tela inicial */}
       <AvatarHero />
