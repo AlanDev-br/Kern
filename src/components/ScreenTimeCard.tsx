@@ -124,7 +124,7 @@ export function ScreenTimeCard() {
 
       <div className="mt-2 flex items-end gap-2">
         <span
-          className={`text-3xl font-extrabold ${dentro ? "text-gradient" : ""}`}
+          className={`text-3xl font-extrabold ${dentro ? "text-acento" : ""}`}
           style={dentro ? undefined : { color: "#fb7185" }}
         >
           {total}

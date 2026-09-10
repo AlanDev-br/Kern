@@ -49,7 +49,7 @@ export default function FinancasPage() {
 
       <div className="glass rounded-3xl p-5 text-center">
         <p className="text-xs uppercase tracking-wider text-muted">Total mapeado</p>
-        <p className="text-3xl font-extrabold text-gradient">
+        <p className="text-3xl font-extrabold text-acento">
           R$ {total.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
         </p>
         <p className="mt-1 text-xs text-muted">Priorize a de maior juros primeiro.</p>

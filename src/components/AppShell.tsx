@@ -50,7 +50,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center gap-4">
         <div className="h-14 w-14 animate-float rounded-2xl bg-accent-soft ring-accent-soft" />
-        <p className="text-3xl font-extrabold tracking-tight text-gradient">kern</p>
+        <p className="text-3xl font-extrabold tracking-tight text-acento">kern</p>
         <p className="text-sm text-muted">carregando seus dados</p>
       </div>
     );

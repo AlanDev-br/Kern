@@ -110,25 +110,26 @@ export function TreinoResumo({ treinos }: { treinos: Treino[] }) {
         <span className="text-xs uppercase tracking-wider text-muted">vs. 30 dias antes</span>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Card label="Treinos" valor={`${stats.atual.treinos}`} delta={stats.deltas.treinos} />
-        <Card
+      <dl className="divide-y divide-line/60">
+        <Linha label="Treinos" valor={`${stats.atual.treinos}`} delta={stats.deltas.treinos} temDado={stats.atual.treinos > 0} />
+        <Linha
           label="Volume"
-          valor={stats.atual.volume >= 1000 ? `${(stats.atual.volume / 1000).toFixed(1)}k` : `${stats.atual.volume}`}
-          sufixo=" kg"
+          valor={stats.atual.volume >= 1000 ? `${(stats.atual.volume / 1000).toFixed(1)}k kg` : `${stats.atual.volume} kg`}
           delta={stats.deltas.volume}
+          temDado={stats.atual.volume > 0}
         />
-        <Card label="Séries" valor={`${stats.atual.series}`} delta={stats.deltas.series} />
-        <Card
+        <Linha label="Séries" valor={`${stats.atual.series}`} delta={stats.deltas.series} temDado={stats.atual.series > 0} />
+        <Linha
           label="Tempo"
           valor={
             stats.atual.duracao >= 60
-              ? `${Math.floor(stats.atual.duracao / 60)}h${stats.atual.duracao % 60}`
+              ? `${Math.floor(stats.atual.duracao / 60)}h ${stats.atual.duracao % 60}m`
               : `${stats.atual.duracao}m`
           }
           delta={stats.deltas.duracao}
+          temDado={stats.atual.duracao > 0}
         />
-      </div>
+      </dl>
 
       <div>
         <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted">
@@ -188,28 +189,40 @@ export function TreinoResumo({ treinos }: { treinos: Treino[] }) {
   );
 }
 
-function Card({
+// Eram quatro placas com superficie propria dentro do cartao — cartao dentro de
+// cartao, que o piso de craft proibe, e ainda no formato numero grande com
+// rotulo minusculo. Viraram linhas de uma lista de definicao: o dado continua
+// inteiro, a hierarquia sai do peso e da posicao, e nao ha uma segunda
+// superficie desenhada para separar o que a linha ja separa.
+function Linha({
   label,
   valor,
-  sufixo = "",
   delta,
+  temDado,
 }: {
   label: string;
   valor: string;
-  sufixo?: string;
   delta: number;
+  temDado: boolean;
 }) {
   const pos = delta >= 0;
   return (
-    <div className="rounded-2xl border border-line/40 bg-card/60 p-4">
-      <p className="text-xs font-bold uppercase tracking-wider text-muted">{label}</p>
-      <p className="mt-1.5 text-lg font-black tabular-nums">
-        {valor}
-        <span className="text-xs font-medium text-muted">{sufixo}</span>
-      </p>
-      <p className={`mt-0.5 text-xs font-extrabold ${pos ? "text-accent" : "text-rose-400"}`}>
-        {pos ? "↑" : "↓"} {Math.abs(delta)}%
-      </p>
+    <div className="flex items-baseline justify-between gap-3 py-2.5">
+      <dt className="text-sm text-muted">{label}</dt>
+      <dd className="flex items-baseline gap-2.5">
+        <span className="text-base font-bold tabular-nums">{valor}</span>
+        {/* Sem periodo anterior para comparar, variacao nao existe. Antes disto
+            a tela mostrava "↑ 0%" em verde no dia 1: sinal de melhora para
+            ausencia de dado, que e a pior mentira que um painel pode contar. */}
+        {temDado && delta !== 0 ? (
+          <span className={`text-sm font-bold tabular-nums ${pos ? "text-accent" : "text-rose-400"}`}>
+            {pos ? "+" : "−"}
+            {Math.abs(delta)}%
+          </span>
+        ) : (
+          <span className="text-sm text-muted">—</span>
+        )}
+      </dd>
     </div>
   );
 }

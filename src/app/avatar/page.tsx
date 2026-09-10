@@ -145,7 +145,7 @@ export default function AvatarPage() {
             <Avatar3D url={objUrl} streak={ctx.streakAtual} rankIndex={rankEfetivo} cor={rankInfo.cor} />
             <div className="pointer-events-none absolute left-4 top-4">
               <p className="text-xs text-muted">Nível {nivel.nivel}</p>
-              <p className="text-lg font-bold text-gradient">{nivel.nome}</p>
+              <p className="text-lg font-bold text-acento">{nivel.nome}</p>
               <p className="mt-1 text-xs text-muted">{ctx.streakAtual} de streak · {ctx.xpTotal} XP</p>
             </div>
             {!tem && (

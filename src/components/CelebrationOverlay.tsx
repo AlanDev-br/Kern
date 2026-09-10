@@ -101,7 +101,7 @@ export function CelebrationOverlay() {
                 <Icone nome={atual.icone as IconeNome} tamanho={32} />
               </div>
             )}
-            <h2 className="text-xl font-bold text-gradient">{atual.titulo}</h2>
+            <h2 className="text-xl font-bold text-acento">{atual.titulo}</h2>
             <p className="mt-1 text-sm text-muted">{atual.subtitulo}</p>
             {atual.frase && (
               <p className="mt-4 border-t border-line pt-4 text-sm italic leading-relaxed text-fg/90">

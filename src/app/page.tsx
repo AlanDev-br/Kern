@@ -40,7 +40,7 @@ export default function HojePage() {
           {saudacao()}, Alan · {nomeDiaSemana()}
         </p>
         <h1 className="mt-0.5 text-3xl font-bold tracking-tight">
-          Dia <span className="text-gradient">{diaN > 0 ? diaN : 0}</span> de 90
+          Dia <span className="text-acento">{diaN > 0 ? diaN : 0}</span> de 90
         </h1>
       </header>
 

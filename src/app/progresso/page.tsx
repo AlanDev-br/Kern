@@ -174,7 +174,7 @@ export default function ProgressoPage() {
 function BigStat({ valor, label, sufixo }: { valor: string; label: string; sufixo?: string }) {
   return (
     <div className="glass rounded-2xl px-3 py-4 text-center">
-      <p className="text-2xl font-extrabold text-gradient">
+      <p className="text-2xl font-extrabold text-acento">
         {valor}
         {sufixo && <span className="text-base">{sufixo}</span>}
       </p>
