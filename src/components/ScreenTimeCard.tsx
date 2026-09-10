@@ -9,6 +9,7 @@ import {
   type UsoSocial,
 } from "@/lib/screen-time";
 import { LIMITE_REDE_MIN } from "@/lib/social-apps";
+import { PERFIL } from "@/lib/perfil";
 
 type Estado = "carregando" | "web" | "sem-permissao" | "ok";
 
@@ -57,6 +58,8 @@ export function ScreenTimeCard() {
   }
 
   if (estado === "web") {
+    // Num perfil sem APK, o aviso nunca deixaria de ser verdade: some.
+    if (!PERFIL.temAndroid) return null;
     return (
       <div className="rounded-2xl border border-line bg-card/50 p-4">
         <p className="text-sm font-semibold">Tempo de tela</p>

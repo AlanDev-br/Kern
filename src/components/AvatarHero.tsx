@@ -7,6 +7,7 @@ import { useApp } from "@/lib/store";
 import { nivelDoXp } from "@/lib/xp";
 import { rankDoNivel } from "@/lib/rank";
 import { carregarModeloParaRankObjectURL, AVATAR_PADRAO_URL } from "@/lib/avatar";
+import { Icone } from "@/components/Icone";
 
 // Dentro do executavel de desktop, o preload injeta esta marca. Fora dele
 // (celular, navegador) ela nao existe, e o avatar 3D sobe normalmente.
@@ -27,6 +28,10 @@ export function AvatarHero() {
   const rankIndex = Math.min(Math.max(nivel.nivel - 1, 0), 6);
 
   const [objUrl, setObjUrl] = useState<string | null>(null);
+  // Separa "ainda procurando" de "procurei e não há". Sem isso, um perfil sem
+  // modelo embutido nem enviado fica com o esqueleto pulsando para sempre,
+  // prometendo um carregamento que nunca vai terminar.
+  const [resolvido, setResolvido] = useState(false);
 
   useEffect(() => {
     let vivo = true;
@@ -45,6 +50,7 @@ export function AvatarHero() {
         if (prev !== u) revogar(prev);
         return u;
       });
+      setResolvido(true);
     }
     load();
     const onVis = () => {
@@ -62,7 +68,7 @@ export function AvatarHero() {
     // recarrega o modelo quando o rank muda (corpo evolui)
   }, [rankIndex]);
 
-  if (!objUrl) {
+  if (!resolvido) {
     return <div className="h-[40vh] animate-pulse rounded-3xl bg-card/50" />;
   }
 
@@ -85,9 +91,20 @@ export function AvatarHero() {
           O desktop existe para consultar o histórico, e não para ver o avatar
           girar. Trocar um app que não abre por um app sem canvas é a troca
           certa; no celular, onde o avatar é o centro da tela, nada muda. */}
-      {!dentroDoDesktop() && (
+      {objUrl && !dentroDoDesktop() && (
         <div className="absolute inset-0">
           <Avatar3D url={objUrl} streak={ctx.streakAtual} cor={rank.cor} rankIndex={rankIndex} />
+        </div>
+      )}
+
+      {/* Sem modelo nenhum: o lugar do corpo convida a criar um, em vez de ficar
+          um retângulo vazio no meio da tela de abertura. */}
+      {!objUrl && (
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 px-8 text-center">
+          <Icone nome="espelho" tamanho={34} className="text-muted" />
+          <p className="max-w-xs text-sm leading-relaxed text-muted">
+            Seu avatar ainda não existe. Crie o seu e ele passa a evoluir junto com o seu rank.
+          </p>
         </div>
       )}
 
@@ -111,7 +128,7 @@ export function AvatarHero() {
         href="/avatar/"
         className="absolute right-4 top-4 inline-flex min-h-11 items-center rounded-lg border border-line bg-bg/95 px-4 text-xs font-semibold active:scale-95"
       >
-        Personalizar
+        {objUrl ? "Personalizar" : "Criar avatar"}
       </Link>
 
       {/* lema do rank */}

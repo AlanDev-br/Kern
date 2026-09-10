@@ -3,18 +3,24 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Icone, type IconeNome } from "./Icone";
+import { PERFIL } from "@/lib/perfil";
 
 // Cinco destinos, não oito. A barra anterior dava 42px de largura por item numa
 // tela de 390px, e encolheu para 32px quando o rótulo subiu para 13px — oito
 // rótulos legíveis não cabem. Nada foi removido do app, só mudou de porta:
 // Agenda e Leitura são alcançadas pela Hoje, Troféus pelo Progresso.
-const ITENS: { href: string; label: string; icone: IconeNome }[] = [
+const TODOS_ITENS: { href: string; label: string; icone: IconeNome }[] = [
   { href: "/", label: "Hoje", icone: "hoje" },
   { href: "/treino/", label: "Treino", icone: "treino" },
   { href: "/progresso/", label: "Progresso", icone: "progresso" },
   { href: "/dados/", label: "Dados", icone: "dados" },
   { href: "/config/", label: "Perfil", icone: "perfil" },
 ];
+
+// "Dados" inteira depende do Health Connect, que é do Android. Num perfil sem
+// APK ela nunca sai da tela de "só no aplicativo": vira uma porta permanente
+// para um cômodo que não existe.
+const ITENS = TODOS_ITENS.filter((i) => (i.href === "/dados/" ? PERFIL.temAndroid : true));
 
 /**
  * A mesma navegação em duas formas, escolhidas pela largura e não pelo aparelho.

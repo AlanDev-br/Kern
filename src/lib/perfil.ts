@@ -44,6 +44,13 @@ export interface Perfil {
    * lado; sem isso a seção seria um botão que não leva a lugar nenhum.
    */
   sincroniaDesktop: boolean;
+  /**
+   * O perfil chega a rodar dentro do APK Android. Quando não chega, os cartões
+   * que só existem lá (vestível via Health Connect, tempo de tela) somem em vez
+   * de anunciarem para sempre um recurso “disponível no app Android” que aquela
+   * pessoa não tem como instalar.
+   */
+  temAndroid: boolean;
 }
 
 const PERFIS: Record<PerfilId, Perfil> = {
@@ -56,6 +63,7 @@ const PERFIS: Record<PerfilId, Perfil> = {
     semearHistorico: true,
     avatarPadraoUrl: "/avatar/base.glb",
     sincroniaDesktop: true,
+    temAndroid: true,
   },
   kelly: {
     id: "kelly",
@@ -69,6 +77,9 @@ const PERFIS: Record<PerfilId, Perfil> = {
     // iPhone: o app dela é PWA na tela de início, e não há Kern de desktop
     // pareado do outro lado.
     sincroniaDesktop: false,
+    // iPhone: não há APK para instalar, então o vestível e o tempo de tela
+    // nunca vão sair de "indisponível".
+    temAndroid: false,
   },
 };
 

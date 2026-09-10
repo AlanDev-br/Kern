@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useApp } from "@/lib/store";
+import { PERFIL } from "@/lib/perfil";
 import {
   saudeNativa,
   statusSaude,
@@ -96,6 +97,8 @@ export function HealthSyncCard() {
   }
 
   if (!saudeNativa()) {
+    // Num perfil sem APK, o aviso nunca deixaria de ser verdade: some.
+    if (!PERFIL.temAndroid) return null;
     return (
       <div className="rounded-2xl border border-line bg-card/50 p-4">
         <p className="text-sm font-semibold">Dados do vestível</p>

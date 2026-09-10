@@ -384,7 +384,7 @@ export default function ConfigPage() {
           {/* Avatar Circular */}
           <div className="h-16 w-16 rounded-full border border-line bg-card flex-shrink-0 overflow-hidden relative">
             <div className="h-full w-full bg-gradient-to-tr from-accent/20 to-accent/40 flex items-center justify-center text-2xl font-bold text-accent">
-              AN
+              {PERFIL.iniciais}
             </div>
           </div>
 
