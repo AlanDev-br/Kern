@@ -11,9 +11,28 @@ import { Capacitor, CapacitorHttp } from "@capacitor/core";
 // ─────────────────────────────────────────────────────────────
 
 export const MODELOS_GROQ = [
-  { id: "llama-3.3-70b-versatile", nome: "Llama 3.3 70B (recomendado)" },
-  { id: "llama-3.1-8b-instant", nome: "Llama 3.1 8B (mais rápido)" },
+  { id: "openai/gpt-oss-120b", nome: "GPT-OSS 120B (recomendado)" },
+  { id: "openai/gpt-oss-20b", nome: "GPT-OSS 20B (mais rápido)" },
 ];
+
+// A Groq desligou a família Llama 3.x em 16/08/2026. Quem já usou o coach tem o
+// id morto gravado na config, e continuaria levando erro da API a cada mensagem —
+// por isso a troca acontece também na leitura, não só na lista acima. O destino de
+// cada um é o substituto que a própria Groq indicou no aviso de descontinuação.
+const MODELOS_APOSENTADOS: Record<string, string> = {
+  "llama-3.3-70b-versatile": "openai/gpt-oss-120b",
+  "llama-3.1-8b-instant": "openai/gpt-oss-20b",
+  "llama3-70b-8192": "openai/gpt-oss-120b",
+  "llama3-8b-8192": "openai/gpt-oss-20b",
+  "mixtral-8x7b-32768": "openai/gpt-oss-120b",
+  "gemma2-9b-it": "openai/gpt-oss-20b",
+};
+
+/** Devolve sempre um modelo vivo: traduz o aposentado, ou usa o padrão. */
+export function modeloVigente(id: string | undefined | null): string {
+  if (!id) return MODELOS_GROQ[0].id;
+  return MODELOS_APOSENTADOS[id] ?? id;
+}
 
 // Chave/modelo vindos do .env.local (embutidos no build). Se preenchidos, o coach
 // ativa sozinho, sem precisar colar nada na tela.

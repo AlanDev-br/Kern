@@ -16,6 +16,7 @@ import {
   chamarCoach,
   montarContexto,
   MODELOS_GROQ,
+  modeloVigente,
   CHAVE_AMBIENTE,
   MODELO_AMBIENTE,
   type Mensagem,
@@ -98,7 +99,9 @@ export default function CoachPage() {
   const [chave, setChave] = useState("");
   const [modelo, setModelo] = useState(MODELOS_GROQ[0].id);
   const chaveEfetiva = config?.iaApiKey || CHAVE_AMBIENTE;
-  const modeloEfetivo = config?.iaModelo || MODELO_AMBIENTE || MODELOS_GROQ[0].id;
+  // modeloVigente traduz id de modelo aposentado; sem isso, uma config antiga
+  // gravada no aparelho manda um id morto para a API a cada mensagem.
+  const modeloEfetivo = modeloVigente(config?.iaModelo || MODELO_AMBIENTE);
   const temChave = !!chaveEfetiva;
 
   const contexto = useMemo<string>(() => {
