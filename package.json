@@ -81,13 +81,17 @@
           ]
         }
       ],
-      "artifactName": "${productName}-${version}-${arch}.${ext}"
+      "icon": "electron/icon.png"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "perMachine": false,
-      "shortcutName": "Kern"
+      "shortcutName": "Kern",
+      "artifactName": "${productName}-${version}-instalador.${ext}"
+    },
+    "portable": {
+      "artifactName": "${productName}-${version}-portatil.${ext}"
     }
   }
 }
